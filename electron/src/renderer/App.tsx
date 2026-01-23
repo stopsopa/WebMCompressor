@@ -22,7 +22,6 @@ function App() {
   const [files, setFiles] = useState<VideoFile[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [activeTab, setActiveTab] = useState<'files' | 'logs'>('files');
-  const [processingCount, setProcessingCount] = useState(0);
 
   // Load config on mount
   useEffect(() => {
@@ -41,7 +40,6 @@ function App() {
   // Update process count for close confirmation
   useEffect(() => {
     const count = files.filter(f => f.status === 'processing').length;
-    setProcessingCount(count);
     window.electronAPI.setProcessCount(count);
   }, [files]);
 
@@ -134,10 +132,7 @@ function App() {
     }
   };
 
-  // Get current default settings
   const getCurrentSettings = (): CompressionSettings => {
-    const preset = QUALITY_PRESETS[config.defaultQuality];
-    
     return {
       quality: config.defaultQuality,
       resolution: config.defaultResolution,

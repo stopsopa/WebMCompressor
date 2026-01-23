@@ -15,27 +15,26 @@ function DropZone({ onFilesDrop }: DropZoneProps) {
     e.preventDefault();
     e.stopPropagation();
 
-    console.log('Files dropped:', e.dataTransfer.files);
-    
     const files = Array.from(e.dataTransfer.files);
-    console.log('Files array:', files);
     
-    // In Electron, File objects have a 'path' property
+    // In modern Electron, we use webUtils.getPathForFile (exposed via our preload)
     const filePaths = files
       .map(file => {
-        // Try to get the path property (Electron-specific)
-        const electronFile = file as any;
-        console.log('File object:', file, 'Path:', electronFile.path);
-        return electronFile.path || null;
+        try {
+          const path = window.electronAPI.getPathForFile(file);
+          console.log(`File: ${file.name}, Path: ${path}`);
+          return path;
+        } catch (err) {
+          console.error('Error getting path for file:', file.name, err);
+          return null;
+        }
       })
-      .filter((path): path is string => path !== null);
-
-    console.log('Extracted file paths:', filePaths);
+      .filter((path): path is string => !!path);
 
     if (filePaths.length > 0) {
       onFilesDrop(filePaths);
     } else {
-      console.warn('No valid file paths found');
+      console.warn('No valid file paths could be extracted.');
     }
   }, [onFilesDrop]);
 

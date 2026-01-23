@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, webUtils } from "electron";
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -19,6 +19,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Process count for close confirmation
   setProcessCount: (count: number) => ipcRenderer.send("process:count", count),
+
+  // Tool to get file path from File object (standard in modern Electron)
+  getPathForFile: (file: File) => webUtils.getPathForFile(file),
 });
 
 // Type definition for window.electronAPI
@@ -36,23 +39,20 @@ declare global {
         error?: string;
       }>;
       getOutputPath: (inputPath: string) => Promise<string>;
-      ffmpegPass1: (
-        args: any,
-      ) => Promise<{
+      ffmpegPass1: (args: any) => Promise<{
         success: boolean;
         output?: string;
         error?: string;
         stderr?: string;
       }>;
-      ffmpegPass2: (
-        args: any,
-      ) => Promise<{
+      ffmpegPass2: (args: any) => Promise<{
         success: boolean;
         output?: string;
         error?: string;
         stderr?: string;
       }>;
       setProcessCount: (count: number) => void;
+      getPathForFile: (file: File) => string;
     };
   }
 }

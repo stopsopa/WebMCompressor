@@ -21,6 +21,8 @@ async function createWindow() {
             preload: path.join(__dirname, "../preload/preload.js"),
             contextIsolation: true,
             nodeIntegration: false,
+            // Enable file path access for drag-and-drop
+            webSecurity: false,
         },
         title: "WebM Compressor",
     });
@@ -71,7 +73,10 @@ ipcMain.handle("config:load", async () => {
         return JSON.parse(data);
     }
     catch (error) {
-        // Return default config if file doesn't exist
+        if (error.code !== "ENOENT") {
+            console.error("error loading config:", error.message || error);
+        }
+        // Return default config if file doesn't exist or is invalid
         return {
             defaultQuality: "medium",
             defaultResolution: "original",
