@@ -1,0 +1,342 @@
+name: Build & Release Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      manual_run_reason:
+        description: "Reason for manual run (optional)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+env:
+  # Precedence:
+  # 1. inputs.tag_name (if provided via workflow_dispatch or workflow_call)
+  # 2. github.ref_name (fallback for release:published or manual run without input)
+  RELEASE_TAG: ${{ inputs.tag_name || github.ref_name }}
+
+jobs:
+  # STEP 0: Debug Information
+  debug:
+    name: 📝 Debug Info (Always Run - first but in parallel)
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📝 Debug Context
+        run: |
+          echo "### Pipeline Context ###"
+          echo "Triggered by {{ github.event_name }}: >${{ github.event_name }}<"
+          echo "Manual reason {{ inputs.manual_run_reason }}: >${{ inputs.manual_run_reason }}<"
+          echo "Ref {{ github.ref_name }} (will be branch or tag name): >${{ github.ref_name }}<"
+          echo "Resolved RELEASE_TAG: {{ env.RELEASE_TAG }}: >${{ env.RELEASE_TAG }}<"
+          echo "--- Environment (Filtered) ---"
+          env | grep -E "STEP_|GITHUB_|RELEASE_TAG" | sort
+          echo "STEP_DEMO_VAL=initialized" >> $GITHUB_ENV
+
+  # STEP 1: Always Run Tests
+  test:
+    name: 🧪 Run Tests
+    runs-on: ubuntu-latest
+    needs: debug
+    # CROSS-JOB STATE (The "Anouncer"):
+    # To pass data to other jobs, you MUST declare them here.
+    # It maps a step's internal output to a job-level output.
+    outputs:
+      test_complete: ${{ steps.unit_tests.outputs.test_complete }}
+    steps:
+      - name: 📝 Step Debug (Start)
+        run: |
+          echo "### Test Job Initial State ###"
+          env | grep -E "STEP_|GITHUB_|RELEASE_TAG" | sort
+
+      - uses: actions/checkout@v4
+        with:
+          # Use the resolved RELEASE_TAG for checkout
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: 🧪 Run Tests
+        id: unit_tests
+        run: |
+          echo "Mocking tests... Success!"
+          echo "STEP_TEST_COMPLETE=true" >> $GITHUB_ENV
+
+          # CROSS-JOB STATE (The "Pitcher"):
+          # Echoing to $GITHUB_OUTPUT makes the value available to the job's 'outputs' section above.
+          echo "test_complete=true" >> $GITHUB_OUTPUT
+
+      - name: 📝 Step Debug (End)
+        run: |
+          echo "Markers after test: STEP_TEST_COMPLETE=>$STEP_TEST_COMPLETE<"
+          env | grep -E "STEP_|GITHUB_|RELEASE_TAG" | sort
+
+  # STEP 2a: Test Build (Optional Fork)
+  # Gate: Test Approval
+  # This job acts as a "Gate" for the Test environment.
+  # It has `continue-on-error: true`, so if you:
+  # 1. Reject the deployment review
+  # 2. Let the review timer expire
+  # This job will "Fail" (Red) but NOT fail the entire workflow.
+  # The dependent job (test-build) will check for the 'approved' output and SKIP if not present.
+  test-gate:
+    # https://github.com/user-attachments/assets/b26e977e-cb56-4d89-9f8d-e3ad35b1197f
+    # this is to don't get email 30 days after nobody triggered environment approval for consecutive steps
+    # more about this gate trick: https://github.com/stopsopa/WebMCompressor/commit/b18add75efb6f6f3cd6af12551cd5ebfccc25d38
+    name: 🛡️ Test Gate
+    needs: test
+    runs-on: ubuntu-latest
+    environment: test
+    continue-on-error: true
+    outputs:
+      approved: ${{ steps.check.outputs.approved }}
+    steps:
+      - name: ✅ Mark Approved
+        id: check
+        run: echo "approved=true" >> $GITHUB_OUTPUT
+      - run: echo "Test Gate - Approved"
+
+  test-build:
+    name: 🍴 Test Build - Fork test
+    needs:
+      - test # WARNING: this will actually generate extra lines on the graph - don't be alarmed: https://i.imgur.com/EvTAriN.png & https://github.com/user-attachments/assets/6841fd35-72eb-4c56-bb4e-0836354b411d
+      - test-gate
+    if: needs.test-gate.outputs.approved == 'true'
+    # LOGIC SUMMARY:
+    # 1. If 'test-gate' FAILS (timeout/rejection), it turns Red but the workflow stays Green (due to continue-on-error).
+    # 2. 'test-gate' failure means the 'approved' output is NEVER set.
+    # 3. This job checks for 'approved' == 'true'. Since it's missing, this condition evaluates to FALSE.
+    # 4. Result: This job is SKIPPED (Grey), not Failed.
+    # 5. Conclusion: The pipeline stops here gracefully without marking the run as Failed.
+    runs-on: ubuntu-latest
+    # environment: test # Removed: Handled by gate <--- that would normally be uncommented if test-gate wouldn't be defined
+    # CROSS-JOB STATE (The "Catcher"):
+    # Since this is a fresh machine, we must 'catch' the output from the 'test' job
+    # and map it back into this job's environment.
+    env:
+      STEP_TEST_COMPLETE: ${{ needs.test.outputs.test_complete }}
+    steps:
+      - name: 🔍 State Check
+        run: |
+          env | grep -E "STEP_|GITHUB_|RELEASE_TAG" | sort
+          echo "GITHUB_ENV path: >$GITHUB_ENV<"
+
+      - run: echo "This is a dummy test deployment triggered by approval."
+
+  # STEP 2b: Dev/QA Build (Main Fork)
+  # Gate: QA Approval
+  # Similar to test-gate: Stops the branch gracefully on Rejection/Timeout.
+  qa-gate:
+    # https://github.com/user-attachments/assets/b26e977e-cb56-4d89-9f8d-e3ad35b1197f
+    # this is to don't get email 30 days after nobody triggered environment approval for consecutive steps
+    # more about this gate trick: https://github.com/stopsopa/WebMCompressor/commit/b18add75efb6f6f3cd6af12551cd5ebfccc25d38
+    name: 🛡️ QA Gate
+    needs: test
+    runs-on: ubuntu-latest
+    environment: development
+    continue-on-error: true
+    outputs:
+      approved: ${{ steps.check.outputs.approved }}
+    steps:
+      - name: ✅ Mark Approved
+        id: check
+        run: echo "approved=true" >> $GITHUB_OUTPUT
+      - run: echo "QA Gate - Approved"
+
+  # 🚨 CONFIGURATION REQUIRED:
+  # You MUST configure TWO environments in GitHub Repo Settings > Environments:
+  #
+  # 1. 'development' (For QA Build)
+  #    - Go to Settings > Environments > New environment > Name: development
+  #    - Configure environment > Check "Required reviewers" > Add yourself (stopsopa)
+  #    - Save protection rules
+  #
+  # 2. 'production' (For Official Release)
+  #    - Go to Settings > Environments > New environment > Name: production
+  #    - Configure environment > Check "Required reviewers" > Add yourself (stopsopa)
+  #    - Save protection rules
+  qa-build:
+    name: 🚧 QA Build (${{ matrix.os }})
+    needs:
+      - test # WARNING: this will actually generate extra lines on the graph - don't be alarmed: https://i.imgur.com/EvTAriN.png & https://github.com/user-attachments/assets/6841fd35-72eb-4c56-bb4e-0836354b411d
+      - qa-gate
+    if: needs.qa-gate.outputs.approved == 'true'
+    # LOGIC SUMMARY:
+    # 1. If 'qa-gate' FAILS (timeout/rejection), it turns Red but the workflow stays Green (due to continue-on-error).
+    # 2. 'qa-gate' failure means the 'approved' output is NEVER set.
+    # 3. This job checks for 'approved' == 'true'. Since it's missing, this condition evaluates to FALSE.
+    # 4. Result: This job is SKIPPED (Grey), not Failed.
+    # 5. Conclusion: The pipeline stops here gracefully without marking the run as Failed.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    # environment: development # Removed: Handled by gate
+    # CROSS-JOB STATE (The "Catcher"):
+    # Mapping the test result here so the Audit dump below can see it.
+    env:
+      STEP_TEST_COMPLETE: ${{ needs.test.outputs.test_complete }}
+    defaults:
+      run:
+        working-directory: ./electron
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Use the resolved RELEASE_TAG for checkout
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: 🔍 Audit
+        shell: bash
+        run: |
+          echo "ENV Path: $GITHUB_ENV"
+          env | grep -E "STEP_|GITHUB_|RELEASE_TAG" | sort || echo "No markers yet"
+
+      - name: 🔍 State Check (2)
+        shell: bash
+        run: |
+          echo "STEP_QA_CHECKOUT=true" >> $GITHUB_ENV
+          env | grep "STEP_" | sort || echo "No STEP markers"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: electron/package-lock.json
+
+      - name: 📦 Install & Build
+        run: |
+          npm ci
+          npm run build
+
+      - name: 🏗️ Build Electron App for QA
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ matrix.os }}" = "macos-latest" ]; then
+            npx electron-builder --mac --publish never
+          else
+            npx electron-builder --win --publish never
+          fi
+        shell: bash
+
+      - name: 📤 Upload Artifacts (Mac)
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-release-dmg
+          path: electron/release/*.dmg
+          retention-days: 1
+
+      - name: 📤 Upload Artifacts (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-release-win
+          path: |
+            electron/release/*.exe
+            electron/release/*.msi
+          retention-days: 1
+
+  # STEP 3: The "Gatekeeper" for Production
+  # Gate: Production Approval
+  # Similar to qa-gate: Stops the branch gracefully on Rejection/Timeout.
+  bump-gate:
+    name: 🛡️ Bump Gate
+    needs: qa-build
+    runs-on: ubuntu-latest
+    environment: production
+    continue-on-error: true
+    outputs:
+      approved: ${{ steps.check.outputs.approved }}
+    steps:
+      - name: ✅ Mark Approved
+        id: check
+        run: echo "approved=true" >> $GITHUB_OUTPUT
+      - run: echo "Bump Gate - Approved"
+
+  bump:
+    name: 🚀 Bump Version (Prod)
+    needs:
+      - qa-build # <--- Depends on QA passing!
+      - bump-gate
+    if: needs.bump-gate.outputs.approved == 'true'
+    # LOGIC SUMMARY:
+    # 1. If 'bump-gate' FAILS (timeout/rejection), it turns Red but the workflow stays Green (due to continue-on-error).
+    # 2. 'bump-gate' failure means the 'approved' output is NEVER set.
+    # 3. This job checks for 'approved' == 'true'. Since it's missing, this condition evaluates to FALSE.
+    # 4. Result: This job is SKIPPED (Grey), not Failed.
+    # 5. Conclusion: The pipeline stops here gracefully without marking the run as Failed.
+    runs-on: ubuntu-latest
+    # environment: production # Removed: Handled by gate
+    defaults:
+      run:
+        working-directory: ./electron
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      new_tag: ${{ steps.release.outputs.new_tag }}
+      released: ${{ steps.release.outputs.released }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Use the resolved RELEASE_TAG for checkout
+          ref: ${{ env.RELEASE_TAG }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: 🔍 Audit
+        run: env | grep -E "STEP_|GITHUB_|RELEASE_TAG" | sort
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: electron/package-lock.json
+
+      - name: 📦 Install & Release
+        id: release
+        run: |
+          npm ci
+
+          # Detection Strategy
+          git fetch --tags
+          OLD_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "Old tag: $OLD_TAG"
+
+          # Step B: Run semantic-release (creates new tag if changes exist)
+          npx semantic-release
+
+          # Step C: Get the latest tag again
+          git fetch --tags
+          NEW_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "New tag: $NEW_TAG"
+
+          # Step D: Compare. If different, we have a release!
+          if [ "$OLD_TAG" != "$NEW_TAG" ] && [ -n "$NEW_TAG" ]; then
+            echo "New release detected: $NEW_TAG"
+            # Set outputs for the next job to see
+            echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+            echo "released=true" >> $GITHUB_OUTPUT
+            echo "STEP_BUMP_RELEASE_CREATED=true" >> $GITHUB_ENV
+          else
+            echo "released=false" >> $GITHUB_OUTPUT
+            echo "STEP_BUMP_RELEASE_SKIPPED=true" >> $GITHUB_ENV
+          fi
+
+      - name: 🔍 State Check (Final)
+        run: |
+          env | grep "STEP_" | sort
+
+  # STEP 4: Build & Publish (Only if Step 3 released something)
+  build-release:
+    needs: bump
+    if: needs.bump.outputs.released == 'true'
+    uses: ./.github/workflows/release.yml
+    with:
+      tag_name: ${{ needs.bump.outputs.new_tag }}
+    secrets: inherit

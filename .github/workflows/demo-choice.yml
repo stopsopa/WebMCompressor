@@ -1,0 +1,73 @@
+name: Demo - Manual Inputs & Choices
+
+on:
+  workflow_dispatch:
+    inputs:
+      # 1. Dropdown (Choice) - Replaces Radio Buttons
+      target_region:
+        description: "Target Region"
+        required: true
+        default: "us-east-1"
+        type: choice
+        options:
+          - us-east-1
+          - eu-west-1
+          - ap-southeast-2
+
+      # 2. Checkbox (Boolean)
+      enable_debug:
+        description: "Enable Debug Logging?"
+        required: false
+        default: false
+        type: boolean
+
+      # 3. Text Input (String)
+      release_notes:
+        description: "Custom Release Note"
+        required: false
+        default: "Manual deploy"
+        type: string
+
+jobs:
+  # 1. Show Inputs
+  display-inputs:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Selected Region: ${{ inputs.target_region }}"
+          echo "Debug Enabled: ${{ inputs.enable_debug }}"
+          echo "Notes: ${{ inputs.release_notes }}"
+
+  # 2. Parallel Options (The Decision Menu 🎋)
+  # Each job pauses on its own Environment.
+  # You approve ONLY the one(s) you want to run.
+
+  deploy-us:
+    name: 🇺🇸 Deploy US
+    needs: display-inputs
+    runs-on: ubuntu-latest
+    environment: demo-us # <--- Pauses here!
+    steps:
+      - run: |
+          echo "Simulating deployment to US Region..."
+          echo "Configuration: US-EAST-1"
+
+  deploy-eu:
+    name: 🇪🇺 Deploy EU
+    needs: display-inputs
+    runs-on: ubuntu-latest
+    environment: demo-eu # <--- Pauses here!
+    steps:
+      - run: |
+          echo "Simulating deployment to EU Region..."
+          echo "Configuration: EU-WEST-1"
+
+  deploy-global:
+    name: 🌍 Deploy Global
+    needs: display-inputs
+    runs-on: ubuntu-latest
+    environment: demo-global # <--- Pauses here!
+    steps:
+      - run: |
+          echo "Simulating GLOBAL rollout..."
+          echo "Configuration: ALL-REGIONS"

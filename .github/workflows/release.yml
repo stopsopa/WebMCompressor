@@ -1,0 +1,103 @@
+name: Release Build
+
+on:
+  # Trigger 1: Global Event Listener
+  # This waits for a GitHub global event. Specifically, when someone (or a bot using a Personal Access Token)
+  # creates a new Release in the "Releases" tab.
+  # Note: Releases created by the default GITHUB_TOKEN will NOT trigger this (to prevent recursion).
+  release:
+    types: [published]
+  # This trigger allows this workflow to be called by other workflows (like bump-version.yml)
+  workflow_call:
+    inputs:
+      tag_name:
+        description: "The tag to release (e.g. v1.0.0). Defaults to github.ref_name."
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: 🏗️ Build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: 🔍 Audit
+        shell: bash
+        run: |
+          echo "### Release Context ###"
+          echo "Event ${{ github.event_name }}: >${{ github.event_name }}<"
+          echo "Tag ${{ inputs.tag_name }}:   >${{ inputs.tag_name }}<"
+          echo "Ref ${{ github.ref_name }}:   >${{ github.ref_name }}<"
+          echo "ENV Path: $GITHUB_ENV"
+          env | grep -E "STEP_|GITHUB_" | sort || echo "No markers yet"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag_name || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: electron/package-lock.json
+
+      - name: 📦 Install, Build & Sync
+        working-directory: ./electron
+        shell: bash
+        run: |
+          npm ci
+
+          # Version Sync
+          REF_NAME=${{ inputs.tag_name || github.ref_name }}
+          VERSION=${REF_NAME#v}
+          echo "Setting package.json version to $VERSION"
+          npm version $VERSION --no-git-tag-version
+
+          npm run build
+
+      - name: 🏗️ Build and Publish Electron App
+        working-directory: ./electron
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          if [ "${{ matrix.os }}" = "macos-latest" ]; then
+            npx electron-builder --mac --publish always
+          else
+            npx electron-builder --win --publish always
+          fi
+
+      - name: 📤 Upload Additional Assets
+        if: matrix.os == 'macos-latest'
+        working-directory: ./electron
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME=${{ inputs.tag_name || github.ref_name }}
+          gh release upload $TAG_NAME package.json --clobber
+
+  summary:
+    name: 📢 Release Summary
+    needs: build
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: 📢 Summary
+        run: |
+          TAG_NAME=${{ inputs.tag_name || github.ref_name }}
+          REPO_URL="https://github.com/${{ github.repository }}"
+          RELEASE_URL="$REPO_URL/releases/tag/$TAG_NAME"
+
+          echo "### 🚀 Release Build Pipeline Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "All builds (macOS and Windows) have finished." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "You can view the release and download the artifacts here:" >> $GITHUB_STEP_SUMMARY
+          echo "👉 [**$TAG_NAME**]($RELEASE_URL)" >> $GITHUB_STEP_SUMMARY
