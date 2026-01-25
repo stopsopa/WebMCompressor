@@ -6,3 +6,4 @@ target/
 .DS_Store
 *.tar.gz
 *.mov
+/coverage/

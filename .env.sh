@@ -16,4 +16,5 @@ if [ -z "${PROJECT_NAME}" ]; then
     exit 1
 fi
 
-export NODE_OPTIONS="${NODE_OPTIONS} --experimental-strip-types --experimental-transform-types --import file://${DIR}/node-suppress-warning.js"
+# export NODE_OPTIONS="${NODE_OPTIONS} --experimental-transform-types --import file://${DIR}/node-suppress-warning.js"
+# above is valid but now flags are added using --experimental-config-file=node.config.json in ts.sh

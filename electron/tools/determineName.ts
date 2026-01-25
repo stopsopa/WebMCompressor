@@ -17,8 +17,10 @@ function extract(filePath: string) {
   };
 }
 
-export default function findName(file: string, targetExtension: string) {
+export default function determineName(file: string, targetExtension: string) {
   const parts = extract(file);
+
+  targetExtension = targetExtension.toLowerCase();
 
   if (parts.extension === targetExtension) {
     return `${parts.dirname}/${parts.filename}[processed].${targetExtension}`;
@@ -27,7 +29,7 @@ export default function findName(file: string, targetExtension: string) {
   return `${parts.dirname}/${parts.filename}.${targetExtension}`;
 }
 
-if (import.meta.main) {
-  const p = findName(process.argv[2], process.argv[3]);
+if (import.meta?.main) {
+  const p = determineName(process.argv[2], process.argv[3]);
   process.stdout.write(p);
 }
