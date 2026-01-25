@@ -1,7 +1,7 @@
-import closestResolution from "./closestResolution.ts";
-import type { Resolution } from "./closestResolution.ts";
+import { closestHeight } from "./closestResolution.ts";
+import type { HeightResolution } from "./closestResolution.ts";
 
-const crfValues: Record<Resolution, number> = {
+const crfValues: Record<HeightResolution, number> = {
   240: 37,
   360: 36,
   480: 33,
@@ -15,7 +15,7 @@ const crfValues: Record<Resolution, number> = {
  * based on: https://developers.google.com/media/vp9/settings/vod/#quality
  */
 export default function determineCrf(videoHeight: number): number {
-  const targetHeight = closestResolution(videoHeight);
+  const targetHeight = closestHeight(videoHeight);
 
   return crfValues[targetHeight];
 }

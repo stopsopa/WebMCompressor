@@ -1,9 +1,13 @@
-import closestResolution from "./closestResolution.ts";
+import { closestHeight } from "./closestResolution.ts";
+import type { HeightResolution } from "./closestResolution.ts";
 
 /**
  * based on: https://developers.google.com/media/vp9/settings/vod/#bitrate
  */
-const bitrateMap = {
+const bitrateMap: Record<
+  HeightResolution,
+  { avg: number; min: number; max: number }
+> = {
   240: {
     avg: 150,
     min: 75,
@@ -42,6 +46,6 @@ const bitrateMap = {
 };
 
 export default function determineBitrate(videoHeight: number) {
-  const normalizedHeight = closestResolution(videoHeight);
+  const normalizedHeight = closestHeight(videoHeight);
   return bitrateMap[normalizedHeight as keyof typeof bitrateMap];
 }
