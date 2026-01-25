@@ -8,6 +8,9 @@ type Params = {
   sourceFile: string;
 };
 
+/**
+ * Logic based on: https://developers.google.com/media/vp9/settings/vod/
+ */
 export default function generateFFMPEGParams(params: Params) {
   const { videoHeight, videoWidth, originalHeight, sourceFile } = params;
 

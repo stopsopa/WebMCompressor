@@ -1,8 +1,6 @@
 import closestResolution from "./closestResolution.ts";
 import type { Resolution } from "./closestResolution.ts";
 
-// In CQ mode, you will also set the maximum quality level. The following quality levels are recommended for file-based VP9 encoding:
-
 const crfValues: Record<Resolution, number> = {
   240: 37,
   360: 36,
@@ -13,6 +11,9 @@ const crfValues: Record<Resolution, number> = {
   2160: 15,
 };
 
+/**
+ * based on: https://developers.google.com/media/vp9/settings/vod/#quality
+ */
 export default function determineCrf(videoHeight: number): number {
   const targetHeight = closestResolution(videoHeight);
 

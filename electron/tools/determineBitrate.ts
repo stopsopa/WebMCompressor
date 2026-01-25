@@ -1,15 +1,7 @@
 import closestResolution from "./closestResolution.ts";
 
 /**
- * Values based on: https://developers.google.com/media/vp9/settings/vod/#bitrate
- *
- * "The following bitrates are suggested as baselines for web and mobile distribution.
- * These suggestions minimize bitrate which achieving video quality suitable for consumer
- * web and mobile distribution; think of them as a 'low' bit rate recommendation that
- * can still achieve reasonable quality."
- *
- * "For the examples above, it is recommended that minimum bitrate be set at 50% of
- * target bitrate, and maximum at 145% of target."
+ * based on: https://developers.google.com/media/vp9/settings/vod/#bitrate
  */
 const bitrateMap = {
   240: {
