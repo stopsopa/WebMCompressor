@@ -3,6 +3,9 @@ import assert from "node:assert";
 
 import closestResolution from "./closestResolution.ts";
 
+/**
+ * /bin/bash ts.sh --test electron/tools/closestResolution.test.ts
+ */
 describe("closestResolution", () => {
   it("should return closest resolution", () => {
     assert.strictEqual(closestResolution(30), 240);
