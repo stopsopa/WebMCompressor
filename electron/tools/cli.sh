@@ -30,7 +30,13 @@ fi
 cat "${TMP}"
 
 
-echo -e "\n      Press enter to continue\n"
-read
+if [ -t 0 ]; then
+    # this is for
+    # /bin/bash inter.sh
+    echo -e "\n\n      Press enter to continue\n"
+    read
+fi
+
 
 /bin/bash "${TMP}"
+

@@ -18,11 +18,11 @@ describe("generateFFMPEGParams", () => {
     });
     assert.strictEqual(
       firstPass,
-      `-loglevel error -i "test/dir/test.mp4" -c:v libvpx-vp9 -c:a libopus -vf scale=1920x1080 -b:v 3000k -minrate 1500k -maxrate 4350k -tile-columns 2 -threads 4 -g 240 -quality good -crf 31 -speed 4 -pass 1 -an -f null /dev/null`,
+      `-loglevel error -i "test/dir/test.mp4" -c:v libvpx-vp9 -vf scale=1920x1080 -b:v 3000k -minrate 1500k -maxrate 4350k -tile-columns 2 -threads 4 -g 240 -quality good -crf 31 -speed 4 -an -pass 1 -f null /dev/null`,
     );
     assert.strictEqual(
       secondPass,
-      `-loglevel error -i "test/dir/test.mp4" -c:v libvpx-vp9 -c:a libopus -vf scale=1920x1080 -b:v 3000k -minrate 1500k -maxrate 4350k -tile-columns 2 -threads 4 -g 240 -quality good -crf 31 -speed 2 -pass 2 -metadata creation_time="2026-01-25T01:44:58.000Z" -metadata comment="sayonara" -y "test/dir/test.webm"`,
+      `-loglevel error -i "test/dir/test.mp4" -c:v libvpx-vp9 -vf scale=1920x1080 -b:v 3000k -minrate 1500k -maxrate 4350k -tile-columns 2 -threads 4 -g 240 -quality good -crf 31 -speed 2 -c:a libopus -pass 2 -metadata creation_time="2026-01-25T01:44:58.000Z" -metadata comment="sayonara" -y "test/dir/test.webm"`,
     );
   });
 });

@@ -7,3 +7,7 @@ target/
 *.tar.gz
 *.mov
 /coverage/
+ffmpeg*.log
+*.webm
+*.mp4
+*.mov

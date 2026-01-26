@@ -39,7 +39,7 @@ export default function generateFFMPEGParams(params: Params) {
 
   bufferfp.push(`-loglevel error`);
   bufferfp.push(`-i "${sourceFile.replace(/"/g, '\\"')}"`);
-  bufferfp.push(`-c:v libvpx-vp9 -c:a libopus`);
+  bufferfp.push(`-c:v libvpx-vp9`);
 
   if (scale) {
     bufferfp.push(`-vf scale=${videoWidth}x${videoHeight}`);
@@ -59,7 +59,10 @@ export default function generateFFMPEGParams(params: Params) {
   bufferfp.push(`-speed ${firstPass}`);
   buffersp.push(`-speed ${secondPass}`);
 
-  bufferfp.push(`-pass 1 -an -f null /dev/null`);
+  bufferfp.push(`-an`);
+  buffersp.push(`-c:a libopus`);
+
+  bufferfp.push(`-pass 1 -f null /dev/null`);
   if (!date) {
     // 2026-01-25T01:44:58.000Z
     date = new Date().toISOString();
