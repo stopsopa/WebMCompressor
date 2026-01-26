@@ -6,7 +6,7 @@ import determineMultipassSpeed from "./determineMultipassSpeed.ts";
 import determineCrf from "./determineCrf.ts";
 import determineName from "./determineName.ts";
 
-type Params = {
+export type Params = {
   sourceFile: string;
 
   videoHeight: number;
@@ -15,6 +15,7 @@ type Params = {
 
   scale: boolean; // this is to inform to scale
   date?: string; // mainly to fix it for testing
+  mainExec?: string; // e.g. /usr/local/bin/ffmpeg, default: 'ffmpeg'
 };
 
 /**
@@ -37,7 +38,9 @@ export default function generateFFMPEGParams(params: Params) {
 
   const bufferfp: string[] = []; // first pass
 
-  bufferfp.push(`-loglevel error -c:v libvpx-vp9 -c:a libopus`);
+  const exec = params.mainExec || "ffmpeg";
+
+  bufferfp.push(`${exec} -loglevel error -c:v libvpx-vp9 -c:a libopus`);
   bufferfp.push(`-i "${sourceFile.replace(/"/g, '\\"')}"`);
 
   if (scale) {
