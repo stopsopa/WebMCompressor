@@ -15,13 +15,15 @@ export type Params = {
 
   scale: boolean; // this is to inform to scale
   date?: string; // mainly to fix it for testing
+  extra?: string; // some extra parameters like -ss 00:00:17 -to 00:00:22 for cutting video
 };
 
 /**
  * Logic based on: https://developers.google.com/media/vp9/settings/vod/
  */
 export default function generateFFMPEGParams(params: Params) {
-  const { videoHeight, videoWidth, scale, sourceFile, frameRate } = params;
+  const { videoHeight, videoWidth, scale, sourceFile, frameRate, extra } =
+    params;
 
   let { date } = params;
 
@@ -62,7 +64,13 @@ export default function generateFFMPEGParams(params: Params) {
   bufferfp.push(`-an`);
   buffersp.push(`-c:a libopus`);
 
+  if (typeof extra === "string") {
+    bufferfp.push(extra);
+    buffersp.push(extra);
+  }
+
   bufferfp.push(`-pass 1 -f null /dev/null`);
+
   if (!date) {
     // 2026-01-25T01:44:58.000Z
     date = new Date().toISOString();
