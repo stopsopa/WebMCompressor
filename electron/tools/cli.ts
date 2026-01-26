@@ -1,5 +1,5 @@
 /**
- * /bin/bash ts.sh electron/tools/cli.ts --sourceFile "test.mp4" --videoHeight 1080 --videoWidth 1920 --frameRate 30 --pass "secondPass"
+ * NODE_OPTIONS="" /bin/bash ts.sh electron/tools/cli.ts -s "input.mp4" -h 1080 -w 1920 -r 30 -sc
  */
 
 import generateFFMPEGParams, { type Params } from "./generateFFMPEGParams.ts";
@@ -7,7 +7,7 @@ import generateFFMPEGParams, { type Params } from "./generateFFMPEGParams.ts";
 const args = process.argv.slice(2);
 
 function printHelp() {
-  console.log(`
+  process.stdout.write(`
 Usage: ts.sh electron/tools/cli.ts [options]
 
 Required arguments:
@@ -19,13 +19,18 @@ Required arguments:
 Optional arguments:
   -sc, --scale [true|false]    Whether to apply scaling. (default: false, but just --sc, --scale sets it to true)
   -d, --date <string>          Creation time metadata for the second pass. (default: current time)
-  -e, --mainExec <path>        Path to the ffmpeg executable. (default: 'ffmpeg')
+  -e, --mainExec <path>        Path to the ffmpeg executable. (default: 'ffmpeg') - passing just  
+                               -e "" will cause script to return just arguments
   -p, --pass <option>          Which pass parameters to return: 'both', 'firstPass', 'secondPass'. (default: 'both')
   --help                       Show this help message.
 
 Example:
-  /bin/bash ts.sh electron/tools/cli.ts -s "input.mp4" -h 1080 -w 1920 -r 30 -sc -p "secondPass"
+  NODE_OPTIONS="" /bin/bash ts.sh electron/tools/cli.ts -s "input.mp4" -h 1080 -w 1920 -r 30 -sc
+  NODE_OPTIONS="" /bin/bash ts.sh electron/tools/cli.ts -s "input.mp4" -h 1080 -w 1920 -r 30 -sc -p "secondPass"
+  NODE_OPTIONS="" /bin/bash ts.sh electron/tools/cli.ts -s "input.mp4" -h 1080 -w 1920 -r 30 -sc -p "firstPass" -e ""
 `);
+
+  process.exit(1);
 }
 
 if (args.length === 0 || args.includes("--help") || args.includes("/?")) {
@@ -38,7 +43,7 @@ type PassOption = "both" | "firstPass" | "secondPass";
 const params: Partial<Params> & { pass: PassOption; mainExec: string } = {
   scale: false, // default scale to false
   pass: "both",
-  mainExec: "ffmpeg",
+  mainExec: "",
 };
 
 for (let i = 0; i < args.length; i++) {
@@ -82,7 +87,7 @@ for (let i = 0; i < args.length; i++) {
       break;
     case "-e":
     case "--mainExec":
-      params.mainExec = nextArg;
+      params.mainExec = nextArg || "";
       i++;
       break;
     case "-p":
@@ -124,22 +129,26 @@ if (missing.length > 0) {
 
 const result = generateFFMPEGParams(params as Params);
 
-const finalFirstPass = `${params.mainExec} ${result.firstPass}`;
-const finalSecondPass = `${params.mainExec} ${result.secondPass}`;
+let finalFirstPass = result.firstPass;
+let finalSecondPass = result.secondPass;
 
-if (params.pass === "both") {
-  console.log(
-    JSON.stringify(
-      {
-        firstPass: finalFirstPass,
-        secondPass: finalSecondPass,
-      },
-      null,
-      4,
-    ),
-  );
-} else if (params.pass === "firstPass") {
-  console.log(finalFirstPass);
-} else if (params.pass === "secondPass") {
-  console.log(finalSecondPass);
+if (params.mainExec) {
+  finalFirstPass = `${params.mainExec} ${result.firstPass}`;
+  finalSecondPass = `${params.mainExec} ${result.secondPass}`;
 }
+
+let buff: string[] = [];
+switch (params.pass) {
+  case "both":
+    buff.push(finalFirstPass);
+    buff.push(finalSecondPass);
+    break;
+  case "firstPass":
+    buff.push(finalFirstPass);
+    break;
+  case "secondPass":
+    buff.push(finalSecondPass);
+    break;
+}
+
+process.stdout.write(buff.join("\n"));

@@ -7,6 +7,8 @@ source "${DIR}/.env.sh"
 
 set -e
 
+export NODE_NO_WARNINGS=1
+
 if [[ "${@}" == *"--test"* ]]; then
   rm -rf coverage
   # without c8 ... - test will work like nothing happened but coverage directory won't be created

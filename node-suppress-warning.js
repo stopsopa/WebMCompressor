@@ -2,12 +2,12 @@
 const originalEmit = process.emit;
 process.emit = function (name, data) {
   const message = data?.message;
-  const name = data?.name;
+  const warningName = data?.name;
   if (
     name === "warning" &&
     data &&
-    ((name === "ExperimentalWarning" &&
-      message.includes("Transform Types")) ||
+    ((warningName === "ExperimentalWarning" &&
+      message?.includes("Transform Types")) ||
       (typeof data === "string" && data.includes("Transform Types")))
   ) {
     return false;
