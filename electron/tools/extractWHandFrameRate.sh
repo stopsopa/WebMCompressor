@@ -1,5 +1,14 @@
 
 # /bin/bash electron/tools/extractWHandFrameRate.sh [file.mov]
+# This script extracts the width, height, and frame rate (FPS) from a video file using ffprobe.
+# It normalizes the FPS to its numerator (leading digits) and outputs three values on separate lines:
+# 1. Width
+# 2. Height
+# 3. Normalized FPS (no trailing newline)
+# Example output for 1920x1080 60fps video:
+# 1920
+# 1080
+# 60
 
 FILE="${1}"
 
