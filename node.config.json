@@ -3,7 +3,7 @@
   "nodeOptions": {
     "strip-types": true,
     "experimental-transform-types": true,
-    "test-coverage-lines": 60,    
+    "test-coverage-lines": 60,
     "import": "./node-suppress-warning.js"
   },
   "testRunner": {

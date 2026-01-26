@@ -11,33 +11,34 @@ function printHelp() {
 Usage: ts.sh electron/tools/cli.ts [options]
 
 Required arguments:
-  --sourceFile <path>      Path to the source video file.
-  --videoHeight <number>   Target video height.
-  --videoWidth <number>    Target video width.
-  --frameRate <number>     Target frame rate.
+  -s, --sourceFile <path>      Path to the source video file.
+  -h, --videoHeight <number>   Target video height.
+  -w, --videoWidth <number>    Target video width.
+  -r, --frameRate <number>     Target frame rate.
 
 Optional arguments:
-  --scale [true|false]     Whether to apply scaling. (default: false, but just --scale sets it to true)
-  --date <string>          Creation time metadata for the second pass. (default: current time)
-  --mainExec <path>        Path to the ffmpeg executable. (default: 'ffmpeg')
-  --pass <option>          Which pass parameters to return: 'both', 'firstPass', 'secondPass'. (default: 'both')
-  --help                   Show this help message.
+  -sc, --scale [true|false]    Whether to apply scaling. (default: false, but just --sc, --scale sets it to true)
+  -d, --date <string>          Creation time metadata for the second pass. (default: current time)
+  -e, --mainExec <path>        Path to the ffmpeg executable. (default: 'ffmpeg')
+  -p, --pass <option>          Which pass parameters to return: 'both', 'firstPass', 'secondPass'. (default: 'both')
+  --help                       Show this help message.
 
 Example:
-  /bin/bash ts.sh electron/tools/cli.ts --sourceFile "input.mp4" --videoHeight 1080 --videoWidth 1920 --frameRate 30 --pass "secondPass"
+  /bin/bash ts.sh electron/tools/cli.ts -s "input.mp4" -h 1080 -w 1920 -r 30 -sc -p "secondPass"
 `);
 }
 
-if (args.length === 0 || args.includes("--help")) {
+if (args.length === 0 || args.includes("--help") || args.includes("/?")) {
   printHelp();
   process.exit(0);
 }
 
 type PassOption = "both" | "firstPass" | "secondPass";
 
-const params: Partial<Params> & { pass: PassOption } = {
+const params: Partial<Params> & { pass: PassOption; mainExec: string } = {
   scale: false, // default scale to false
   pass: "both",
+  mainExec: "ffmpeg",
 };
 
 for (let i = 0; i < args.length; i++) {
@@ -45,22 +46,27 @@ for (let i = 0; i < args.length; i++) {
   const nextArg = args[i + 1];
 
   switch (arg) {
+    case "-s":
     case "--sourceFile":
       params.sourceFile = nextArg;
       i++;
       break;
+    case "-h":
     case "--videoHeight":
       params.videoHeight = Number(nextArg);
       i++;
       break;
+    case "-w":
     case "--videoWidth":
       params.videoWidth = Number(nextArg);
       i++;
       break;
+    case "-r":
     case "--frameRate":
       params.frameRate = Number(nextArg);
       i++;
       break;
+    case "-sc":
     case "--scale":
       if (nextArg === "true" || nextArg === "false") {
         params.scale = nextArg === "true";
@@ -69,14 +75,17 @@ for (let i = 0; i < args.length; i++) {
         params.scale = true;
       }
       break;
+    case "-d":
     case "--date":
       params.date = nextArg;
       i++;
       break;
+    case "-e":
     case "--mainExec":
       params.mainExec = nextArg;
       i++;
       break;
+    case "-p":
     case "--pass":
       if (
         nextArg === "both" ||
@@ -86,7 +95,7 @@ for (let i = 0; i < args.length; i++) {
         params.pass = nextArg as PassOption;
       } else {
         console.error(
-          `Error: --pass must be one of 'both', 'firstPass', 'secondPass'`,
+          `Error: -p, --pass must be one of 'both', 'firstPass', 'secondPass'`,
         );
         process.exit(1);
       }
@@ -97,13 +106,13 @@ for (let i = 0; i < args.length; i++) {
 
 // Basic validation
 const missing: string[] = [];
-if (!params.sourceFile) missing.push("--sourceFile");
+if (!params.sourceFile) missing.push("-s, --sourceFile");
 if (params.videoHeight === undefined || isNaN(params.videoHeight))
-  missing.push("--videoHeight (must be a number)");
+  missing.push("-h, --videoHeight (must be a number)");
 if (params.videoWidth === undefined || isNaN(params.videoWidth))
-  missing.push("--videoWidth (must be a number)");
+  missing.push("-w, --videoWidth (must be a number)");
 if (params.frameRate === undefined || isNaN(params.frameRate))
-  missing.push("--frameRate (must be a number)");
+  missing.push("-r, --frameRate (must be a number)");
 
 if (missing.length > 0) {
   console.error(
@@ -115,10 +124,22 @@ if (missing.length > 0) {
 
 const result = generateFFMPEGParams(params as Params);
 
+const finalFirstPass = `${params.mainExec} ${result.firstPass}`;
+const finalSecondPass = `${params.mainExec} ${result.secondPass}`;
+
 if (params.pass === "both") {
-  console.log(JSON.stringify(result, null, 4));
+  console.log(
+    JSON.stringify(
+      {
+        firstPass: finalFirstPass,
+        secondPass: finalSecondPass,
+      },
+      null,
+      4,
+    ),
+  );
 } else if (params.pass === "firstPass") {
-  console.log(result.firstPass);
+  console.log(finalFirstPass);
 } else if (params.pass === "secondPass") {
-  console.log(result.secondPass);
+  console.log(finalSecondPass);
 }

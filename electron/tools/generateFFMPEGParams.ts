@@ -15,7 +15,6 @@ export type Params = {
 
   scale: boolean; // this is to inform to scale
   date?: string; // mainly to fix it for testing
-  mainExec?: string; // e.g. /usr/local/bin/ffmpeg, default: 'ffmpeg'
 };
 
 /**
@@ -38,9 +37,7 @@ export default function generateFFMPEGParams(params: Params) {
 
   const bufferfp: string[] = []; // first pass
 
-  const exec = params.mainExec || "ffmpeg";
-
-  bufferfp.push(`${exec} -loglevel error -c:v libvpx-vp9 -c:a libopus`);
+  bufferfp.push(`-loglevel error -c:v libvpx-vp9 -c:a libopus`);
   bufferfp.push(`-i "${sourceFile.replace(/"/g, '\\"')}"`);
 
   if (scale) {
