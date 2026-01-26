@@ -37,8 +37,9 @@ export default function generateFFMPEGParams(params: Params) {
 
   const bufferfp: string[] = []; // first pass
 
-  bufferfp.push(`-loglevel error -c:v libvpx-vp9 -c:a libopus`);
+  bufferfp.push(`-loglevel error`);
   bufferfp.push(`-i "${sourceFile.replace(/"/g, '\\"')}"`);
+  bufferfp.push(`-c:v libvpx-vp9 -c:a libopus`);
 
   if (scale) {
     bufferfp.push(`-vf scale=${videoWidth}x${videoHeight}`);
