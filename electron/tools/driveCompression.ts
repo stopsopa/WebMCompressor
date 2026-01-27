@@ -14,12 +14,17 @@ export type ProgressData = {
   firstPassDurationMs: number | null;
 };
 
-export type DriveCompressionOptions = Omit<Params, "frameRate"> & {
-  progressEvent?: (error: string | null, data: ProgressData) => void;
-  end: (step: CompressionStep, error: string | null) => void;
-  ffmpegPath?: string;
-  ffprobePath?: string;
-};
+export type DriveCompressionOptions = Omit<Params, "frameRate" | "videoHeight" | "videoWidth"> &
+  (
+    | { videoHeight: number; videoWidth?: number }
+    | { videoWidth: number; videoHeight?: number }
+    | { videoHeight: number; videoWidth: number }
+  ) & {
+    progressEvent?: (error: string | null, data: ProgressData) => void;
+    end: (step: CompressionStep, error: string | null) => void;
+    ffmpegPath?: string;
+    ffprobePath?: string;
+  };
 
 /**
  * Sends a message back to the main process or triggers progress callbacks.
@@ -57,18 +62,18 @@ export default async function driveCompression(options: DriveCompressionOptions)
     } = await extractMetadata(ffprobePath, sourceFile);
 
     if (scale) {
-      ({ height: videoHeight, width: videoWidth } = scaleWandH(
-        { height: metaHeight, width: metaWidth },
-        { height: videoHeight, width: videoWidth },
-      ));
+      ({ height: videoHeight, width: videoWidth } = scaleWandH({ height: metaHeight, width: metaWidth }, {
+        height: videoHeight,
+        width: videoWidth,
+      } as any));
     }
 
     // 2. Prepare Parameters
     // We use extracted metadata to fill in missing required parameters or ensure accuracy
     const finalParams: Params = {
       sourceFile,
-      videoHeight: scale ? videoHeight : metaHeight,
-      videoWidth: scale ? videoWidth : metaWidth,
+      videoHeight: (scale ? videoHeight : metaHeight) as number,
+      videoWidth: (scale ? videoWidth : metaWidth) as number,
       frameRate: metaFps,
       scale,
       date,
