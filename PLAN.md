@@ -162,6 +162,8 @@ Implement the processing engine with configurable concurrency.
   ```
 - **Dev Tools Helpers**:
   - `getSettings()`: returns the current `GlobalSettings` object.
+- **Queue Cleanup**:
+  - Render a "Clear" button under the **LIST SECTION** once all files in the queue have finished processing (either successfully or with errors). This button should be visible only when the total count of files is > 0 and no files are in `validating`, `queued`, or `processing` states.
 
 ---
 
