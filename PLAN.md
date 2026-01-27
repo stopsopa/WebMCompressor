@@ -18,7 +18,9 @@ WARNING: move through phases in order from 1st to the last one but only after ap
 - **Framework**: Electron + React + TypeScript + raw CSS (no Tailwind, no CSS frameworks) + Vite
 - **Audio/Video Engine**: `ffmpeg` (bundled)
 - **Styling**: Vanilla CSS with AWS Console aesthetics (high-quality UI, vibrant colors, structured layout)
-- **Metadata**: `ffprobe` (via `extractMetadata.ts`)
+- **Window Sizing**:
+  - **Production**: Default window size 1100x800.
+  - **Development**: Window widened to 1600px to accommodate side-by-side DevTools without squeezing the main UI.
 - we will have to bundle ffmpeg and ffprobe with the app. we will not relay on user having ffmpeg installed on his system. ffmpeg have to be shipped in the final electron binary of the app.
 - keep current run.sh, compile.sh, dev.sh, install.sh scripts. I need to have manual way to control lifecycle of the app with single commands. - these have to work with the phase 1.
 - keep modules in electron/tools untouched - you might entire directory to different location if needed. but don't modify anything. Its already designed and tailored to this spec in PLAN.md and tested.
@@ -88,6 +90,7 @@ The form will capture settings that serve as "defaults" for any new file dropped
   - `date`: Current timestamp generated at execution time. - we can store time of dropping file on the item state behind LIST SECTION.
 - **Internal State**:
   - Each video in the **LIST SECTION** stores its own copy of these settings, captured at the moment the file was dropped.
+  - Important: from now on present the state behind LIST SECTION and FORM SECTION in dev mode (when project ran using dev.sh script) - using react dev tools. (ideally expose global functions `getList()` and `getForm()` of the electron developer tools which I can always call to get current state of the list or form to print it with `console.log()`)
 
 ---
 
