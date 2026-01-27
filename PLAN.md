@@ -134,6 +134,7 @@ Refactor the setting form into a reusable component and allow per-video tweaks.
   - Add an "Edit" button to each row in the **LIST SECTION**. - last row.
   - Clicking "Edit" opens a **Settings Modal**.
   - The modal uses the same Settings Component but targets the specific video's configuration - for editing - the same component as in FORM SECTION but in edit mode.
+  - **Visibility**: The "Edit" button is visible only when the video status is `queued` or `error`. It is removed once processing starts or completes successfully.
 - **State Constraints**:
   - Editing is permitted only for videos that have not yet started processing (state: `queued` or `waiting`).
   - while editing (as long as modal is opened) wideo will not be taken for processing. Immediately once edit modal is closed the video is returned to the pool. But don't remove it from the list. just add extra flag to the row in state behind LIST SECTION indicating that edit is in progress.
