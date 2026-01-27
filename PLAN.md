@@ -79,11 +79,20 @@ The form will capture settings that serve as "defaults" for any new file dropped
 - **Scale Settings**:
   - **Checkbox**: "Scale Video" (default unticked - indicates scale = false, default value, means user will reformat video to webm but keep original dimensions of the video). When user tick this to true, then heigh of width is needed to be set by user (becomes required field) - do validation like don't allow to leave it empty. as long as entire set of values in the FORM SECTION is not valid, dropping new files is not allowed.
     signal this state visually on DROPZONE SECTION - that DROPZONE is inactive due to validation error on the FORM SECTION.
-  - **Height Selection**: Provide buttons/radio buttons for standard resolutions: `240, 360, 480, 720, 1080, 1440, 2160`.
+  - **Height Selection**: Provide buttons/radio buttons for standard resolutions: look fo the list heightResolutions from file @electron/src/tools/closestResolution.ts.
     - Clicking a resolution automatically ticks the "Scale" checkbox and populates the height input. - pupulate selected value to heigh input automatically
     - user can also just type in the height input manually.
   - **Width Selection**: User can also type in the width input manually.
   - But user can input height or width but not both. , provide way for user to choose, maybe readio buttons again. Make it look decent/structured.
+- **Drive Compression Mapping**:
+  - The `Scale Video` checkbox maps to the `scale` boolean property in `DriveCompressionOptions`.
+  - The Width and Height inputs map directly to `videoWidth` and `videoHeight` respectively.
+  - **Storage Restriction**: The application state (returned by `getForm()`) must **only** store these three fields. No presets or parallel job settings are permitted in this phase.
+- **Validation Criteria**:
+  - **Scale Disabled**: The form is always valid regardless of `videoWidth`/`videoHeight` values.
+  - **Scale Enabled**: The form is valid **only if**:
+    - Either `videoWidth` **OR** `videoHeight` is a numerical value greater than 0.
+    - If both are missing or 0, or if both are somehow present, the form is invalid.
 - **Automatic Parameters** (to be handled at start-of-compression):
   - `sourceFile`: Path from the individual list item. - that will be taken from the item state behind LIST SECTION. (obviously)
   - `ffmpegPath`/`ffprobePath`: Paths to bundled binaries. - that will be drived at the moment of calling @driveCompression.ts when it will be time to process video.

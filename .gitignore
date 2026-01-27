@@ -19,3 +19,4 @@ ffmpeg*.log
 *.mp4
 *.mov
 example/*.png
+example/*.gif
