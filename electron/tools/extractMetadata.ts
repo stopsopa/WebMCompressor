@@ -12,7 +12,10 @@ const th = (msg: string) => new Error(`extractMetadata.ts error: ${msg}`);
  * Extracts width, height, FPS and duration from a video file using ffprobe.
  * Logic based on extractMetadata.sh
  */
-export async function extractMetadata(filePath: string) {
+export async function extractMetadata(
+  ffprobePath: string = "ffprobe",
+  filePath: string,
+) {
   if (!existsSync(filePath)) {
     throw th(`File not found: ${filePath}`);
   }
@@ -33,7 +36,7 @@ export async function extractMetadata(filePath: string) {
   ];
 
   try {
-    const result = spawnSync("ffprobe", args, { encoding: "utf8" });
+    const result = spawnSync(ffprobePath, args, { encoding: "utf8" });
 
     if (result.status !== 0) {
       throw th(
@@ -104,7 +107,7 @@ if (import.meta?.main) {
         process.exit(1);
       }
 
-      const meta = await extractMetadata(file);
+      const meta = await extractMetadata(undefined, file);
       process.stdout.write(`${meta.width}\n`);
       process.stdout.write(`${meta.height}\n`);
       process.stdout.write(`${meta.fps}\n`);
