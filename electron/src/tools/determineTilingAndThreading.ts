@@ -1,5 +1,5 @@
-import { closestWidth } from "./closestResolution.ts";
-import type { WidthResolution } from "./closestResolution.ts";
+import { closestWidth } from "./closestResolution.js";
+import type { WidthResolution } from "./closestResolution.js";
 
 /**
  * based on: https://developers.google.com/media/vp9/settings/vod/#tiling_and_threading_recommendations

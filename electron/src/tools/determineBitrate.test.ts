@@ -1,10 +1,10 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import determineBitrate from "./determineBitrate.ts";
-import { bitrateMap } from "./determineBitrate.ts";
-import { heightResolutions } from "./closestResolution.ts";
-import { frameRates } from "./categorizeFrameRate.ts";
-import type { FrameRateType } from "./determineBitrate.ts";
+import determineBitrate from "./determineBitrate.js";
+import { bitrateMap } from "./determineBitrate.js";
+import { heightResolutions } from "./closestResolution.js";
+import { frameRates } from "./categorizeFrameRate.js";
+import type { FrameRateType } from "./determineBitrate.js";
 
 /**
  * /bin/bash ts.sh --test electron/tools/determineBitrate.test.ts

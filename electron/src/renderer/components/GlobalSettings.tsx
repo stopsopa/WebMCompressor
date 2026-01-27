@@ -1,19 +1,19 @@
 import React from 'react';
 import SettingsForm from './SettingsForm';
-import type { AppConfig } from '../types';
+import type { FormSettings } from '../types';
 
 interface GlobalSettingsProps {
-  config: AppConfig;
-  onChange: (config: AppConfig) => void;
+  form: FormSettings;
+  onChange: (form: FormSettings) => void;
   onValidationChange: (isValid: boolean) => void;
 }
 
-const GlobalSettings: React.FC<GlobalSettingsProps> = ({ config, onChange, onValidationChange }) => {
+const GlobalSettings: React.FC<GlobalSettingsProps> = ({ form, onChange, onValidationChange }) => {
   return (
     <div className="global-settings-wrapper">
       <SettingsForm 
         title="Global Settings"
-        config={config}
+        config={form}
         onChange={onChange}
         onValidationChange={onValidationChange}
       />

@@ -1,6 +1,6 @@
-import { closestHeight } from "./closestResolution.ts";
-import type { HeightResolution } from "./closestResolution.ts";
-import type { FrameRate } from "./categorizeFrameRate.ts";
+import { closestHeight } from "./closestResolution.js";
+import type { HeightResolution } from "./closestResolution.js";
+import type { FrameRate } from "./categorizeFrameRate.js";
 
 export type FrameRateType = `${HeightResolution}:${FrameRate}`;
 

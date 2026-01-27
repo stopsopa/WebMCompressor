@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
 
-import determineCrf from "./determineCrf.ts";
+import determineCrf from "./determineCrf.js";
 
 /**
  * /bin/bash ts.sh --test electron/tools/determineCrf.test.ts

@@ -5,6 +5,7 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import fs from "fs/promises";
 import { extractMetadata } from "../tools/extractMetadata.js";
+import driveCompression from "../tools/driveCompression.js";
 
 const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
@@ -96,6 +97,7 @@ ipcMain.handle("config:load", async () => {
       scale: false,
       videoWidth: null,
       videoHeight: null,
+      parallelProcessing: 1,
     };
   }
 });
@@ -103,11 +105,12 @@ ipcMain.handle("config:load", async () => {
 // Save configuration
 ipcMain.handle("config:save", async (_event, config) => {
   try {
-    // Strictly filter to Phase 2 allowed fields only before saving
+    // Strictly filter allowed fields
     const filteredConfig = {
       scale: !!config.scale,
       videoWidth: typeof config.videoWidth === "number" ? config.videoWidth : null,
       videoHeight: typeof config.videoHeight === "number" ? config.videoHeight : null,
+      parallelProcessing: typeof config.parallelProcessing === "number" ? config.parallelProcessing : 1,
     };
 
     await fs.mkdir(getConfigDir(), { recursive: true });
@@ -180,76 +183,38 @@ ipcMain.on("process:count", (_event, count: number) => {
   activeProcessCount = count;
 });
 
-// Start FFmpeg process (pass 1)
-ipcMain.handle(
-  "ffmpeg:pass1",
-  async (
-    _event,
-    args: {
-      inputPath: string;
-      settings: any;
-    },
-  ) => {
-    const { inputPath, settings } = args;
+// Start Compression (Phase 4)
+ipcMain.on("compression:start", async (event, args: { id: string; sourceFile: string; settings: any }) => {
+  const { id, sourceFile, settings } = args;
 
-    // Build FFmpeg command for pass 1
-    const bitrate = settings.calculatedBitrate || settings.bitrate;
-    const minBitrate = Math.floor(bitrate * 0.5);
-    const maxBitrate = Math.floor(bitrate * 1.45);
-
-    let scaleFilter = "";
-    if (settings.resolution === "maxWidth" && settings.maxWidth) {
-      scaleFilter = `-vf scale='min(iw,${settings.maxWidth}):-2'`;
-    } else if (settings.resolution === "maxHeight" && settings.maxHeight) {
-      scaleFilter = `-vf scale='-2:min(ih,${settings.maxHeight})'`;
+  try {
+    await driveCompression({
+      sourceFile,
+      scale: !!settings.scale,
+      videoWidth: settings.videoWidth,
+      videoHeight: settings.videoHeight,
+      progressEvent: (error, progress) => {
+        if (mainWindow) {
+          mainWindow.webContents.send("compression:progress", { id, progress });
+        }
+      },
+      end: (step, error, duration) => {
+        if (mainWindow) {
+          mainWindow.webContents.send("compression:end", { id, step, error, duration });
+        }
+      },
+    });
+  } catch (error: any) {
+    if (mainWindow) {
+      mainWindow.webContents.send("compression:end", {
+        id,
+        step: "error",
+        error: error.message || String(error),
+        duration: "0s",
+      });
     }
-
-    const command = `ffmpeg -i "${inputPath}" ${scaleFilter} -c:v libvpx-vp9 -b:v ${bitrate}k -minrate ${minBitrate}k -maxrate ${maxBitrate}k -tile-columns 4 -g 240 -threads 4 -quality good -speed 4 -crf ${settings.crf} -pass 1 -an -f null ${process.platform === "win32" ? "NUL" : "/dev/null"}`;
-
-    try {
-      const { stdout, stderr } = await execAsync(command);
-      return { success: true, output: stderr };
-    } catch (error: any) {
-      return { success: false, error: error.message, stderr: error.stderr };
-    }
-  },
-);
-
-// Start FFmpeg process (pass 2)
-ipcMain.handle(
-  "ffmpeg:pass2",
-  async (
-    _event,
-    args: {
-      inputPath: string;
-      outputPath: string;
-      settings: any;
-      onProgress?: (progress: any) => void;
-    },
-  ) => {
-    const { inputPath, outputPath, settings } = args;
-
-    const bitrate = settings.calculatedBitrate || settings.bitrate;
-    const minBitrate = Math.floor(bitrate * 0.5);
-    const maxBitrate = Math.floor(bitrate * 1.45);
-
-    let scaleFilter = "";
-    if (settings.resolution === "maxWidth" && settings.maxWidth) {
-      scaleFilter = `-vf scale='min(iw,${settings.maxWidth}):-2'`;
-    } else if (settings.resolution === "maxHeight" && settings.maxHeight) {
-      scaleFilter = `-vf scale='-2:min(ih,${settings.maxHeight})'`;
-    }
-
-    const command = `ffmpeg -i "${inputPath}" ${scaleFilter} -c:v libvpx-vp9 -b:v ${bitrate}k -minrate ${minBitrate}k -maxrate ${maxBitrate}k -tile-columns 4 -g 240 -threads 4 -quality good -speed 2 -crf ${settings.crf} -pass 2 -c:a libopus -b:a 128k -progress pipe:1 -y "${outputPath}"`;
-
-    try {
-      const { stdout, stderr } = await execAsync(command);
-      return { success: true, output: stderr };
-    } catch (error: any) {
-      return { success: false, error: error.message, stderr: error.stderr };
-    }
-  },
-);
+  }
+});
 
 // Reveal file in Finder/Explorer
 ipcMain.on("video:reveal", (_event, filePath: string) => {

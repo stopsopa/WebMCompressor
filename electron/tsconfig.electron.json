@@ -10,5 +10,6 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/main/**/*", "src/preload/**/*", "src/tools/extractMetadata.ts"]
+  "include": ["src/main/**/*", "src/preload/**/*", "src/tools/**/*"],
+  "exclude": ["src/tools/**/*.test.ts", "src/tools/**/*.run.ts", "src/tools/cli.ts"]
 }

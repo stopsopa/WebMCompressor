@@ -3,7 +3,7 @@ import assert from "node:assert";
 
 import generateFFMPEGParams, {
   generateFFMPEGParamsStrings,
-} from "./generateFFMPEGParams.ts";
+} from "./generateFFMPEGParams.js";
 
 /**
  * /bin/bash ts.sh --test electron/tools/generateFFMPEGParams.test.ts

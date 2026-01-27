@@ -1,10 +1,10 @@
-import { closestHeight, closestWidth } from "./closestResolution.ts";
-import determineBitrate from "./determineBitrate.ts";
-import categorizeFrameRate from "./categorizeFrameRate.ts";
-import determineTilingAndThreading from "./determineTilingAndThreading.ts";
-import determineMultipassSpeed from "./determineMultipassSpeed.ts";
-import determineCrf from "./determineCrf.ts";
-import determineName from "./determineName.ts";
+import { closestHeight, closestWidth } from "./closestResolution.js";
+import determineBitrate from "./determineBitrate.js";
+import categorizeFrameRate from "./categorizeFrameRate.js";
+import determineTilingAndThreading from "./determineTilingAndThreading.js";
+import determineMultipassSpeed from "./determineMultipassSpeed.js";
+import determineCrf from "./determineCrf.js";
+import determineName from "./determineName.js";
 
 export type Params = {
   sourceFile: string;

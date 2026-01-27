@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
 
-import { closestHeight, closestWidth } from "./closestResolution.ts";
+import { closestHeight, closestWidth } from "./closestResolution.js";
 
 /**
  * /bin/bash ts.sh --test electron/tools/closestResolution.test.ts

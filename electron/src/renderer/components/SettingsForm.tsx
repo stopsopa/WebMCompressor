@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import type { AppConfig, CompressionSettings } from '../types';
-import { heightResolutions } from '../../tools/closestResolution.ts';
+import type { FormSettings } from '../types';
+import { heightResolutions } from '../../tools/closestResolution.js';
 import './SettingsForm.css';
 
 interface SettingsFormProps {
   title: string;
-  config: AppConfig | CompressionSettings;
-  onChange: (config: any) => void;
+  config: FormSettings;
+  onChange: (config: FormSettings) => void;
   onValidationChange?: (isValid: boolean) => void;
   showScaleToggle?: boolean;
 }

@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import type { VideoFile, CompressionSettings } from '../types';
+import type { VideoFile, FormSettings } from '../types';
 import SettingsForm from './SettingsForm';
 import './EditModal.css';
 
 interface EditModalProps {
   file: VideoFile;
-  onSave: (settings: CompressionSettings) => void;
+  onSave: (settings: FormSettings) => void;
   onClose: () => void;
 }
 
 const EditModal: React.FC<EditModalProps> = ({ file, onSave, onClose }) => {
-  const [settings, setSettings] = useState<CompressionSettings>({ ...file.settings });
+  const [settings, setSettings] = useState<FormSettings>({ ...file.settings });
   const [isValid, setIsValid] = useState(true);
 
   const handleSave = () => {

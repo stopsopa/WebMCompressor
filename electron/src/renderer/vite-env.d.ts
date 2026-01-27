@@ -13,18 +13,11 @@ interface Window {
       error?: string;
     }>;
     getOutputPath: (inputPath: string) => Promise<string>;
-    ffmpegPass1: (args: any) => Promise<{
-      success: boolean;
-      output?: string;
-      error?: string;
-      stderr?: string;
-    }>;
-    ffmpegPass2: (args: any) => Promise<{
-      success: boolean;
-      output?: string;
-      error?: string;
-      stderr?: string;
-    }>;
+    startCompression: (args: { id: string; sourceFile: string; settings: any }) => void;
+    onCompressionProgress: (callback: (id: string, progress: any) => void) => () => void;
+    onCompressionEnd: (
+      callback: (id: string, step: string, error: string | null, duration: string) => void,
+    ) => () => void;
     setProcessCount: (count: number) => void;
     getPathForFile: (file: File) => string;
     revealVideo: (filePath: string) => void;

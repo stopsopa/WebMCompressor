@@ -1,9 +1,9 @@
 import { spawn } from "node:child_process";
-import generateFFMPEGParams from "./generateFFMPEGParams.ts";
-import type { Params } from "./generateFFMPEGParams.ts";
-import { extractMetadata } from "./extractMetadata.ts";
-import scaleWandH from "./scaleWandH.ts";
-import { timeHumanReadable } from "./timeHumanReadable.ts";
+import generateFFMPEGParams from "./generateFFMPEGParams.js";
+import type { Params } from "./generateFFMPEGParams.js";
+import { extractMetadata } from "./extractMetadata.js";
+import scaleWandH from "./scaleWandH.js";
+import { timeHumanReadable } from "./timeHumanReadable.js";
 
 export type CompressionStep = "first" | "second";
 

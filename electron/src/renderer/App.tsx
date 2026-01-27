@@ -3,29 +3,40 @@ import './App.css';
 import DropZone from './components/DropZone';
 import FileList from './components/FileList';
 import RejectionModal from './components/RejectionModal';
-import GlobalSettings from './components/GlobalSettings';
+import GlobalFormSettings from './components/GlobalSettings';
 import EditModal from './components/EditModal';
-import type { VideoFile, AppConfig, CompressionSettings } from './types';
+import type { VideoFile, AppConfig, FormSettings } from './types';
 
 function App() {
   const [files, setFiles] = useState<VideoFile[]>([]);
   const [rejectedFiles, setRejectedFiles] = useState<{ path: string; error: string }[]>([]);
   const [isConfigValid, setIsConfigValid] = useState(true);
+  // const [activeProcessCount, setActiveProcessCount] = useState(0); // Removed as per diff
+
   const [config, setConfig] = useState<AppConfig>({
-    scale: false,
-    videoWidth: null,
-    videoHeight: null,
+    form: {
+      scale: false,
+      videoWidth: null,
+      videoHeight: null,
+    },
+    settings: {
+      parallelProcessing: 1,
+    }
   });
   const [editingFile, setEditingFile] = useState<VideoFile | null>(null);
 
   useEffect(() => {
     window.electronAPI.loadConfig().then(loadedConfig => {
-      if (loadedConfig) {
-        // Strictly filter to Phase 2 allowed fields only
+      if (loadedConfig && loadedConfig.form && loadedConfig.settings) {
         setConfig({
-          scale: !!loadedConfig.scale,
-          videoWidth: typeof loadedConfig.videoWidth === 'number' ? loadedConfig.videoWidth : null,
-          videoHeight: typeof loadedConfig.videoHeight === 'number' ? loadedConfig.videoHeight : null,
+          form: {
+            scale: !!loadedConfig.form.scale,
+            videoWidth: typeof loadedConfig.form.videoWidth === 'number' ? loadedConfig.form.videoWidth : null,
+            videoHeight: typeof loadedConfig.form.videoHeight === 'number' ? loadedConfig.form.videoHeight : null,
+          },
+          settings: {
+            parallelProcessing: typeof loadedConfig.settings.parallelProcessing === 'number' ? loadedConfig.settings.parallelProcessing : 1,
+          }
         });
       }
     });
@@ -34,10 +45,78 @@ function App() {
   // Sync dev helpers
   useEffect(() => {
     (window as any).getList = () => files;
-    (window as any).getForm = () => config;
+    (window as any).getForm = () => config.form;
+    (window as any).getSettings = () => config.settings;
   }, [files, config]);
 
-  const handleConfigChange = (newConfig: AppConfig) => {
+  // IPC Listeners (Phase 4)
+  useEffect(() => {
+    const unbindProgress = window.electronAPI.onCompressionProgress((id: string, progress: any) => {
+      setFiles(prev => prev.map(f => 
+        f.id === id ? { ...f, progress: progress.progressPercentNum } : f
+      ));
+    });
+
+    const unbindEnd = window.electronAPI.onCompressionEnd((id: string, step: string, error: string | null, _duration: string) => {
+      setFiles(prev => prev.map(f => {
+        if (f.id !== id) return f;
+        
+        if (error) {
+          return { ...f, status: 'error', error };
+        }
+        
+        if (step === 'second') {
+          return { ...f, status: 'complete', progress: 100 };
+        }
+        
+        return f;
+      }));
+    });
+
+    return () => {
+      unbindProgress();
+      unbindEnd();
+    };
+  }, []);
+
+  // Queue Manager (Phase 4)
+  useEffect(() => {
+    // 1. Check if we can start more jobs
+    const activeCount = files.filter(f => f.status === 'processing').length;
+    if (activeCount >= config.settings.parallelProcessing) return;
+
+    // 2. Find next queued file
+    // Condition: status is 'queued', and NOT isEditing
+    const nextFile = files.find(f => f.status === 'queued' && !f.isEditing);
+    if (!nextFile) return;
+
+    // 3. Start compression
+    setFiles(prev => prev.map(f => 
+      f.id === nextFile.id ? { ...f, status: 'processing' } : f
+    ));
+
+    window.electronAPI.startCompression({
+      id: nextFile.id,
+      sourceFile: nextFile.path,
+      settings: nextFile.settings
+    });
+
+  }, [files, config.settings.parallelProcessing]);
+
+  // Update process count in main process for close confirmation
+  useEffect(() => {
+    const activeCount = files.filter(f => f.status === 'processing').length;
+    window.electronAPI.setProcessCount(activeCount);
+  }, [files]);
+
+  const handleFormChange = (newForm: FormSettings) => {
+    const newConfig = { ...config, form: newForm };
+    setConfig(newConfig);
+    window.electronAPI.saveConfig(newConfig);
+  };
+
+  const handleParallelChange = (count: number) => {
+    const newConfig = { ...config, settings: { ...config.settings, parallelProcessing: count } };
     setConfig(newConfig);
     window.electronAPI.saveConfig(newConfig);
   };
@@ -53,7 +132,7 @@ function App() {
     ));
   };
 
-  const handleSaveEdit = (settings: CompressionSettings) => {
+  const handleSaveEdit = (settings: FormSettings) => {
     if (editingFile) {
       setFiles(prev => prev.map(f => 
         f.id === editingFile.id 
@@ -109,9 +188,9 @@ function App() {
         endTime: null,
         currentPass: null,
         settings: { 
-          scale: config.scale,
-          videoWidth: config.videoWidth || undefined,
-          videoHeight: config.videoHeight || undefined
+          scale: config.form.scale,
+          videoWidth: config.form.videoWidth,
+          videoHeight: config.form.videoHeight
         }
       };
 
@@ -152,9 +231,9 @@ function App() {
   return (
     <div className="app-container">
       {/* FORM SECTION (Top) */}
-      <GlobalSettings 
-        config={config} 
-        onChange={handleConfigChange} 
+      <GlobalFormSettings 
+        form={config.form} 
+        onChange={handleFormChange} 
         onValidationChange={handleValidationChange}
       />
 
@@ -162,7 +241,12 @@ function App() {
       <DropZone onFilesDrop={handleFilesDrop} disabled={!isConfigValid} />
 
       {/* LIST SECTION (Bottom) */}
-      <FileList files={files} onEdit={handleStartEdit} />
+      <FileList 
+        files={files} 
+        parallelProcessing={config.settings.parallelProcessing}
+        onParallelChange={handleParallelChange}
+        onEdit={handleStartEdit} 
+      />
 
       {/* Rejection Modal */}
       {rejectedFiles.length > 0 && (

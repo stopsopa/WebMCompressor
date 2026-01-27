@@ -12,7 +12,7 @@
 import {
   generateFFMPEGParamsStrings,
   type Params,
-} from "./generateFFMPEGParams.ts";
+} from "./generateFFMPEGParams.js";
 
 const args = process.argv.slice(2);
 

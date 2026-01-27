@@ -5,5 +5,6 @@
     "moduleResolution": "NodeNext",
     "outDir": "./dist-electron"
   },
-  "include": ["src/main/**/*", "src/tools/extractMetadata.ts"]
+  "include": ["src/main/**/*", "src/tools/**/*"],
+  "exclude": ["src/tools/**/*.test.ts", "src/tools/**/*.run.ts", "src/tools/cli.ts"]
 }

@@ -11,9 +11,20 @@ contextBridge.exposeInMainWorld("electronAPI", {
   validateVideo: (filePath: string) => ipcRenderer.invoke("video:validate", filePath),
   getOutputPath: (inputPath: string) => ipcRenderer.invoke("video:getOutputPath", inputPath),
 
-  // FFmpeg processing
-  ffmpegPass1: (args: any) => ipcRenderer.invoke("ffmpeg:pass1", args),
-  ffmpegPass2: (args: any) => ipcRenderer.invoke("ffmpeg:pass2", args),
+  // New Compression IPC (Phase 4)
+  startCompression: (args: { id: string; sourceFile: string; settings: any }) =>
+    ipcRenderer.send("compression:start", args),
+  onCompressionProgress: (callback: (id: string, progress: any) => void) => {
+    const listener = (_event: any, data: { id: string; progress: any }) => callback(data.id, data.progress);
+    ipcRenderer.on("compression:progress", listener);
+    return () => ipcRenderer.removeListener("compression:progress", listener);
+  },
+  onCompressionEnd: (callback: (id: string, step: string, error: string | null, duration: string) => void) => {
+    const listener = (_event: any, data: { id: string; step: string; error: string | null; duration: string }) =>
+      callback(data.id, data.step, data.error, data.duration);
+    ipcRenderer.on("compression:end", listener);
+    return () => ipcRenderer.removeListener("compression:end", listener);
+  },
 
   // Process count for close confirmation
   setProcessCount: (count: number) => ipcRenderer.send("process:count", count),
@@ -40,18 +51,11 @@ declare global {
         error?: string;
       }>;
       getOutputPath: (inputPath: string) => Promise<string>;
-      ffmpegPass1: (args: any) => Promise<{
-        success: boolean;
-        output?: string;
-        error?: string;
-        stderr?: string;
-      }>;
-      ffmpegPass2: (args: any) => Promise<{
-        success: boolean;
-        output?: string;
-        error?: string;
-        stderr?: string;
-      }>;
+      startCompression: (args: { id: string; sourceFile: string; settings: any }) => void;
+      onCompressionProgress: (callback: (id: string, progress: any) => void) => () => void;
+      onCompressionEnd: (
+        callback: (id: string, step: string, error: string | null, duration: string) => void,
+      ) => () => void;
       setProcessCount: (count: number) => void;
       getPathForFile: (file: File) => string;
       revealVideo: (filePath: string) => void;

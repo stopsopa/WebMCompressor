@@ -1,6 +1,6 @@
 import test, { describe } from "node:test";
 import assert from "node:assert";
-import scaleWandH from "./scaleWandH.ts";
+import scaleWandH from "./scaleWandH.js";
 
 /**
  * /bin/bash ts.sh --test electron/tools/scaleWandH.test.ts

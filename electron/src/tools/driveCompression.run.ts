@@ -1,4 +1,4 @@
-import driveCompression from "./driveCompression.ts";
+import driveCompression from "./driveCompression.js";
 
 export const heightResolutions = [
   240, //

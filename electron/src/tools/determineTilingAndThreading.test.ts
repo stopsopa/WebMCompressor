@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
 
-import determineTilingAndThreading from "./determineTilingAndThreading.ts";
+import determineTilingAndThreading from "./determineTilingAndThreading.js";
 
 
 // const tilingAndThreadingMap: Record<

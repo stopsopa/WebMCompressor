@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import determineMultipassSpeed from "./determineMultipassSpeed.ts";
+import determineMultipassSpeed from "./determineMultipassSpeed.js";
 
 /**
  * /bin/bash ts.sh --test electron/tools/determineMultipassSpeed.test.ts

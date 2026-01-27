@@ -7,7 +7,7 @@ export interface VideoFile {
   height: number;
   fps: number;
   durationMs: number;
-  settings: CompressionSettings;
+  settings: FormSettings;
   status: "validating" | "queued" | "processing" | "complete" | "error";
   progress: number; // 0-100
   error: string | null;
@@ -17,16 +17,19 @@ export interface VideoFile {
   isEditing?: boolean;
 }
 
-export interface CompressionSettings {
-  scale: boolean;
-  videoHeight?: number;
-  videoWidth?: number;
-}
-
-export interface AppConfig {
+export interface FormSettings {
   scale: boolean;
   videoWidth: number | null;
   videoHeight: number | null;
+}
+
+export interface GlobalSettings {
+  parallelProcessing: number;
+}
+
+export interface AppConfig {
+  form: FormSettings;
+  settings: GlobalSettings;
 }
 
 export interface FFmpegProgress {

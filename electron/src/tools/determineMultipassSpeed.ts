@@ -1,5 +1,5 @@
-import { closestHeight } from "./closestResolution.ts";
-import type { HeightResolution } from "./closestResolution.ts";
+import { closestHeight } from "./closestResolution.js";
+import type { HeightResolution } from "./closestResolution.js";
 
 const crfValues: Record<
   HeightResolution,

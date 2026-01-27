@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import { timeHumanReadable } from "./timeHumanReadable.ts";
+import { timeHumanReadable } from "./timeHumanReadable.js";
 
 /**
  * /bin/bash ts.sh --test electron/tools/timeHumanReadable.test.ts
