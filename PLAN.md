@@ -45,6 +45,7 @@ Build the core layout and implement the video file ingestion logic.
   - intercept `drop` events.
   - Accept any file type for initial processing.
 - **File Validation & Filtering**:
+  - **Deduplication**: Before processing, check if the file's absolute path is already in the queue. Do not add duplicates.
   - For each dropped file, execute `extractMetadata.ts`.
   - If `extractMetadata.ts` fails, the file is considered "not a video" (or unsupported).
   - Maintain a list of absolute paths for accepted files.
