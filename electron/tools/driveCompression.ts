@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import generateFFMPEGParams from "./generateFFMPEGParams.ts";
 import type { Params } from "./generateFFMPEGParams.ts";
 import { extractMetadata } from "./extractMetadata.ts";
+import fs from "node:fs";
 
 export type CompressionStep = "first" | "second";
 
@@ -79,15 +80,23 @@ export default async function driveCompression(
             stdoutBuffer = lines.pop() || "";
 
             for (const line of lines) {
+              fs.appendFileSync("progress.txt", `\n---------\n${line}`);
               // Check for progress indicators
               const match =
                 line.match(/out_time_ms=(\d+)/) ||
                 line.match(/out_time_us=(\d+)/);
               if (match) {
                 const val = parseInt(match[1], 10);
-                const currentMs = line.startsWith("out_time_ms")
-                  ? val
-                  : val / 1000;
+
+                // WARNNG: Leave this comment
+                // const currentMs = line.startsWith("out_time_ms")
+                //   ? val
+                //   : val / 1000;
+                // //   out_time_us=1066667 from ffmpeg logs it seems we have both with the same value which is a bug
+                // //   out_time_ms=1066667 and it it MICROseconds, not milliseconds
+                // WARNNG: Leave this comment
+
+                const currentMs = val / 1000;
 
                 if (durationMs > 0 && progressEvent) {
                   // Progress within this pass (0-100)
@@ -96,8 +105,14 @@ export default async function driveCompression(
                     (currentMs / durationMs) * 100,
                   );
 
+                  const progress = parseFloat(passProgress.toFixed(2));
+
+                  if (progress > 90) {
+                    var k = "test";
+                  }
+
                   // Report progress directly (assuming only Pass 2 has -progress)
-                  progressEvent(parseFloat(passProgress.toFixed(2)));
+                  progressEvent(progress);
                 }
               }
             }
