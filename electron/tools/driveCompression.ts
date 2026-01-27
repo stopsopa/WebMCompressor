@@ -20,6 +20,26 @@ export type ProgressData = {
   firstPassDurationHuman: string;
 };
 
+/**
+ * Full DriveCompressionOptions type fields:
+ * {
+ *   sourceFile: string;
+ *   ffmpegPath?: string;
+ *   ffprobePath?: string;
+ *   date?: string;
+ * 
+ *   scale: boolean;
+ *   videoHeight?: number; // At least one of videoHeight or videoWidth must be provided
+ *   videoWidth?: number;  // At least one of videoHeight or videoWidth must be provided
+ * 
+ *   progressEvent?: (error: string | null, data: ProgressData) => void;
+ *   end: (step: CompressionStep, error: string | null, duration: string) => void;
+ * 
+ *   extra?: string[];
+ *   extrafirst?: string[];
+ *   extrasecond?: string[];
+ * }
+ */
 export type DriveCompressionOptions = Omit<Params, "frameRate" | "videoHeight" | "videoWidth"> &
   (
     | { videoHeight: number; videoWidth?: number }
