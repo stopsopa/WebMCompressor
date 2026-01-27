@@ -21,10 +21,21 @@ export type Params = {
   extrasecond?: string[]; // or granurally for second pass
 };
 
+type NestedStringArray = (string | string[])[];
+
 /**
  * Logic based on: https://developers.google.com/media/vp9/settings/vod/
+ * WARNING:
+ *   be aware that in returned arrays might be nested arrays with strings
+ *   so array with strings but with two levels nested
+ * these arrays will have to be flattened with .flat(2) to be ready to be passed to spawnSync("ffprobe", args, { encoding: "utf8" });
+ * and also this library returns only arguments for ffmpeg but ffmpeg binary path will have to be determined in electron app for spawnSync()
+ * application should be shipped with ffmpeg binary and ffprobe binary
  */
-export default function generateFFMPEGParams(params: Params) {
+export default function generateFFMPEGParams(params: Params): {
+  firstPass: NestedStringArray;
+  secondPass: NestedStringArray;
+} {
   const {
     videoHeight,
     videoWidth,
