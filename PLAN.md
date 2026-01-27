@@ -20,7 +20,7 @@ WARNING: move through phases in order from 1st to the last one but only after ap
 - **Styling**: Vanilla CSS with AWS Console aesthetics (high-quality UI, vibrant colors, structured layout)
 - **Window Sizing**:
   - **Production**: Default window size 1100x800.
-  - **Development**: Window widened to 2600px to accommodate side-by-side DevTools without squeezing the main UI.
+  - **Development**: main usable app width (excluding DevTools) make 1100px to accommodate side-by-side DevTools without squeezing the main UI.
 - we will have to bundle ffmpeg and ffprobe with the app. we will not relay on user having ffmpeg installed on his system. ffmpeg have to be shipped in the final electron binary of the app.
 - keep current run.sh, compile.sh, dev.sh, install.sh scripts. I need to have manual way to control lifecycle of the app with single commands. - these have to work with the phase 1.
 - keep modules in electron/tools untouched - you might entire directory to different location if needed. but don't modify anything. Its already designed and tailored to this spec in PLAN.md and tested.
