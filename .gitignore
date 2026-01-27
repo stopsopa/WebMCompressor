@@ -1,9 +1,12 @@
-target/
-*.class
+node_modules/
+.env
+.env.*.local
+.DS_Store
 .idea/
 .vscode/
+target/
+*.class
 *.iml
-.DS_Store
 *.tar.gz
 *.mov
 /coverage/
