@@ -7,7 +7,7 @@ if [ ! -f "${FILE}" ]; then
     exit 1
 fi
 
-LINES_ARRAY=($(/bin/bash electron/tools/extractWHandFrameRate.sh "${FILE}"))
+LINES_ARRAY=($(/bin/bash electron/tools/extractMetadata.sh "${FILE}"))
 
 # declare -p LINES_ARRAY
 # declare -a LINES_ARRAY='([0]="1920" [1]="1080" [2]="60")'

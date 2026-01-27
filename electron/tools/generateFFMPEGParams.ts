@@ -16,14 +16,24 @@ export type Params = {
   scale: boolean; // this is to inform to scale
   date?: string; // mainly to fix it for testing
   extra?: string; // some extra parameters like -ss 00:00:17 -to 00:00:22 for cutting video
+  extrafirst?: string; // or granurally for first pass
+  extrasecond?: string; // or granurally for second pass
 };
 
 /**
  * Logic based on: https://developers.google.com/media/vp9/settings/vod/
  */
 export default function generateFFMPEGParams(params: Params) {
-  const { videoHeight, videoWidth, scale, sourceFile, frameRate, extra } =
-    params;
+  const {
+    videoHeight,
+    videoWidth,
+    scale,
+    sourceFile,
+    frameRate,
+    extra,
+    extrafirst,
+    extrasecond,
+  } = params;
 
   let { date } = params;
 
@@ -67,6 +77,14 @@ export default function generateFFMPEGParams(params: Params) {
   if (typeof extra === "string") {
     bufferfp.push(extra);
     buffersp.push(extra);
+  }
+
+  if (typeof extrafirst === "string") {
+    bufferfp.push(extrafirst);
+  }
+
+  if (typeof extrasecond === "string") {
+    buffersp.push(extrasecond);
   }
 
   bufferfp.push(`-pass 1 -f null /dev/null`);
