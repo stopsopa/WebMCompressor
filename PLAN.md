@@ -100,6 +100,14 @@ The form will capture settings that serve as "defaults" for any new file dropped
   - **Scale Enabled**: The form is valid **only if**:
     - Either `videoWidth` **OR** `videoHeight` is a numerical value greater than 0.
     - If both are missing or 0, or if both are somehow present, the form is invalid.
+- **Form State Structure**:
+  ```typescript
+  interface FormSettings {
+    scale: boolean;
+    videoWidth: number | null;
+    videoHeight: number | null;
+  }
+  ```
 - **Automatic Parameters** (to be handled at start-of-compression):
   - `sourceFile`: Path from the individual list item. - that will be taken from the item state behind LIST SECTION. (obviously)
   - `ffmpegPath`/`ffprobePath`: Paths to bundled binaries. - that will be drived at the moment of calling @driveCompression.ts when it will be time to process video.
@@ -107,6 +115,8 @@ The form will capture settings that serve as "defaults" for any new file dropped
 - **Internal State**:
   - Each video in the **LIST SECTION** stores its own copy of these settings, captured at the moment the file was dropped.
   - Important: from now on present the state behind LIST SECTION and FORM SECTION in dev mode (when project ran using dev.sh script) - using react dev tools. (ideally expose global functions `getList()` and `getForm()` of the electron developer tools which I can always call to get current state of the list or form to print it with `console.log()`)
+    - `getList()`: returns the current array of videos in the queue.
+    - `getForm()`: returns the current `FormSettings` object.
 
 ---
 
@@ -144,6 +154,14 @@ Implement the processing engine with configurable concurrency.
   - **Increase number**: If the count is increased, the system immediately picks the next files from the top of the queue and starts `driveCompression.ts` up to make sure N specified video are processed simultaneously.
   - **Decrease number**: If the count is decreased, current active processes are allowed to finish, but no new ones will start until the active count drops below the new limit.
   - processing videos (up to the N number of them simulatniously) should start immedeately after dropping files on DROPZONE SECTION. (as long as FORM SECTION is valid and no edit modal is opened).
+- **Settings State Structure**:
+  ```typescript
+  interface GlobalSettings {
+    parallelProcessing: number;
+  }
+  ```
+- **Dev Tools Helpers**:
+  - `getSettings()`: returns the current `GlobalSettings` object.
 
 ---
 
@@ -197,11 +215,18 @@ Implement user settings persistence across sessions.
 ### Storage
 
 - **User Config**: Store in `~/.webmcompressor/setup.json`.
+- **Config file structure**:
+  ```typescript
+  interface AppSetup {
+    form: FormSettings;
+    settings: GlobalSettings;
+  }
+  ```
 - **App Defaults**: Shipped in `electron/setup.json`.
 - **Startup Flow**:
   1. Check for `~/.webmcompressor/setup.json`.
   2. If missing, copy from `electron/setup.json`.
-  3. Populate the **FORM SECTION** with these values on launch.
+  3. Populate the **FORM SECTION** and global settings with these values on launch.
   4. allow me later to tune electron/setup.json
 
 ---
