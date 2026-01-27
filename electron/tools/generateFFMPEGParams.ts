@@ -12,6 +12,7 @@ export type Params = {
   videoHeight: number;
   videoWidth: number;
   frameRate: number;
+  duration?: number;
 
   scale: boolean; // this is to inform to scale
   date?: string; // mainly to fix it for testing

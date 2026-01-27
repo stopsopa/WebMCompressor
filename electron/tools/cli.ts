@@ -18,6 +18,7 @@ Required arguments:
 
 Optional arguments:
   -sc, --scale [true|false]    Whether to apply scaling. (default: false, but just --sc, --scale sets it to true)
+  -du, --duration <number>     Duration in seconds.
   -d, --date <string>          Creation time metadata for the second pass. (default: current time)
   -e, --mainExec <path>        Path to the ffmpeg executable. (default: 'ffmpeg') - passing just  
                                -e "" will cause script to return just arguments
@@ -69,6 +70,11 @@ for (let i = 0; i < args.length; i++) {
     case "-r":
     case "--frameRate":
       params.frameRate = Number(nextArg);
+      i++;
+      break;
+    case "-du":
+    case "--duration":
+      params.duration = Number(nextArg);
       i++;
       break;
     case "-sc":

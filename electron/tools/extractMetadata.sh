@@ -1,14 +1,16 @@
 
 # /bin/bash electron/tools/extractWHandFrameRate.sh [file.mov]
 # This script extracts the width, height, and frame rate (FPS) from a video file using ffprobe.
-# It normalizes the FPS to its numerator (leading digits) and outputs three values on separate lines:
+# It normalizes the FPS to its numerator (leading digits) and outputs four values on separate lines:
 # 1. Width
 # 2. Height
-# 3. Normalized FPS (no trailing newline)
-# Example output for 1920x1080 60fps video:
+# 3. Normalized FPS
+# 4. Duration in seconds (no trailing newline)
+# Example output for 1920x1080 60fps 10s video:
 # 1920
 # 1080
 # 60
+# 10.050000
 
 FILE="${1}"
 
@@ -17,18 +19,19 @@ if [ ! -f "${FILE}" ]; then
     exit 1
 fi
 
-# trim and check if there are exactly 3 lines in the output
-LINES_ARRAY=($(ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate -of default=noprint_wrappers=1:nokey=1 "${FILE}"))
+# trim and check if there are exactly 4 lines in the output
+LINES_ARRAY=($(ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${FILE}"))
 
 
-if [ ${#LINES_ARRAY[@]} -ne 3 ]; then
-    echo "${0} error: Invalid output from ffprobe (expected 3 values, got ${#LINES_ARRAY[@]})"
+if [ ${#LINES_ARRAY[@]} -ne 4 ]; then
+    echo "${0} error: Invalid output from ffprobe (expected 4 values, got ${#LINES_ARRAY[@]})"
     exit 1
 fi
 
 WIDTH="${LINES_ARRAY[0]}"
 HEIGHT="${LINES_ARRAY[1]}"
 FPS="${LINES_ARRAY[2]}"
+DURATION="${LINES_ARRAY[3]}"
 
 # normalize FPS: take only leading digits from the beginning (e.g. 60/1 -> 60)
 if [[ "${FPS}" =~ ^([0-9]+) ]]; then
@@ -54,6 +57,13 @@ if ! [[ "${FPS}" =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
+# check if duration matches regex ^[0-9]+(\.[0-9]+)?$
+if ! [[ "${DURATION}" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+    echo "${0} error: Invalid duration from ffprobe: ${DURATION}"
+    exit 1
+fi
+
 echo "${WIDTH}"
 echo "${HEIGHT}"
-echo -n "${FPS}"
+echo "${FPS}"
+echo -n "${DURATION}"
