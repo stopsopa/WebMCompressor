@@ -8,10 +8,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   saveConfig: (config: any) => ipcRenderer.invoke("config:save", config),
 
   // Video validation
-  validateVideo: (filePath: string) =>
-    ipcRenderer.invoke("video:validate", filePath),
-  getOutputPath: (inputPath: string) =>
-    ipcRenderer.invoke("video:getOutputPath", inputPath),
+  validateVideo: (filePath: string) => ipcRenderer.invoke("video:validate", filePath),
+  getOutputPath: (inputPath: string) => ipcRenderer.invoke("video:getOutputPath", inputPath),
 
   // FFmpeg processing
   ffmpegPass1: (args: any) => ipcRenderer.invoke("ffmpeg:pass1", args),
@@ -22,6 +20,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Tool to get file path from File object (standard in modern Electron)
   getPathForFile: (file: File) => webUtils.getPathForFile(file),
+
+  // Reveal file in Finder/Explorer
+  revealVideo: (filePath: string) => ipcRenderer.send("video:reveal", filePath),
 });
 
 // Type definition for window.electronAPI
@@ -29,13 +30,13 @@ declare global {
   interface Window {
     electronAPI: {
       loadConfig: () => Promise<any>;
-      saveConfig: (
-        config: any,
-      ) => Promise<{ success: boolean; error?: string }>;
+      saveConfig: (config: any) => Promise<{ success: boolean; error?: string }>;
       validateVideo: (filePath: string) => Promise<{
         success: boolean;
-        duration?: number;
-        fileSize?: number;
+        width?: number;
+        height?: number;
+        fps?: number;
+        durationMs?: number;
         error?: string;
       }>;
       getOutputPath: (inputPath: string) => Promise<string>;
@@ -53,6 +54,7 @@ declare global {
       }>;
       setProcessCount: (count: number) => void;
       getPathForFile: (file: File) => string;
+      revealVideo: (filePath: string) => void;
     };
   }
 }

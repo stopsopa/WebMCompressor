@@ -1,0 +1,83 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  max-width: 900px; /* Even wider to accommodate long paths */
+  width: 90%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.rejection-list {
+  list-style: none;
+  padding: 0;
+  margin: var(--spacing-md) 0;
+  overflow-y: auto;
+  border: 1px solid var(--aws-border);
+  background: var(--aws-bg-light);
+  border-radius: 2px;
+  flex: 1;
+}
+
+.rejection-item {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--aws-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.rejection-item:last-child {
+  border-bottom: none;
+}
+
+.rejection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.rejection-path {
+  font-size: 0.8rem; /* Smaller font to help fitting path */
+  color: var(--aws-text-dark);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  font-family: 'Courier New', Courier, monospace; /* Monospace for paths */
+}
+
+.reveal-button {
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  height: auto;
+  white-space: nowrap;
+}
+
+.rejection-error {
+  font-size: 0.75rem;
+  color: var(--aws-red);
+  font-style: italic;
+  padding-left: var(--spacing-sm);
+  border-left: 2px solid var(--aws-red);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-md);
+}

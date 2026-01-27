@@ -1,9 +1,10 @@
-import { app, BrowserWindow, ipcMain, dialog } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, shell } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
 import { exec } from "child_process";
 import { promisify } from "util";
 import fs from "fs/promises";
+import { extractMetadata } from "../tools/extractMetadata.js";
 
 const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
@@ -11,8 +12,8 @@ const __dirname = path.dirname(__filename);
 
 let mainWindow: BrowserWindow | null = null;
 
-// Use app.getPath('home') instead of os.homedir() - more reliable in Electron
-const getConfigDir = () => path.join(app.getPath("home"), "WebMCompressor");
+// Use app.getPath('userData') for app configuration - standard Electron practice
+const getConfigDir = () => path.join(app.getPath("userData"), "config");
 const getConfigPath = () => path.join(getConfigDir(), "config.json");
 
 // Track active processes for close confirmation
@@ -116,22 +117,12 @@ ipcMain.handle("config:save", async (_event, config) => {
 // Validate video file and get metadata using FFprobe
 ipcMain.handle("video:validate", async (_event, filePath: string) => {
   try {
-    const { stdout } = await execAsync(
-      `ffprobe -v error -show_entries format=duration,size -of json "${filePath}"`,
-    );
-
-    const data = JSON.parse(stdout);
-
-    if (!data.format || !data.format.duration) {
-      throw new Error(
-        "Not a valid video file or duration could not be determined",
-      );
-    }
+    // Note: in production we will need to provide the actual path to bundled ffprobe
+    const meta = await extractMetadata(undefined, filePath);
 
     return {
       success: true,
-      duration: parseFloat(data.format.duration),
-      fileSize: parseInt(data.format.size || "0", 10),
+      ...meta,
     };
   } catch (error: any) {
     return {
@@ -254,3 +245,8 @@ ipcMain.handle(
     }
   },
 );
+
+// Reveal file in Finder/Explorer
+ipcMain.on("video:reveal", (_event, filePath: string) => {
+  shell.showItemInFolder(filePath);
+});

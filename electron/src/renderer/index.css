@@ -1,23 +1,106 @@
-html,
-body,
-#root {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
-    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: #1a1a1a;
-  color: #e0e0e0;
+:root {
+  --aws-orange: #ff9900;
+  --aws-orange-hover: #ec7211;
+  --aws-blue: #0073bb;
+  --aws-blue-hover: #005f99;
+  --aws-bg-light: #f2f3f3;
+  --aws-border: #d5dbdb;
+  --aws-text-dark: #16191f;
+  --aws-text-light: #545b64;
+  --aws-white: #ffffff;
+  --aws-green: #1d8102;
+  --aws-red: #d13212;
+  --aws-font: "Amazon Ember", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
 }
 
 * {
   box-sizing: border-box;
 }
 
-code {
-  font-family:
-    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: var(--aws-font);
+  background-color: var(--aws-bg-light);
+  color: var(--aws-text-dark);
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: var(--spacing-md);
+  gap: var(--spacing-md);
+}
+
+/* Common Box Style */
+.card {
+  background: var(--aws-white);
+  border: 1px solid var(--aws-border);
+  padding: var(--spacing-md);
+  border-radius: 2px;
+  box-shadow: 0 1px 1px 0 rgba(0, 28, 36, 0.1);
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-md);
+  color: var(--aws-text-dark);
+}
+
+/* Scrollbar Style */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #aab7b8;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #879596;
+}
+
+/* Button styles */
+.aws-button {
+  padding: 8px 16px;
+  border-radius: 2px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color 0.1s;
+}
+
+.aws-button-primary {
+  background-color: var(--aws-orange);
+  color: var(--aws-white);
+}
+
+.aws-button-primary:hover {
+  background-color: var(--aws-orange-hover);
+}
+
+.aws-button-secondary {
+  background-color: var(--aws-white);
+  border-color: var(--aws-text-light);
+  color: var(--aws-text-dark);
+}
+
+.aws-button-secondary:hover {
+  background-color: var(--aws-bg-light);
 }

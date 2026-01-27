@@ -6,8 +6,10 @@ interface Window {
     saveConfig: (config: any) => Promise<{ success: boolean; error?: string }>;
     validateVideo: (filePath: string) => Promise<{
       success: boolean;
-      duration?: number;
-      fileSize?: number;
+      width?: number;
+      height?: number;
+      fps?: number;
+      durationMs?: number;
       error?: string;
     }>;
     getOutputPath: (inputPath: string) => Promise<string>;
@@ -25,5 +27,6 @@ interface Window {
     }>;
     setProcessCount: (count: number) => void;
     getPathForFile: (file: File) => string;
+    revealVideo: (filePath: string) => void;
   };
 }

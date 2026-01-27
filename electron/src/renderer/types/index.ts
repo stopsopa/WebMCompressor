@@ -3,8 +3,10 @@ export interface VideoFile {
   path: string;
   name: string;
   outputPath: string;
-  duration: number; // in seconds
-  fileSize: number; // in bytes
+  width: number;
+  height: number;
+  fps: number;
+  durationMs: number;
   settings: CompressionSettings;
   status: "validating" | "queued" | "processing" | "complete" | "error";
   progress: number; // 0-100
@@ -15,11 +17,9 @@ export interface VideoFile {
 }
 
 export interface CompressionSettings {
-  quality: QualityPreset;
-  resolution: ResolutionMode;
-  maxWidth: number | null;
-  maxHeight: number | null;
-  sizePerSecond: number | null; // in KB/s
+  scale: boolean;
+  height?: number;
+  width?: number;
 }
 
 export type QualityPreset = "ultra" | "high" | "medium" | "low" | "tiny";

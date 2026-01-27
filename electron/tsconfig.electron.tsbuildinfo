@@ -1,1 +1,1 @@
-{"root":["./src/main/main.ts","./src/preload/preload.ts"],"version":"5.9.3"}
+{"root":["./src/main/main.ts","./src/preload/preload.ts","./src/tools/extractmetadata.ts"],"version":"5.9.3"}
