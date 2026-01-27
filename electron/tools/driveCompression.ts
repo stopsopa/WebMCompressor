@@ -3,15 +3,21 @@ import generateFFMPEGParams from "./generateFFMPEGParams.ts";
 import type { Params } from "./generateFFMPEGParams.ts";
 import { extractMetadata } from "./extractMetadata.ts";
 import scaleWandH from "./scaleWandH.ts";
+import { timeHumanReadable } from "./timeHumanReadable.ts";
 
 export type CompressionStep = "first" | "second";
 
 export type ProgressData = {
-  progressPercent: number;
+  progressPercentHuman: string;
+  progressPercentNum: number;
   totalTimePassedMs: number;
+  totalTimePassedHuman: string;
   estimatedTotalTimeMs: number;
+  estimatedTotalTimeHuman: string;
   estimatedRemainingTimeMs: number;
+  estimatedRemainingTimeHuman: string;
   firstPassDurationMs: number | null;
+  firstPassDurationHuman: string;
 };
 
 export type DriveCompressionOptions = Omit<Params, "frameRate" | "videoHeight" | "videoWidth"> &
@@ -21,7 +27,7 @@ export type DriveCompressionOptions = Omit<Params, "frameRate" | "videoHeight" |
     | { videoHeight: number; videoWidth: number }
   ) & {
     progressEvent?: (error: string | null, data: ProgressData) => void;
-    end: (step: CompressionStep, error: string | null) => void;
+    end: (step: CompressionStep, error: string | null, duration: string) => void;
     ffmpegPath?: string;
     ffprobePath?: string;
   };
@@ -51,6 +57,7 @@ export default async function driveCompression(options: DriveCompressionOptions)
   const overallStartTime = Date.now();
   let firstPassDurationMs: number | null = null;
   let secondPassStartTime: number | null = null;
+  let stepStartTime = Date.now();
 
   try {
     // 1. Extract Metadata to get duration for progress calculation
@@ -142,11 +149,16 @@ export default async function driveCompression(options: DriveCompressionOptions)
                   }
 
                   progressEvent(null, {
-                    progressPercent: progress,
+                    progressPercentHuman: progress.toFixed(2) + "%",
+                    progressPercentNum: progress,
                     totalTimePassedMs,
+                    totalTimePassedHuman: timeHumanReadable(totalTimePassedMs),
                     estimatedTotalTimeMs,
+                    estimatedTotalTimeHuman: timeHumanReadable(estimatedTotalTimeMs),
                     estimatedRemainingTimeMs,
+                    estimatedRemainingTimeHuman: timeHumanReadable(estimatedRemainingTimeMs),
                     firstPassDurationMs,
+                    firstPassDurationHuman: firstPassDurationMs ? timeHumanReadable(firstPassDurationMs) : "?",
                   });
                 }
               }
@@ -164,11 +176,16 @@ export default async function driveCompression(options: DriveCompressionOptions)
               const now = Date.now();
               const totalTimePassedMs = now - overallStartTime;
               progressEvent(null, {
-                progressPercent: 100,
+                progressPercentHuman: "100.00%",
+                progressPercentNum: 100,
                 totalTimePassedMs,
+                totalTimePassedHuman: timeHumanReadable(totalTimePassedMs),
                 estimatedTotalTimeMs: totalTimePassedMs,
+                estimatedTotalTimeHuman: timeHumanReadable(totalTimePassedMs),
                 estimatedRemainingTimeMs: 0,
+                estimatedRemainingTimeHuman: "0s",
                 firstPassDurationMs,
+                firstPassDurationHuman: firstPassDurationMs ? timeHumanReadable(firstPassDurationMs) : "?",
               });
             }
             resolve();
@@ -187,17 +204,18 @@ export default async function driveCompression(options: DriveCompressionOptions)
 
     // 3. Execute First Pass (Analysis phase)
     currentStep = "first";
-    const firstPassStartTime = Date.now();
+    stepStartTime = Date.now();
     await runPass(firstPass.flat(2) as string[], 1);
-    firstPassDurationMs = Date.now() - firstPassStartTime;
-    end("first", null);
+    firstPassDurationMs = Date.now() - stepStartTime;
+    end("first", null, timeHumanReadable(firstPassDurationMs));
 
     // 4. Execute Second Pass (Encoding phase)
     currentStep = "second";
+    stepStartTime = Date.now();
     await runPass(secondPass.flat(2) as string[], 2);
-    end("second", null);
+    end("second", null, timeHumanReadable(Date.now() - stepStartTime));
   } catch (err: any) {
     // Notify about the error on the current step
-    end(currentStep, err.message || String(err));
+    end(currentStep, err.message || String(err), timeHumanReadable(Date.now() - stepStartTime));
   }
 }

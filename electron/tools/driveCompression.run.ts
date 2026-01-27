@@ -1,6 +1,14 @@
 import driveCompression from "./driveCompression.ts";
 
-export const heightResolutions = [240, 360, 480, 720, 1080, 1440, 2160] as const;
+export const heightResolutions = [
+  240, //
+  // 360, //
+  // 480, //
+  // 720, //
+  // 1080, //
+  // 1440, //
+  // 2160, //
+] as const;
 
 let sourceFile;
 sourceFile = "example/S1_E5_Sekret_Maczugi__The_Secret_Of_The_Club[short].mov";
@@ -28,27 +36,24 @@ for (const height of heightResolutions) {
         return;
       }
       const {
-        progressPercent,
-        totalTimePassedMs,
-        estimatedTotalTimeMs,
-        estimatedRemainingTimeMs,
-        firstPassDurationMs,
+        progressPercentHuman,
+        totalTimePassedHuman,
+        estimatedTotalTimeHuman,
+        estimatedRemainingTimeHuman,
+        firstPassDurationHuman,
       } = data;
-      const passedS = (totalTimePassedMs / 1000).toFixed(1);
-      const totalS = (estimatedTotalTimeMs / 1000).toFixed(1);
-      const remainingS = (estimatedRemainingTimeMs / 1000).toFixed(1);
-      const firstS = firstPassDurationMs ? (firstPassDurationMs / 1000).toFixed(1) : "?";
 
       console.log(
-        `Progress: ${progressPercent.toFixed(2)}% | Passed: ${passedS}s (1st: ${firstS}s) | Total: ${totalS}s | Remaining: ${remainingS}s`,
+        `Progress: ${progressPercentHuman} | Passed: ${totalTimePassedHuman} (1st: ${firstPassDurationHuman}) | Total: ${estimatedTotalTimeHuman} | Remaining: ${estimatedRemainingTimeHuman}`,
       );
     },
-    end: (step, error) => {
+
+    end: (step, error, duration) => {
       if (error) {
-        console.error(`Compression failed during ${step} pass: ${error}`);
+        console.error(`Compression failed during ${step} pass (step duration: ${duration}): ${error}`);
         // process.exit(1);
       } else {
-        console.log(`end(): Step ${step} finished successfully!`);
+        console.log(`end(): Step ${step} finished successfully! (step duration: ${duration})`);
         if (step === "second") {
           console.log("ALL GOOD");
           //   process.exit(0);
