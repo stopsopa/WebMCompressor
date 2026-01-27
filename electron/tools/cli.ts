@@ -6,10 +6,13 @@
  * So absolutely don't use this library in final application, stick to using directly generateFFMPEGParams.ts library
  * WARNING:
  *
- * NODE_OPTIONS="" /bin/bash ts.sh electron/tools/cli.ts -s "input.mp4" -h 1080 -w 1920 -r 30 -sc -du 10050
+ * NODE_OPTIONS="" /bin/bash ts.sh electron/tools/cli.ts -h 1080 -w 1920 -r 30 -sc -du 10050 -s "input.mp4"
  */
 
-import generateFFMPEGParams, { type Params } from "./generateFFMPEGParams.ts";
+import {
+  generateFFMPEGParamsStrings,
+  type Params,
+} from "./generateFFMPEGParams.ts";
 
 const args = process.argv.slice(2);
 
@@ -48,10 +51,13 @@ if (args.length === 0 || args.includes("--help") || args.includes("/?")) {
 
 type PassOption = "both" | "firstPass" | "secondPass";
 
-const params: Partial<Params> & { pass: PassOption; mainExec: string } = {
+const params: Partial<Params> & {
+  pass: PassOption;
+  mainExec: string;
+} = {
   scale: false, // default scale to false
   pass: "both",
-  mainExec: "",
+  mainExec: "ffmpeg",
 };
 
 for (let i = 0; i < args.length; i++) {
@@ -140,7 +146,7 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-const result = generateFFMPEGParams(params as Params);
+const result = generateFFMPEGParamsStrings(params as Params);
 
 let finalFirstPass = result.firstPass;
 let finalSecondPass = result.secondPass;
