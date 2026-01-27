@@ -35,20 +35,11 @@ export default function generateFFMPEGParams(params: Params): {
   firstPass: NestedStringArray;
   secondPass: NestedStringArray;
 } {
-  const {
-    videoHeight,
-    videoWidth,
-    scale,
-    sourceFile,
-    frameRate,
-    extra,
-    extrafirst,
-    extrasecond,
-  } = params;
+  const { videoHeight, videoWidth, scale, sourceFile, frameRate, extra, extrafirst, extrasecond } = params;
 
   let { date } = params;
 
-  const outputFileName = determineName(sourceFile, "webm");
+  let outputFileName = determineName(sourceFile, "webm");
 
   const categorizedFrameRate = categorizeFrameRate(frameRate);
 
@@ -68,23 +59,11 @@ export default function generateFFMPEGParams(params: Params): {
     bufferfp.push(["-vf", `scale=${videoWidth}x${videoHeight}`]);
   }
 
-  bufferfp.push([
-    `-b:v`,
-    `${avg}k`,
-    `-minrate`,
-    `${min}k`,
-    `-maxrate`,
-    `${max}k`,
-  ]);
+  bufferfp.push([`-b:v`, `${avg}k`, `-minrate`, `${min}k`, `-maxrate`, `${max}k`]);
 
   const { tileColumns, threads } = determineTilingAndThreading(videoWidth);
 
-  bufferfp.push([
-    `-tile-columns`,
-    String(tileColumns),
-    `-threads`,
-    String(threads),
-  ]);
+  bufferfp.push([`-tile-columns`, String(tileColumns), `-threads`, String(threads)]);
 
   bufferfp.push([`-g`, `240`]);
   bufferfp.push([`-quality`, `good`]);
@@ -119,14 +98,7 @@ export default function generateFFMPEGParams(params: Params): {
     // 2026-01-25T01:44:58.000Z
     date = new Date().toISOString();
   }
-  buffersp.push([
-    `-pass`,
-    `2`,
-    `-metadata`,
-    `creation_time="${date}"`,
-    `-metadata`,
-    `comment="sayonara"`,
-  ]);
+  buffersp.push([`-pass`, `2`, `-metadata`, `creation_time="${date}"`, `-metadata`, `comment="sayonara"`]);
 
   buffersp.push([`-y`, outputFileName]);
 
@@ -152,9 +124,7 @@ export function generateFFMPEGParamsStrings(params: Params) {
 
   // update the same way secondPass
   // but this time we have to look element array with first element '-y' and then do .replace(/"/g, '\\"')  on the second string on that array
-  const sp2 = secondPass.find(
-    (el) => Array.isArray(el) && el[0] === "-y",
-  ) as string[];
+  const sp2 = secondPass.find((el) => Array.isArray(el) && el[0] === "-y") as string[];
   if (sp2 && typeof sp2[1] === "string") {
     sp2[1] = `"${sp2[1].replace(/"/g, '\\"')}"`;
   }

@@ -24,9 +24,7 @@ export type DriveCompressionOptions = Omit<Params, "frameRate"> & {
 /**
  * Sends a message back to the main process or triggers progress callbacks.
  */
-export default async function driveCompression(
-  options: DriveCompressionOptions,
-) {
+export default async function driveCompression(options: DriveCompressionOptions) {
   const {
     sourceFile,
 
@@ -105,9 +103,7 @@ export default async function driveCompression(
 
             for (const line of lines) {
               // Check for progress indicators
-              const match =
-                line.match(/out_time_ms=(\d+)/) ||
-                line.match(/out_time_us=(\d+)/);
+              const match = line.match(/out_time_ms=(\d+)/) || line.match(/out_time_us=(\d+)/);
               if (match) {
                 const val = parseInt(match[1], 10);
 
@@ -123,10 +119,7 @@ export default async function driveCompression(
 
                 if (durationMs > 0 && progressEvent && secondPassStartTime) {
                   // Progress within this pass (0-100)
-                  const passProgress = Math.min(
-                    100,
-                    (currentMs / durationMs) * 100,
-                  );
+                  const passProgress = Math.min(100, (currentMs / durationMs) * 100);
 
                   const progress = parseFloat(passProgress.toFixed(2));
 
@@ -139,11 +132,8 @@ export default async function driveCompression(
 
                   if (progress > 0) {
                     const onePercentTimeMs = secondPassTimePassedMs / progress;
-                    estimatedRemainingTimeMs = Math.round(
-                      (100 - progress) * onePercentTimeMs,
-                    );
-                    estimatedTotalTimeMs =
-                      totalTimePassedMs + estimatedRemainingTimeMs;
+                    estimatedRemainingTimeMs = Math.round((100 - progress) * onePercentTimeMs);
+                    estimatedTotalTimeMs = totalTimePassedMs + estimatedRemainingTimeMs;
                   }
 
                   progressEvent(null, {
@@ -179,9 +169,7 @@ export default async function driveCompression(
             resolve();
           } else {
             reject(
-              new Error(
-                `FFmpeg pass ${passNumber} failed with exit code ${code}${stderr ? `: ${stderr.trim()}` : ""}`,
-              ),
+              new Error(`FFmpeg pass ${passNumber} failed with exit code ${code}${stderr ? `: ${stderr.trim()}` : ""}`),
             );
           }
         });
