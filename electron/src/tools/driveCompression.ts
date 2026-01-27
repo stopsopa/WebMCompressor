@@ -27,14 +27,14 @@ export type ProgressData = {
  *   ffmpegPath?: string;
  *   ffprobePath?: string;
  *   date?: string;
- * 
+ *
  *   scale: boolean;
  *   videoHeight?: number; // At least one of videoHeight or videoWidth must be provided
  *   videoWidth?: number;  // At least one of videoHeight or videoWidth must be provided
- * 
+ *
  *   progressEvent?: (error: string | null, data: ProgressData) => void;
  *   end: (step: CompressionStep, error: string | null, duration: string) => void;
- * 
+ *
  *   extra?: string[];
  *   extrafirst?: string[];
  *   extrasecond?: string[];
@@ -59,7 +59,7 @@ export default async function driveCompression(options: DriveCompressionOptions)
   const {
     sourceFile,
 
-    scale,
+    scale = false,
 
     date,
     extra,

@@ -51,6 +51,7 @@ Build the core layout and implement the video file ingestion logic.
 - **Feedback Mechanism**:
   - Accepted files are immediately added to the **LIST SECTION**.
   - **Rejection Modal**: Display a list of files that failed validation, requiring user dismissal.
+  - **Context Menu**: Right-clicking a row in the **LIST SECTION** should show a menu with a "Reveal in Finder" option.
 - **Metadata Storage**:
   - Store the extracted metadata in an in-memory state object for each video in the list.
 
@@ -69,11 +70,11 @@ The form will capture settings that serve as "defaults" for any new file dropped
 
 - **Scale Settings**:
   - **Checkbox**: "Scale Video" (default unticked - indicates scale = false, default value, means user will reformat video to webm but keep original dimensions of the video). When user tick this to true, then heigh of width is needed to be set by user (becomes required field) - do validation like don't allow to leave it empty. as long as entire set of values in the FORM SECTION is not valid, dropping new files is not allowed.
-  signal this state visually on DROPZONE SECTION - that DROPZONE is inactive due to validation error on the FORM SECTION.
+    signal this state visually on DROPZONE SECTION - that DROPZONE is inactive due to validation error on the FORM SECTION.
   - **Height Selection**: Provide buttons/radio buttons for standard resolutions: `240, 360, 480, 720, 1080, 1440, 2160`.
     - Clicking a resolution automatically ticks the "Scale" checkbox and populates the height input. - pupulate selected value to heigh input automatically
     - user can also just type in the height input manually.
-  - **Width Selection**: User can also type in the width input manually. 
+  - **Width Selection**: User can also type in the width input manually.
   - But user can input height or width but not both. , provide way for user to choose, maybe readio buttons again. Make it look decent/structured.
 - **Automatic Parameters** (to be handled at start-of-compression):
   - `sourceFile`: Path from the individual list item. - that will be taken from the item state behind LIST SECTION. (obviously)
@@ -100,7 +101,7 @@ Refactor the setting form into a reusable component and allow per-video tweaks.
   - The modal uses the same Settings Component but targets the specific video's configuration - for editing - the same component as in FORM SECTION but in edit mode.
 - **State Constraints**:
   - Editing is permitted only for videos that have not yet started processing (state: `queued` or `waiting`).
-  - while editing (as long as modal is opened)  wideo will not be taken for processing. Immediately once edit modal is closed the video is returned to the pool. But don't remove it from the list. just add extra flag to the row in state behind LIST SECTION indicating that edit is in progress.
+  - while editing (as long as modal is opened) wideo will not be taken for processing. Immediately once edit modal is closed the video is returned to the pool. But don't remove it from the list. just add extra flag to the row in state behind LIST SECTION indicating that edit is in progress.
 
 ---
 
@@ -117,7 +118,7 @@ Implement the processing engine with configurable concurrency.
 - **Dynamic Queue Logic**:
   - **Increase number**: If the count is increased, the system immediately picks the next files from the top of the queue and starts `driveCompression.ts` up to make sure N specified video are processed simultaneously.
   - **Decrease number**: If the count is decreased, current active processes are allowed to finish, but no new ones will start until the active count drops below the new limit.
-  - processing videos (up to the N number of them simulatniously) should start immedeately after dropping files on DROPZONE SECTION. (as long as FORM SECTION is valid and no edit modal is opened).  
+  - processing videos (up to the N number of them simulatniously) should start immedeately after dropping files on DROPZONE SECTION. (as long as FORM SECTION is valid and no edit modal is opened).
 
 ---
 
@@ -139,7 +140,7 @@ Provide detailed, real-time feedback for the two-pass compression process.
   - Display the overall processing time (Duration) once both passes are complete.
 
   Make sure to always maintain the same width of these two columns. But reserve it's width to always fit the content we will show in these columns.
-  Set width for this bar to fixed value and allow me to modify it manually from one place. 
+  Set width for this bar to fixed value and allow me to modify it manually from one place.
   Use one number for state pulsing bar for first pass and another number for detailed progress bar for second pass.
 
 ---
@@ -158,7 +159,7 @@ Ensure robustness and provide clear diagnostic information.
   - Rows with failures should change appearance (e.g., red background/border or error icon).
   - **Show Error Button**: A button appearing only on failed rows.
 - **Error Modal**: Opens a detailed view of the captured error information for troubleshooting.
-- allow me also to remove row from LIST SECTION. - add another delete button for that. row cannot be removed when it is currently processed by @driveCompression.ts. 
+- allow me also to remove row from LIST SECTION. - add another delete button for that. row cannot be removed when it is currently processed by @driveCompression.ts.
 
 ---
 
@@ -191,4 +192,3 @@ Implement user settings persistence across sessions.
 - **Spacing**: Generous padding and consistent alignment.
 - **Interactivity**: Hover states for buttons and rows, smooth modal transitions.
 - ffmpeg embedded in the app.
-
