@@ -14,6 +14,7 @@ export interface VideoFile {
   startTime: number | null;
   endTime: number | null;
   currentPass: 1 | 2 | null;
+  isEditing?: boolean;
 }
 
 export interface CompressionSettings {

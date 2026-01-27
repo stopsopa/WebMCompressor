@@ -4,6 +4,7 @@ import './FileList.css';
 
 interface FileListProps {
   files: VideoFile[];
+  onEdit: (file: VideoFile) => void;
 }
 
 interface ContextMenuState {
@@ -13,7 +14,7 @@ interface ContextMenuState {
   filePath: string;
 }
 
-function FileList({ files }: FileListProps) {
+function FileList({ files, onEdit }: FileListProps) {
   const [menu, setMenu] = useState<ContextMenuState>({
     visible: false,
     x: 0,
@@ -74,26 +75,44 @@ function FileList({ files }: FileListProps) {
                 <th>FPS</th>
                 <th>Duration</th>
                 <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {files.map((file) => (
-                <tr 
-                  key={file.id} 
-                  className="file-row"
-                  onContextMenu={(e) => handleContextMenu(e, file.path)}
-                >
-                  <td>{file.name}</td>
-                  <td>{file.width ? `${file.width}x${file.height}` : '-'}</td>
-                  <td>{file.fps ? `${file.fps} fps` : '-'}</td>
-                  <td>{file.durationMs ? formatDuration(file.durationMs) : '-'}</td>
-                  <td>
-                    <span className={`status-badge status-${file.status}`}>
-                      {file.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {files.map((file) => {
+                const isEditable = file.status === 'queued' || file.status === 'error';
+                return (
+                  <tr 
+                    key={file.id} 
+                    className={`file-row ${file.isEditing ? 'is-editing' : ''}`}
+                    onContextMenu={(e) => handleContextMenu(e, file.path)}
+                  >
+                    <td>{file.name}</td>
+                    <td>{file.width ? `${file.width}x${file.height}` : '-'}</td>
+                    <td>{file.fps ? `${file.fps} fps` : '-'}</td>
+                    <td>{file.durationMs ? formatDuration(file.durationMs) : '-'}</td>
+                    <td>
+                      <span className={`status-badge status-${file.status}`}>
+                        {file.status}
+                      </span>
+                      {file.isEditing && (
+                        <span className="status-badge status-editing">
+                          Editing...
+                        </span>
+                      )}
+                    </td>
+                    <td>
+                      <button 
+                        className="aws-button aws-button-secondary edit-btn"
+                        onClick={() => onEdit(file)}
+                        disabled={!isEditable || file.isEditing}
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

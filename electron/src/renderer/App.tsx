@@ -4,7 +4,8 @@ import DropZone from './components/DropZone';
 import FileList from './components/FileList';
 import RejectionModal from './components/RejectionModal';
 import GlobalSettings from './components/GlobalSettings';
-import type { VideoFile, AppConfig } from './types';
+import EditModal from './components/EditModal';
+import type { VideoFile, AppConfig, CompressionSettings } from './types';
 
 function App() {
   const [files, setFiles] = useState<VideoFile[]>([]);
@@ -15,6 +16,7 @@ function App() {
     videoWidth: null,
     videoHeight: null,
   });
+  const [editingFile, setEditingFile] = useState<VideoFile | null>(null);
 
   useEffect(() => {
     window.electronAPI.loadConfig().then(loadedConfig => {
@@ -43,6 +45,33 @@ function App() {
   const handleValidationChange = useCallback((isValid: boolean) => {
     setIsConfigValid(isValid);
   }, []);
+
+  const handleStartEdit = (file: VideoFile) => {
+    setEditingFile(file);
+    setFiles(prev => prev.map(f => 
+      f.id === file.id ? { ...f, isEditing: true } : f
+    ));
+  };
+
+  const handleSaveEdit = (settings: CompressionSettings) => {
+    if (editingFile) {
+      setFiles(prev => prev.map(f => 
+        f.id === editingFile.id 
+          ? { ...f, settings: { ...settings }, isEditing: false } 
+          : f
+      ));
+      setEditingFile(null);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    if (editingFile) {
+      setFiles(prev => prev.map(f => 
+        f.id === editingFile.id ? { ...f, isEditing: false } : f
+      ));
+      setEditingFile(null);
+    }
+  };
 
   const handleFilesDrop = async (filePaths: string[]) => {
     if (!isConfigValid) return;
@@ -133,13 +162,22 @@ function App() {
       <DropZone onFilesDrop={handleFilesDrop} disabled={!isConfigValid} />
 
       {/* LIST SECTION (Bottom) */}
-      <FileList files={files} />
+      <FileList files={files} onEdit={handleStartEdit} />
 
       {/* Rejection Modal */}
       {rejectedFiles.length > 0 && (
         <RejectionModal 
           files={rejectedFiles} 
           onClose={() => setRejectedFiles([])} 
+        />
+      )}
+
+      {/* Edit Modal */}
+      {editingFile && (
+        <EditModal 
+          file={editingFile}
+          onSave={handleSaveEdit}
+          onClose={handleCancelEdit}
         />
       )}
     </div>

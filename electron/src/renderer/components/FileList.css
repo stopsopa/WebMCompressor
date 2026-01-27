@@ -54,7 +54,27 @@ td {
 }
 
 .status-validating { background: #e9ebed; color: #545b64; }
-.status-queued { background: #d8eafa; color: #0073bb; }
+.status-queued {
+  background-color: #f1faff;
+  color: #0077c2;
+  border-color: #0077c2;
+}
+
+.status-editing {
+  background-color: #fff8e1;
+  color: #f57c00;
+  border-color: #f57c00;
+  margin-left: var(--spacing-xs);
+}
+
+.file-row.is-editing {
+  background-color: #fffdf5;
+}
+
+.edit-btn {
+  padding: 4px 12px;
+  font-size: 0.85rem;
+}
 .status-error { background: #fdf3f1; color: #d13212; }
 
 .empty-list-msg {
