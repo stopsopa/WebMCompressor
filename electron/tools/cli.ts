@@ -1,5 +1,5 @@
 /**
- * NODE_OPTIONS="" /bin/bash ts.sh electron/tools/cli.ts -s "input.mp4" -h 1080 -w 1920 -r 30 -sc
+ * NODE_OPTIONS="" /bin/bash ts.sh electron/tools/cli.ts -s "input.mp4" -h 1080 -w 1920 -r 30 -sc -du 10050
  */
 
 import generateFFMPEGParams, { type Params } from "./generateFFMPEGParams.ts";
@@ -18,7 +18,7 @@ Required arguments:
 
 Optional arguments:
   -sc, --scale [true|false]    Whether to apply scaling. (default: false, but just --sc, --scale sets it to true)
-  -du, --duration <number>     Duration in seconds.
+  -du, --duration <number>     Duration in milliseconds.
   -d, --date <string>          Creation time metadata for the second pass. (default: current time)
   -e, --mainExec <path>        Path to the ffmpeg executable. (default: 'ffmpeg') - passing just  
                                -e "" will cause script to return just arguments

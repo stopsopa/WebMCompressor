@@ -1,16 +1,16 @@
 
-# /bin/bash electron/tools/extractWHandFrameRate.sh [file.mov]
+# /bin/bash electron/tools/extractMetadata.sh [file.mov]
 # This script extracts the width, height, and frame rate (FPS) from a video file using ffprobe.
 # It normalizes the FPS to its numerator (leading digits) and outputs four values on separate lines:
 # 1. Width
 # 2. Height
 # 3. Normalized FPS
-# 4. Duration in seconds (no trailing newline)
+# 4. Duration in milliseconds (no trailing newline)
 # Example output for 1920x1080 60fps 10s video:
 # 1920
 # 1080
 # 60
-# 10.050000
+# 10050
 
 FILE="${1}"
 
@@ -62,6 +62,9 @@ if ! [[ "${DURATION}" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
     echo "${0} error: Invalid duration from ffprobe: ${DURATION}"
     exit 1
 fi
+
+# transform seconds to miliseconds in raw bash
+DURATION=$(awk "BEGIN { print int(${DURATION} * 1000) }")
 
 echo "${WIDTH}"
 echo "${HEIGHT}"

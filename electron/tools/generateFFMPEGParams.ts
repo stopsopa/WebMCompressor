@@ -69,6 +69,8 @@ export default function generateFFMPEGParams(params: Params) {
 
   const buffersp = [...bufferfp];
 
+  buffersp[0] = `-loglevel error -progress -`; // add -progress - to second pass
+
   bufferfp.push(`-speed ${firstPass}`);
   buffersp.push(`-speed ${secondPass}`);
 
