@@ -87,6 +87,13 @@ The form will capture settings that serve as "defaults" for any new file dropped
 - **Drive Compression Mapping**:
   - The `Scale Video` checkbox maps to the `scale` boolean property in `DriveCompressionOptions`.
   - The Width and Height inputs map directly to `videoWidth` and `videoHeight` respectively.
+  - **Mutual Exclusivity Logic**:
+    - The UI provides **Radio Buttons** to toggle between Width and Height modes.
+    - Selecting a mode disables the other input and clears its value in the state.
+    - Clicking a **Standard Height button** (e.g., 720p) automatically:
+      1. Ticks the "Scale Video" checkbox.
+      2. Switches the active mode to "Height".
+      3. Populates the Height input and clears the Width input.
   - **Storage Restriction**: The application state (returned by `getForm()`) must **only** store these three fields. No presets or parallel job settings are permitted in this phase.
 - **Validation Criteria**:
   - **Scale Disabled**: The form is always valid regardless of `videoWidth`/`videoHeight` values.
