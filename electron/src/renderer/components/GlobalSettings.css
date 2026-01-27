@@ -1,0 +1,173 @@
+.global-settings {
+  background: var(--aws-white);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.settings-grid-simple {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.checkbox-only {
+  padding: var(--spacing-sm) 0;
+}
+
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--aws-text-dark);
+}
+
+.checkbox-label input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.aws-select, .aws-input {
+  padding: 8px 12px;
+  border: 1px solid var(--aws-border);
+  border-radius: 2px;
+  font-size: 0.9rem;
+  background: var(--aws-white);
+  color: var(--aws-text-dark);
+  outline: none;
+  transition: all 0.2s;
+}
+
+.aws-input:disabled {
+  background-color: var(--aws-bg-light);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.aws-select:focus, .aws-input:not(:disabled):focus {
+  border-color: var(--aws-blue);
+  box-shadow: 0 0 0 1px var(--aws-blue);
+}
+
+.aws-input.invalid {
+  border-color: var(--aws-red);
+  box-shadow: 0 0 0 1px var(--aws-red);
+}
+
+/* Scaling Options */
+.scaling-options {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--aws-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.resolution-short-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm); /* Added margin since it's now under input */
+}
+
+.resolution-short-list label {
+  font-size: 0.75rem; /* Slightly smaller since it's nested */
+  font-weight: 700;
+  color: var(--aws-text-light);
+  text-transform: uppercase;
+}
+
+.resolution-buttons {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.resolution-btn {
+  padding: 4px 8px; /* Slightly tighter padding */
+  border: 1px solid var(--aws-border);
+  background: var(--aws-white);
+  cursor: pointer;
+  border-radius: 2px;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.resolution-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--aws-bg-light);
+}
+
+.resolution-btn:hover {
+  background: var(--aws-bg-light);
+  border-color: var(--aws-text-light);
+}
+
+.resolution-btn.active {
+  background: var(--aws-blue);
+  color: var(--aws-white);
+  border-color: var(--aws-blue);
+}
+
+.manual-resolution-v2 {
+  display: flex;
+  gap: var(--spacing-lg);
+}
+
+.resolution-choice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  flex: 1;
+  padding: var(--spacing-md);
+  border: 1px solid transparent;
+  border-radius: 2px;
+  transition: background-color 0.2s;
+}
+
+.resolution-choice:first-child {
+  max-width: 250px;
+}
+
+.resolution-choice.active {
+  background-color: #f7f9f9;
+  border-color: var(--aws-border);
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+}
+
+.radio-label .label-text {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--aws-text-light);
+  text-transform: uppercase;
+}
+
+.radio-label input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.validation-error-text {
+  color: var(--aws-red);
+  font-size: 0.85rem;
+  font-weight: 600;
+}

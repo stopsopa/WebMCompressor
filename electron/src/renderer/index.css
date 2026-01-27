@@ -39,6 +39,9 @@ html, body, #root {
   height: 100vh;
   padding: var(--spacing-md);
   gap: var(--spacing-md);
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 /* Common Box Style */

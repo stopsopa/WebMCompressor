@@ -1,15 +1,52 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import DropZone from './components/DropZone';
 import FileList from './components/FileList';
 import RejectionModal from './components/RejectionModal';
-import type { VideoFile } from './types';
+import GlobalSettings from './components/GlobalSettings';
+import type { VideoFile, AppConfig } from './types';
 
 function App() {
   const [files, setFiles] = useState<VideoFile[]>([]);
   const [rejectedFiles, setRejectedFiles] = useState<{ path: string; error: string }[]>([]);
+  const [isConfigValid, setIsConfigValid] = useState(true);
+  const [config, setConfig] = useState<AppConfig>({
+    scale: false,
+    videoWidth: null,
+    videoHeight: null,
+  });
+
+  useEffect(() => {
+    window.electronAPI.loadConfig().then(loadedConfig => {
+      if (loadedConfig) {
+        // Strictly filter to Phase 2 allowed fields only
+        setConfig({
+          scale: !!loadedConfig.scale,
+          videoWidth: typeof loadedConfig.videoWidth === 'number' ? loadedConfig.videoWidth : null,
+          videoHeight: typeof loadedConfig.videoHeight === 'number' ? loadedConfig.videoHeight : null,
+        });
+      }
+    });
+  }, []);
+
+  // Sync dev helpers
+  useEffect(() => {
+    (window as any).getList = () => files;
+    (window as any).getForm = () => config;
+  }, [files, config]);
+
+  const handleConfigChange = (newConfig: AppConfig) => {
+    setConfig(newConfig);
+    window.electronAPI.saveConfig(newConfig);
+  };
+
+  const handleValidationChange = useCallback((isValid: boolean) => {
+    setIsConfigValid(isValid);
+  }, []);
 
   const handleFilesDrop = async (filePaths: string[]) => {
+    if (!isConfigValid) return;
+
     const newRejected: { path: string; error: string }[] = [];
     const currentlyProcessingPaths = new Set<string>();
     
@@ -42,7 +79,11 @@ function App() {
         startTime: null,
         endTime: null,
         currentPass: null,
-        settings: { scale: false }
+        settings: { 
+          scale: config.scale,
+          videoWidth: config.videoWidth || undefined,
+          videoHeight: config.videoHeight || undefined
+        }
       };
 
       setFiles(prev => [...prev, tempEntry]);
@@ -81,16 +122,15 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* FORM SECTION (Top) - Reserved for Phase 2 */}
-      <div className="card">
-        <h2 className="section-title">Global Settings</h2>
-        <div style={{ color: 'var(--aws-text-light)', fontStyle: 'italic', fontSize: '0.9rem' }}>
-          Form parameters will be implemented in Phase 2.
-        </div>
-      </div>
+      {/* FORM SECTION (Top) */}
+      <GlobalSettings 
+        config={config} 
+        onChange={handleConfigChange} 
+        onValidationChange={handleValidationChange}
+      />
 
       {/* DROPZONE SECTION (Middle) */}
-      <DropZone onFilesDrop={handleFilesDrop} />
+      <DropZone onFilesDrop={handleFilesDrop} disabled={!isConfigValid} />
 
       {/* LIST SECTION (Bottom) */}
       <FileList files={files} />

@@ -20,9 +20,11 @@ const getConfigPath = () => path.join(getConfigDir(), "config.json");
 let activeProcessCount = 0;
 
 async function createWindow() {
+  const isDev = !!process.env.VITE_DEV_SERVER_URL;
+
   mainWindow = new BrowserWindow({
-    width: 900,
-    height: 700,
+    width: isDev ? 1700 : 1100,
+    height: 800,
     webPreferences: {
       preload: path.join(__dirname, "../preload/preload.js"),
       contextIsolation: true,
@@ -34,8 +36,8 @@ async function createWindow() {
   });
 
   // Load Vite dev server in development or built files in production
-  if (process.env.VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
+  if (isDev) {
+    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL!);
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, "../../dist/index.html"));
@@ -91,13 +93,9 @@ ipcMain.handle("config:load", async () => {
     }
     // Return default config if file doesn't exist or is invalid
     return {
-      defaultQuality: "medium",
-      defaultResolution: "original",
-      maxWidth: null,
-      maxHeight: null,
-      sizePerSecond: null,
-      parallelProcessing: 1,
-      overwriteExisting: false,
+      scale: false,
+      videoWidth: null,
+      videoHeight: null,
     };
   }
 });
@@ -105,8 +103,15 @@ ipcMain.handle("config:load", async () => {
 // Save configuration
 ipcMain.handle("config:save", async (_event, config) => {
   try {
+    // Strictly filter to Phase 2 allowed fields only before saving
+    const filteredConfig = {
+      scale: !!config.scale,
+      videoWidth: typeof config.videoWidth === "number" ? config.videoWidth : null,
+      videoHeight: typeof config.videoHeight === "number" ? config.videoHeight : null,
+    };
+
     await fs.mkdir(getConfigDir(), { recursive: true });
-    await fs.writeFile(getConfigPath(), JSON.stringify(config, null, 2));
+    await fs.writeFile(getConfigPath(), JSON.stringify(filteredConfig, null, 2));
     return { success: true };
   } catch (error) {
     console.error("Failed to save config:", error);
