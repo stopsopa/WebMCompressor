@@ -68,90 +68,94 @@ const GlobalSettings: React.FC<GlobalSettingsProps> = ({ config, onChange, onVal
 
   return (
     <div className="global-settings card">
-      <h2 className="section-title">Global Settings</h2>
-      <div className="settings-grid-simple">
-        <div className="setting-item checkbox-only">
-          <label className="checkbox-label">
-            <input 
-              type="checkbox" 
-              checked={config.scale} 
-              onChange={handleScaleToggle} 
-            />
-            <span>Scale Video</span>
-          </label>
-        </div>
+      <div className="settings-header">
+        <h2 className="section-title">Global Settings</h2>
+        <label className="checkbox-label">
+          <input 
+            type="checkbox" 
+            checked={config.scale} 
+            onChange={handleScaleToggle} 
+          />
+          <span>Scale Video</span>
+        </label>
       </div>
 
-      {config.scale && (
-        <div className="scaling-options">
-          <div className="manual-resolution-v2">
-            <div className={`resolution-choice ${activeMode === 'width' ? 'active' : ''}`}>
-              <label className="radio-label">
+      <div className="settings-content">
+        {config.scale ? (
+          <div className="scaling-options">
+            <div className="manual-resolution-v2">
+              <div className={`resolution-choice ${activeMode === 'width' ? 'active' : ''}`}>
+                <label className="radio-label">
+                  <input 
+                    type="radio" 
+                    name="resMode" 
+                    checked={activeMode === 'width'} 
+                    onChange={() => handleModeChange('width')}
+                  />
+                  <span className="label-text">Custom Width (px)</span>
+                </label>
                 <input 
-                  type="radio" 
-                  name="resMode" 
-                  checked={activeMode === 'width'} 
-                  onChange={() => handleModeChange('width')}
+                  type="number" 
+                  value={config.videoWidth || ''} 
+                  onChange={handleWidthChange} 
+                  className="aws-input"
+                  placeholder="Auto"
+                  min="100"
+                  disabled={activeMode !== 'width'}
                 />
-                <span className="label-text">Custom Width (px)</span>
-              </label>
-              <input 
-                type="number" 
-                value={config.videoWidth || ''} 
-                onChange={handleWidthChange} 
-                className="aws-input"
-                placeholder="Auto"
-                min="100"
-                disabled={activeMode !== 'width'}
-              />
-            </div>
+              </div>
 
-            <div className={`resolution-choice ${activeMode === 'height' ? 'active' : ''}`}>
-              <label className="radio-label">
+              <div className={`resolution-choice ${activeMode === 'height' ? 'active' : ''}`}>
+                <label className="radio-label">
+                  <input 
+                    type="radio" 
+                    name="resMode" 
+                    checked={activeMode === 'height'} 
+                    onChange={() => handleModeChange('height')}
+                  />
+                  <span className="label-text">Custom Height (px)</span>
+                </label>
                 <input 
-                  type="radio" 
-                  name="resMode" 
-                  checked={activeMode === 'height'} 
-                  onChange={() => handleModeChange('height')}
+                  type="number" 
+                  value={config.videoHeight || ''} 
+                  onChange={handleHeightChange} 
+                  className="aws-input"
+                  placeholder="Auto"
+                  min="100"
+                  disabled={activeMode !== 'height'}
                 />
-                <span className="label-text">Custom Height (px)</span>
-              </label>
-              <input 
-                type="number" 
-                value={config.videoHeight || ''} 
-                onChange={handleHeightChange} 
-                className="aws-input"
-                placeholder="Auto"
-                min="100"
-                disabled={activeMode !== 'height'}
-              />
 
-              <div className="resolution-short-list">
-                <label>Standard Heights:</label>
-                <div className="resolution-buttons">
-                  {heightResolutions.map(h => (
-                    <button 
-                      key={h} 
-                      type="button"
-                      className={`resolution-btn ${config.videoHeight === h ? 'active' : ''}`}
-                      onClick={() => handleResolutionClick(h)}
-                      disabled={activeMode !== 'height'}
-                    >
-                      {h}p
-                    </button>
-                  ))}
+                <div className="resolution-short-list">
+                  <label>Standard Heights:</label>
+                  <div className="resolution-buttons">
+                    {heightResolutions.map(h => (
+                      <button 
+                        key={h} 
+                        type="button"
+                        className={`resolution-btn ${config.videoHeight === h ? 'active' : ''}`}
+                        onClick={() => handleResolutionClick(h)}
+                        disabled={activeMode !== 'height'}
+                      >
+                        {h}p
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
+            
+            {config.scale && !config.videoWidth && !config.videoHeight && (
+              <div className="validation-error-text">
+                Please specify a value for the selected dimension.
+              </div>
+            )}
           </div>
-          
-          {config.scale && !config.videoWidth && !config.videoHeight && (
-            <div className="validation-error-text">
-              Please specify a value for the selected dimension.
-            </div>
-          )}
-        </div>
-      )}
+        ) : (
+          <div className="settings-placeholder">
+            Scaling is disabled. Output will use original video dimensions.
+          </div>
+        )}
+      </div>
     </div>
   );
 };

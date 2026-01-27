@@ -1,18 +1,36 @@
 .global-settings {
   background: var(--aws-white);
-  padding: var(--spacing-md);
+  padding: 0; /* Remove default padding, use it in children */
   margin-bottom: var(--spacing-md);
+  overflow: hidden;
 }
 
-.settings-grid-simple {
+.settings-header {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--aws-border);
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-sm);
+  justify-content: space-between;
+  background-color: #fafafa;
 }
 
-.checkbox-only {
-  padding: var(--spacing-sm) 0;
+.settings-header .section-title {
+  font-size: 1rem;
+}
+
+.settings-header .checkbox-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.settings-content {
+  padding: var(--spacing-md);
+}
+
+.settings-placeholder {
+  color: var(--aws-text-light);
+  font-size: 0.9rem;
+  font-style: italic;
 }
 
 .setting-item {
@@ -122,18 +140,19 @@
 
 .manual-resolution-v2 {
   display: flex;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
 }
 
 .resolution-choice {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-sm);
   flex: 1;
   padding: var(--spacing-md);
-  border: 1px solid transparent;
+  border: 1px solid var(--aws-border);
   border-radius: 2px;
-  transition: background-color 0.2s;
+  background-color: #ffffff;
+  transition: all 0.2s;
 }
 
 .resolution-choice:first-child {
@@ -142,7 +161,8 @@
 
 .resolution-choice.active {
   background-color: #f7f9f9;
-  border-color: var(--aws-border);
+  border-left: 4px solid var(--aws-blue);
+  padding-left: calc(var(--spacing-md) - 3px);
 }
 
 .radio-label {
