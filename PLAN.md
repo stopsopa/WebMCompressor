@@ -51,7 +51,12 @@ Build the core layout and implement the video file ingestion logic.
   - Maintain a list of absolute paths for accepted files.
 - **Feedback Mechanism**:
   - Accepted files are immediately added to the **LIST SECTION**.
-  - **Rejection Modal**: Display a list of files that failed validation, requiring user dismissal.
+  - **Rejection Modal**:
+    - Display a list of files that failed validation.
+    - Each entry must show the full absolute path.
+    - Below the path, show the specific error message in a distinct style.
+    - Include a "Reveal in Finder" button next to each path for easy access.
+    - UI: Extra-wide modal with reduced font size to maximize path visibility.
   - **Context Menu**: Right-clicking a row in the **LIST SECTION** should show a menu with a "Reveal in Finder" option.
 - **Metadata Storage**:
   - Store the extracted metadata in an in-memory state object for each video in the list.
