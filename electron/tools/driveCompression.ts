@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import generateFFMPEGParams from "./generateFFMPEGParams.ts";
 import type { Params } from "./generateFFMPEGParams.ts";
 import { extractMetadata } from "./extractMetadata.ts";
+import scaleWandH from "./scaleWandH.ts";
 
 export type CompressionStep = "first" | "second";
 
@@ -28,9 +29,9 @@ export default async function driveCompression(
 ) {
   const {
     sourceFile,
-    videoHeight,
-    videoWidth,
+
     scale,
+
     date,
     extra,
     extrafirst,
@@ -40,6 +41,8 @@ export default async function driveCompression(
     ffmpegPath = "ffmpeg",
     ffprobePath = "ffprobe",
   } = options;
+
+  let { videoHeight, videoWidth } = options;
 
   let currentStep: CompressionStep = "first";
   const overallStartTime = Date.now();
@@ -54,6 +57,13 @@ export default async function driveCompression(
       width: metaWidth,
       fps: metaFps,
     } = await extractMetadata(ffprobePath, sourceFile);
+
+    if (scale) {
+      ({ height: videoHeight, width: videoWidth } = scaleWandH(
+        { height: metaHeight, width: metaWidth },
+        { height: videoHeight, width: videoWidth },
+      ));
+    }
 
     // 2. Prepare Parameters
     // We use extracted metadata to fill in missing required parameters or ensure accuracy
@@ -119,7 +129,7 @@ export default async function driveCompression(
                   );
 
                   const progress = parseFloat(passProgress.toFixed(2));
-                  
+
                   const now = Date.now();
                   const totalTimePassedMs = now - overallStartTime;
                   const secondPassTimePassedMs = now - secondPassStartTime;

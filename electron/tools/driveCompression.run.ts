@@ -1,7 +1,8 @@
 import driveCompression from "./driveCompression.ts";
 
-const sourceFile =
-  "example/S1_E5_Sekret_Maczugi__The_Secret_Of_The_Club[short].mov";
+let sourceFile;
+sourceFile = "example/S1_E5_Sekret_Maczugi__The_Secret_Of_The_Club[short].mov";
+sourceFile = "example/S1_E5_Sekret_Maczugi__The_Secret_Of_The_Club.mov";
 
 console.log(`Starting compression for: ${sourceFile}`);
 
@@ -12,25 +13,18 @@ driveCompression({
   sourceFile,
   videoHeight: 360, // Arbitrary, will be overridden or used
   videoWidth: 640,
-  scale: false,
+  scale: true,
   progressEvent: (error, data) => {
     if (error) {
       console.error(`Progress error: ${error}`);
       return;
     }
-    const {
-      progressPercent,
-      totalTimePassedMs,
-      estimatedTotalTimeMs,
-      estimatedRemainingTimeMs,
-      firstPassDurationMs,
-    } = data;
+    const { progressPercent, totalTimePassedMs, estimatedTotalTimeMs, estimatedRemainingTimeMs, firstPassDurationMs } =
+      data;
     const passedS = (totalTimePassedMs / 1000).toFixed(1);
     const totalS = (estimatedTotalTimeMs / 1000).toFixed(1);
     const remainingS = (estimatedRemainingTimeMs / 1000).toFixed(1);
-    const firstS = firstPassDurationMs
-      ? (firstPassDurationMs / 1000).toFixed(1)
-      : "?";
+    const firstS = firstPassDurationMs ? (firstPassDurationMs / 1000).toFixed(1) : "?";
 
     console.log(
       `Progress: ${progressPercent.toFixed(2)}% | Passed: ${passedS}s (1st: ${firstS}s) | Total: ${totalS}s | Remaining: ${remainingS}s`,
