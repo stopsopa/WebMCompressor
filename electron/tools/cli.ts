@@ -1,4 +1,11 @@
 /**
+ * WARNING:
+ * This is just experimental script to use generateFFMPEGParams.ts library from cli
+ * But in the final version of our app we won't be calling this script from cli
+ * Instead we will be calling generateFFMPEGParams.ts library directly from electron app
+ * So absolutely don't use this library in final application, stick to using directly generateFFMPEGParams.ts library
+ * WARNING:
+ *
  * NODE_OPTIONS="" /bin/bash ts.sh electron/tools/cli.ts -s "input.mp4" -h 1080 -w 1920 -r 30 -sc -du 10050
  */
 
