@@ -2,12 +2,19 @@ import { spawn } from "node:child_process";
 import generateFFMPEGParams from "./generateFFMPEGParams.ts";
 import type { Params } from "./generateFFMPEGParams.ts";
 import { extractMetadata } from "./extractMetadata.ts";
-import fs from "node:fs";
 
 export type CompressionStep = "first" | "second";
 
+export type ProgressData = {
+  progressPercent: number;
+  totalTimePassedMs: number;
+  estimatedTotalTimeMs: number;
+  estimatedRemainingTimeMs: number;
+  firstPassDurationMs: number | null;
+};
+
 export type DriveCompressionOptions = Omit<Params, "frameRate"> & {
-  progressEvent?: (progressPercent: number) => void;
+  progressEvent?: (error: string | null, data: ProgressData) => void;
   end: (step: CompressionStep, error: string | null) => void;
   ffmpegPath?: string;
   ffprobePath?: string;
@@ -35,6 +42,9 @@ export default async function driveCompression(
   } = options;
 
   let currentStep: CompressionStep = "first";
+  const overallStartTime = Date.now();
+  let firstPassDurationMs: number | null = null;
+  let secondPassStartTime: number | null = null;
 
   try {
     // 1. Extract Metadata to get duration for progress calculation
@@ -68,6 +78,10 @@ export default async function driveCompression(
       return new Promise<void>((resolve, reject) => {
         const hasProgress = flattenedArgs.includes("-progress");
 
+        if (passNumber === 2) {
+          secondPassStartTime = Date.now();
+        }
+
         const child = spawn(ffmpegPath, flattenedArgs);
 
         let stderr = "";
@@ -80,7 +94,6 @@ export default async function driveCompression(
             stdoutBuffer = lines.pop() || "";
 
             for (const line of lines) {
-              fs.appendFileSync("progress.txt", `\n---------\n${line}`);
               // Check for progress indicators
               const match =
                 line.match(/out_time_ms=(\d+)/) ||
@@ -98,7 +111,7 @@ export default async function driveCompression(
 
                 const currentMs = val / 1000;
 
-                if (durationMs > 0 && progressEvent) {
+                if (durationMs > 0 && progressEvent && secondPassStartTime) {
                   // Progress within this pass (0-100)
                   const passProgress = Math.min(
                     100,
@@ -106,13 +119,30 @@ export default async function driveCompression(
                   );
 
                   const progress = parseFloat(passProgress.toFixed(2));
+                  
+                  const now = Date.now();
+                  const totalTimePassedMs = now - overallStartTime;
+                  const secondPassTimePassedMs = now - secondPassStartTime;
 
-                  if (progress > 90) {
-                    var k = "test";
+                  let estimatedRemainingTimeMs = 0;
+                  let estimatedTotalTimeMs = 0;
+
+                  if (progress > 0) {
+                    const onePercentTimeMs = secondPassTimePassedMs / progress;
+                    estimatedRemainingTimeMs = Math.round(
+                      (100 - progress) * onePercentTimeMs,
+                    );
+                    estimatedTotalTimeMs =
+                      totalTimePassedMs + estimatedRemainingTimeMs;
                   }
 
-                  // Report progress directly (assuming only Pass 2 has -progress)
-                  progressEvent(progress);
+                  progressEvent(null, {
+                    progressPercent: progress,
+                    totalTimePassedMs,
+                    estimatedTotalTimeMs,
+                    estimatedRemainingTimeMs,
+                    firstPassDurationMs,
+                  });
                 }
               }
             }
@@ -125,9 +155,16 @@ export default async function driveCompression(
 
         child.on("close", (code: number | null) => {
           if (code === 0) {
-            if (hasProgress && progressEvent) {
-              // Mark the end of this pass explicitly if it had progress tracking
-              progressEvent(100);
+            if (hasProgress && progressEvent && secondPassStartTime) {
+              const now = Date.now();
+              const totalTimePassedMs = now - overallStartTime;
+              progressEvent(null, {
+                progressPercent: 100,
+                totalTimePassedMs,
+                estimatedTotalTimeMs: totalTimePassedMs,
+                estimatedRemainingTimeMs: 0,
+                firstPassDurationMs,
+              });
             }
             resolve();
           } else {
@@ -147,7 +184,9 @@ export default async function driveCompression(
 
     // 3. Execute First Pass (Analysis phase)
     currentStep = "first";
+    const firstPassStartTime = Date.now();
     await runPass(firstPass.flat(2) as string[], 1);
+    firstPassDurationMs = Date.now() - firstPassStartTime;
     end("first", null);
 
     // 4. Execute Second Pass (Encoding phase)
