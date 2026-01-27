@@ -1,4 +1,11 @@
 
+# WARNING:
+# this is just a demo of general logic how it could be potentially used in the future
+# but in the final app we cannot relay on bash and also we have to ask user if he would like to keep original video size or scale
+# if scale then we have to get width or height and calculate proprotionally mainaining original width/heigh ratio
+# and inject this information to cli.ts library for further calculations to determine target bitrate
+# WARNING:
+
 # /bin/bash electron/tools/cli.sh [file.mov]
 FILE="${1}"
 

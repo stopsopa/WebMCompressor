@@ -10,17 +10,17 @@ export type TargetScale =
 export default function scaleWandH(source: Scale, target: TargetScale): Scale {
   const { width: sw, height: sh } = source;
 
-  if (target.width !== undefined) {
-    return {
-      width: target.width,
-      height: Math.round((target.width / sw) * sh),
-    };
-  }
-
   if (target.height !== undefined) {
     return {
       width: Math.round((target.height / sh) * sw),
       height: target.height,
+    };
+  }
+
+  if (target.width !== undefined) {
+    return {
+      width: target.width,
+      height: Math.round((target.width / sw) * sh),
     };
   }
 
