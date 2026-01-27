@@ -1,4 +1,9 @@
 
+# This is original script - prototype - written in bash
+# at lates stages of implementing final UI wrapper I've decided to rewrite it in TypeScript (extractMetadata.ts)
+# to don't relay on presence of bash on target machine
+# -----------------------------------------------------------------------------------------
+
 # /bin/bash electron/tools/extractMetadata.sh [file.mov]
 # This script extracts the width, height, and frame rate (FPS) from a video file using ffprobe.
 # It normalizes the FPS to its numerator (leading digits) and outputs four values on separate lines:
