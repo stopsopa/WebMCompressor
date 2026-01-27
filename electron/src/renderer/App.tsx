@@ -152,6 +152,10 @@ function App() {
     }
   };
 
+  const handleClear = () => {
+    setFiles([]);
+  };
+
   const handleFilesDrop = async (filePaths: string[]) => {
     if (!isConfigValid) return;
 
@@ -246,6 +250,7 @@ function App() {
         parallelProcessing={config.settings.parallelProcessing}
         onParallelChange={handleParallelChange}
         onEdit={handleStartEdit} 
+        onClear={handleClear}
       />
 
       {/* Rejection Modal */}
