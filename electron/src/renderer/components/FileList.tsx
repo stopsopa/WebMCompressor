@@ -31,8 +31,8 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
     e.stopPropagation(); // Stop bubbling to window
     setMenu({
       visible: true,
-      x: e.clientX,
-      y: e.clientY,
+      x: e.clientX + 2,
+      y: e.clientY + 2,
       file,
     });
   }, []);
