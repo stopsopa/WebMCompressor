@@ -6,6 +6,9 @@ import { promisify } from "util";
 import fs from "fs/promises";
 import { extractMetadata } from "../tools/extractMetadata.js";
 import driveCompression from "../tools/driveCompression.js";
+import { generateFFMPEGParamsStrings } from "../tools/generateFFMPEGParams.js";
+import scaleWandH from "../tools/scaleWandH.js";
+import { getFFmpegPath, getFFprobePath, getVersions } from "./bins.js";
 
 const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
@@ -125,8 +128,7 @@ ipcMain.handle("config:save", async (_event, config) => {
 // Validate video file and get metadata using FFprobe
 ipcMain.handle("video:validate", async (_event, filePath: string) => {
   try {
-    // Note: in production we will need to provide the actual path to bundled ffprobe
-    const meta = await extractMetadata(undefined, filePath);
+    const meta = await extractMetadata(getFFprobePath(), filePath);
 
     return {
       success: true,
@@ -138,6 +140,11 @@ ipcMain.handle("video:validate", async (_event, filePath: string) => {
       error: error.message || "Failed to validate video file",
     };
   }
+});
+
+// Get tool versions (Phase 4)
+ipcMain.handle("app:getVersions", async () => {
+  return await getVersions();
 });
 
 // Generate output path with collision handling
@@ -190,6 +197,8 @@ ipcMain.on("compression:start", async (event, args: { id: string; sourceFile: st
   try {
     await driveCompression({
       sourceFile,
+      ffmpegPath: getFFmpegPath(),
+      ffprobePath: getFFprobePath(),
       scale: !!settings.scale,
       videoWidth: settings.videoWidth,
       videoHeight: settings.videoHeight,
@@ -219,4 +228,36 @@ ipcMain.on("compression:start", async (event, args: { id: string; sourceFile: st
 // Reveal file in Finder/Explorer
 ipcMain.on("video:reveal", (_event, filePath: string) => {
   shell.showItemInFolder(filePath);
+});
+
+// Get full FFMPEG command (Phase 4)
+ipcMain.handle("video:getCommand", async (_event, args: { sourceFile: string; settings: any; metadata: any }) => {
+  const { sourceFile, settings, metadata } = args;
+  const ffmpeg = getFFmpegPath();
+
+  let { videoWidth, videoHeight } = settings;
+
+  if (settings.scale) {
+    const scaled = scaleWandH({ height: metadata.height, width: metadata.width }, {
+      height: videoHeight,
+      width: videoWidth,
+    } as any);
+    videoHeight = scaled.height;
+    videoWidth = scaled.width;
+  }
+
+  const result = generateFFMPEGParamsStrings({
+    sourceFile,
+    scale: !!settings.scale,
+    videoWidth,
+    videoHeight,
+    frameRate: metadata.fps,
+  });
+
+  return `\n\n"${ffmpeg}" ${result.firstPass}\n\n"${ffmpeg}" ${result.secondPass}\n\n`;
+});
+
+// Open external URL (Phase 4)
+ipcMain.on("app:openExternal", (_event, url: string) => {
+  shell.openExternal(url);
 });

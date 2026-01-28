@@ -1,73 +1,20 @@
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 28, 36, 0.5); /* AWS-like overlay tint */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  backdrop-filter: blur(1px);
-}
-
 .card-modal {
-  background: var(--aws-white);
-  border: 1px solid var(--aws-border);
-  border-radius: 2px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   width: 90%;
-  max-width: 1000px; /* Even wider as requested */
-  display: flex;
-  flex-direction: column;
+  max-width: 1000px;
   max-height: 85vh;
 }
 
-.modal-header {
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-bottom: 1px solid var(--aws-border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-title {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--aws-text-dark);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.status-icon-error {
+.modal-title .status-icon-error {
   color: var(--aws-red);
   font-size: 1.4rem;
 }
 
-.close-x-btn {
-  background: none;
-  border: none;
-  font-size: 2rem;
-  color: var(--aws-text-light);
-  cursor: pointer;
-  line-height: 1;
-  padding: 0;
-}
-
-.close-x-btn:hover {
-  color: var(--aws-text-dark);
-}
-
-.modal-body {
+.modal-body.rejection-modal-body {
   padding: var(--spacing-lg);
-  overflow-y: hidden;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
-  flex: 1;
+  overflow-y: hidden;
 }
 
 /* AWS Alert Box Style */
@@ -114,7 +61,7 @@
 
 .entry-path {
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
-  font-size: 0.8rem; /* Smaller font as requested */
+  font-size: 0.8rem;
   color: var(--aws-text-dark);
   font-weight: 500;
   white-space: nowrap;
@@ -137,12 +84,4 @@
   padding-left: var(--spacing-sm);
   border-left: 2px solid var(--aws-border);
   opacity: 0.85;
-}
-
-.modal-footer {
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-top: 1px solid var(--aws-border);
-  display: flex;
-  justify-content: flex-end;
-  background-color: #fafafa;
 }

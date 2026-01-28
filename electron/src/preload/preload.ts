@@ -34,6 +34,16 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Reveal file in Finder/Explorer
   revealVideo: (filePath: string) => ipcRenderer.send("video:reveal", filePath),
+
+  // Get full ffmpeg command for clipboard (Phase 4)
+  getFFMPEGCommand: (args: { sourceFile: string; settings: any; metadata: any }) =>
+    ipcRenderer.invoke("video:getCommand", args),
+
+  // Get tool versions (Phase 4)
+  getAppVersions: () => ipcRenderer.invoke("app:getVersions"),
+
+  // Open URL in system browser
+  openExternal: (url: string) => ipcRenderer.send("app:openExternal", url),
 });
 
 // Type definition for window.electronAPI
@@ -59,6 +69,9 @@ declare global {
       setProcessCount: (count: number) => void;
       getPathForFile: (file: File) => string;
       revealVideo: (filePath: string) => void;
+      getFFMPEGCommand: (args: { sourceFile: string; settings: any; metadata: any }) => Promise<string>;
+      getAppVersions: () => Promise<{ ffmpeg: string; ffprobe: string }>;
+      openExternal: (url: string) => void;
     };
   }
 }

@@ -2,13 +2,10 @@
   width: 90%;
   max-width: 900px;
   max-height: 90vh;
-  display: flex;
-  flex-direction: column;
 }
 
 .edit-modal-content .modal-body {
   padding: 0;
-  overflow-y: auto;
 }
 
 .edit-modal-content .settings-form-container {
@@ -19,14 +16,4 @@
 
 .edit-modal-content .settings-header {
   background-color: transparent;
-  padding: var(--spacing-md);
-}
-
-.edit-modal-content .modal-footer {
-  padding: var(--spacing-md);
-  border-top: 1px solid var(--aws-border);
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--spacing-md);
-  background-color: #fafafa;
 }

@@ -1,7 +1,6 @@
 .settings-form-container {
   background: var(--aws-white);
   padding: 0; /* Remove default padding, use it in children */
-  margin-bottom: var(--spacing-md);
   overflow: hidden;
 }
 

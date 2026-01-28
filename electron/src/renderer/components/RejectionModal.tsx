@@ -20,8 +20,8 @@ function RejectionModal({ files, onClose }: RejectionModalProps) {
   const total = files.length;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content card-modal">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content card-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">
             <span className="status-icon-error">⚠</span>
@@ -30,7 +30,7 @@ function RejectionModal({ files, onClose }: RejectionModalProps) {
           <button className="close-x-btn" onClick={onClose}>&times;</button>
         </div>
         
-        <div className="modal-body">
+        <div className="modal-body rejection-modal-body">
           <div className="aws-alert-error">
             <div className="alert-content">
               <strong>The following files could not be added to the queue.</strong>

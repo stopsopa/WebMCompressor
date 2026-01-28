@@ -1,0 +1,57 @@
+.app-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: var(--aws-bg-light);
+  border-top: 1px solid var(--aws-border);
+  font-size: 0.75rem;
+  color: var(--aws-text-dark);
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.version-link {
+  color: var(--aws-text-dark);
+  text-decoration: none;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.version-link:hover {
+  text-decoration: underline;
+  opacity: 1;
+}
+
+.separator {
+  color: var(--aws-border);
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+}
+
+.github-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--aws-text-dark);
+  text-decoration: none;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.github-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.github-icon {
+  width: 16px;
+  height: 16px;
+}

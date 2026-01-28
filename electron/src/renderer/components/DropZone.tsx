@@ -55,9 +55,11 @@ function DropZone({ onFilesDrop, disabled }: DropZoneProps) {
     >
       <div className="drop-zone-content">
         <span className="drop-zone-icon">📥</span>
-        <span className="drop-zone-text">Drag and drop video files here</span>
-        <span className="drop-zone-subtext">Supported formats: MP4, MKV, MOV, AVI, etc.</span>
-        {disabled && <span className="error-text">Please fix setting errors above first</span>}
+        <div className="drop-zone-text-group">
+          <span className="drop-zone-text">Drag and drop video files here</span>
+          <span className="drop-zone-subtext">Supported formats: MP4, MKV, MOV, AVI, etc.</span>
+          {disabled && <span className="error-text">Please fix setting errors above first</span>}
+        </div>
       </div>
     </div>
   );

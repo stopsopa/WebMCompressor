@@ -1,0 +1,24 @@
+.command-modal-content {
+  width: 90%;
+  max-width: 800px;
+}
+
+.command-desc {
+  font-size: 0.9rem;
+  color: var(--aws-text-light);
+  margin-bottom: var(--spacing-md);
+}
+
+.command-editor-wrapper {
+  background-color: #f8f9fa;
+  border: 1px solid var(--aws-border);
+  border-radius: 2px;
+  overflow: hidden;
+  height: 400px; /* Taller as it's an editor */
+}
+
+ace-editor {
+  width: 100%;
+  height: 100%;
+  display: block;
+}

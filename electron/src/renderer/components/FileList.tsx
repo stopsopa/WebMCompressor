@@ -8,31 +8,32 @@ interface FileListProps {
   onParallelChange: (count: number) => void;
   onEdit: (file: VideoFile) => void;
   onClear: () => void;
+  onShowCommand: (command: string) => void;
 }
 
 interface ContextMenuState {
   visible: boolean;
   x: number;
   y: number;
-  filePath: string;
+  file: VideoFile | null;
 }
 
-function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear }: FileListProps) {
+function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear, onShowCommand }: FileListProps) {
   const [menu, setMenu] = useState<ContextMenuState>({
     visible: false,
     x: 0,
     y: 0,
-    filePath: '',
+    file: null,
   });
 
-  const handleContextMenu = useCallback((e: React.MouseEvent, filePath: string) => {
+  const handleContextMenu = useCallback((e: React.MouseEvent, file: VideoFile) => {
     e.preventDefault();
     e.stopPropagation(); // Stop bubbling to window
     setMenu({
       visible: true,
       x: e.clientX,
       y: e.clientY,
-      filePath,
+      file,
     });
   }, []);
 
@@ -49,8 +50,24 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
   }, [closeMenu]);
 
   const handleReveal = () => {
-    if (menu.filePath) {
-      window.electronAPI.revealVideo(menu.filePath);
+    if (menu.file) {
+      window.electronAPI.revealVideo(menu.file.path);
+    }
+    closeMenu();
+  };
+
+  const handleCopyCommand = async () => {
+    if (menu.file) {
+      const command = await window.electronAPI.getFFMPEGCommand({
+        sourceFile: menu.file.path,
+        settings: menu.file.settings,
+        metadata: {
+          width: menu.file.width,
+          height: menu.file.height,
+          fps: menu.file.fps,
+        }
+      });
+      onShowCommand(command);
     }
     closeMenu();
   };
@@ -111,10 +128,10 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                       <tr 
                         key={file.id} 
                         className={`file-row ${file.isEditing ? 'is-editing' : ''}`}
-                        onContextMenu={(e) => handleContextMenu(e, file.path)}
+                        onContextMenu={(e) => handleContextMenu(e, file)}
                       >
                         <td>{file.name}</td>
-                        <td>{file.width ? `${file.width}x${file.height}` : '-'}</td>
+                        <td>{file.width ? `w: ${file.width} h: ${file.height}` : '-'}</td>
                         <td>{file.fps ? `${file.fps} fps` : '-'}</td>
                         <td>{file.durationMs ? formatDuration(file.durationMs) : '-'}</td>
                         <td>
@@ -167,6 +184,9 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
         >
           <div className="context-menu-item" onClick={handleReveal}>
             Reveal in Finder
+          </div>
+          <div className="context-menu-item" onClick={handleCopyCommand}>
+            Copy FFMPEG Command
           </div>
         </div>
       )}

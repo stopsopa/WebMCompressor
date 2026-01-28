@@ -5,6 +5,8 @@ import FileList from './components/FileList';
 import RejectionModal from './components/RejectionModal';
 import GlobalFormSettings from './components/GlobalSettings';
 import EditModal from './components/EditModal';
+import CommandModal from './components/CommandModal';
+import Footer from './components/Footer';
 import type { VideoFile, AppConfig, FormSettings } from './types';
 
 function App() {
@@ -24,6 +26,7 @@ function App() {
     }
   });
   const [editingFile, setEditingFile] = useState<VideoFile | null>(null);
+  const [commandToShow, setCommandToShow] = useState<string | null>(null);
 
   useEffect(() => {
     window.electronAPI.loadConfig().then(loadedConfig => {
@@ -251,6 +254,7 @@ function App() {
         onParallelChange={handleParallelChange}
         onEdit={handleStartEdit} 
         onClear={handleClear}
+        onShowCommand={setCommandToShow}
       />
 
       {/* Rejection Modal */}
@@ -269,6 +273,17 @@ function App() {
           onClose={handleCancelEdit}
         />
       )}
+
+      {/* Command Modal */}
+      {commandToShow && (
+        <CommandModal 
+          command={commandToShow}
+          onClose={() => setCommandToShow(null)}
+        />
+      )}
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

@@ -45,6 +45,10 @@ So installation is not needed. Just downloading this file.
 data-main-ace on the other hand can point to any publicly available ace editor version.
 We just have to point it to ace.min.js in particular place.
 
+# theme
+
+By default don't override theme="..." argument in web component. Leave default theme.
+
 For the purpose of AI usage just stick to the example above. User will change path to ace.min.js manually.
 
 # editing content in ace editor web component
