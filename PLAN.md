@@ -185,7 +185,7 @@ WARNING: FOCUS ONLY ON THE SCOPE OF THIS PHASE. - don't implement anything that 
 
 Provide detailed, real-time feedback for the two-pass compression process.
 
-### UI Columns in LIST SECTION
+### UI Columns in LIST SECTION (two columns)
 
 - **Pass 1 Visual**:
   - While active: A "scanning" pulsing progress bar (indeterminate).
@@ -199,6 +199,8 @@ Provide detailed, real-time feedback for the two-pass compression process.
   Make sure to always maintain the same width of these two columns. But reserve it's width to always fit the content we will show in these columns.
   Set width for this bar to fixed value and allow me to modify it manually from one place.
   Use one number for state pulsing bar for first pass and another number for detailed progress bar for second pass.
+
+- new columns for progress bar should be between "Scale" and "actions" columns
 
 ---
 
