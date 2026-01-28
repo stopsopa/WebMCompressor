@@ -81,11 +81,7 @@
   box-shadow: 0 0 0 1px var(--aws-red);
 }
 
-/* Scaling Options */
 .scaling-options {
-  margin-top: var(--spacing-md);
-  padding-top: var(--spacing-md);
-  border-top: 1px solid var(--aws-border);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
