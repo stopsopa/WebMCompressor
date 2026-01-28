@@ -147,10 +147,14 @@ WARNING: Only at this phase (PHASE 4) do call @driveCompression.ts. - not before
 
 Implement the processing engine with configurable concurrency.
 
-### Concurrency Control
+### Concurrency Control & Core Engine
 
 - **Parallelism setting**: A set of radio buttons (1 to 8) at the top of the **LIST SECTION**.
 - **Default**: 1 video at a time.
+- **Embedded Binaries**:
+  - Bundle `ffmpeg` and `ffprobe` using `ffmpeg-static` and `ffprobe-static`.
+  - Implement binary path resolution logic to use bundled versions in production and `node_modules` versions in development.
+  - Update `electron-builder` configuration to include these binaries in the final app bundle.
 - **Dynamic Queue Logic**:
   - **Increase number**: If the count is increased, the system immediately picks the next files from the top of the queue and starts `driveCompression.ts` up to make sure N specified video are processed simultaneously.
   - **Decrease number**: If the count is decreased, current active processes are allowed to finish, but no new ones will start until the active count drops below the new limit.
@@ -165,6 +169,13 @@ Implement the processing engine with configurable concurrency.
   - `getSettings()`: returns the current `GlobalSettings` object.
 - **Queue Cleanup**:
   - Render a "Clear" button under the **LIST SECTION** once all files in the queue have finished processing (either successfully or with errors). This button should be visible only when the total count of files is > 0 and no files are in `validating`, `queued`, or `processing` states.
+- **Developer Transparency**:
+  - Add a "Copy FFMPEG Command" option to the **LIST SECTION** context menu.
+  - This should copy the full `ffmpeg` command (both passes, sequentially) to the clipboard, using absolute paths for binaries and files so the user can run it manually in their terminal.
+- **App Footer**:
+  - Implement a thin footer at the bottom of the application.
+  - **Left Side**: Display the exact versions of bundled `ffmpeg` and `ffprobe`, each wrapped in a link to `https://ffmpeg.org`.
+  - **Right Side**: Display a link to the project's GitHub repository (`https://github.com/stopsopa/WebMCompressor`) with a GitHub icon.
 
 ---
 
