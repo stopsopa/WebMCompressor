@@ -256,3 +256,7 @@ Implement user settings persistence across sessions.
 - **Spacing**: Generous padding and consistent alignment.
 - **Interactivity**: Hover states for buttons and rows, smooth modal transitions.
 - ffmpeg embedded in the app.
+
+# do later
+
+reordering before starting compression
