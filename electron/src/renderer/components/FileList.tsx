@@ -82,6 +82,14 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const formatBytes = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   const allProcessed = files.length > 0 && files.every(f => f.status === 'complete' || f.status === 'error');
 
   return (
@@ -128,6 +136,7 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                     <th>Dimensions</th>
                     <th>FPS</th>
                     <th>Duration</th>
+                    <th>Size</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -190,6 +199,7 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                         </td>
                         <td>{file.fps ? `${file.fps} fps` : '-'}</td>
                         <td>{file.durationMs ? formatDuration(file.durationMs) : '-'}</td>
+                        <td>{file.size ? formatBytes(file.size) : '-'}</td>
                         <td>
                           <span className={`status-badge status-${file.status}`}>
                             {file.status}

@@ -58,6 +58,7 @@ declare global {
         height?: number;
         fps?: number;
         durationMs?: number;
+        size?: number;
         error?: string;
       }>;
       getOutputPath: (inputPath: string) => Promise<string>;

@@ -203,6 +203,7 @@ function App() {
         height: 0,
         fps: 0,
         durationMs: 0,
+        size: 0,
         status: 'validating',
         progress: 0,
         error: null,
@@ -230,7 +231,8 @@ function App() {
                   width: meta.width!, 
                   height: meta.height!, 
                   fps: meta.fps!, 
-                  durationMs: meta.durationMs! 
+                  durationMs: meta.durationMs!,
+                  size: meta.size!
                 } 
               : f
           ));

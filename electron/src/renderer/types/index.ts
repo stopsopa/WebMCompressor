@@ -7,6 +7,7 @@ export interface VideoFile {
   height: number;
   fps: number;
   durationMs: number;
+  size: number;
   settings: FormSettings;
   status: "validating" | "queued" | "processing" | "complete" | "error";
   progress: number; // 0-100

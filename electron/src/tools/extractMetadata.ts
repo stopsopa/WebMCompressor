@@ -4,7 +4,7 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 
 const th = (msg: string) => new Error(`extractMetadata.ts error: ${msg}`);
 
@@ -12,10 +12,7 @@ const th = (msg: string) => new Error(`extractMetadata.ts error: ${msg}`);
  * Extracts width, height, FPS and duration from a video file using ffprobe.
  * Logic based on extractMetadata.sh
  */
-export async function extractMetadata(
-  ffprobePath: string = "ffprobe",
-  filePath: string,
-) {
+export async function extractMetadata(ffprobePath: string = "ffprobe", filePath: string) {
   if (!existsSync(filePath)) {
     throw th(`File not found: ${filePath}`);
   }
@@ -39,21 +36,15 @@ export async function extractMetadata(
     const result = spawnSync(ffprobePath, args, { encoding: "utf8" });
 
     if (result.status !== 0) {
-      throw th(
-        `ffprobe failed with exit code ${result.status}${result.stderr ? `: ${result.stderr.trim()}` : ""}`,
-      );
+      throw th(`ffprobe failed with exit code ${result.status}${result.stderr ? `: ${result.stderr.trim()}` : ""}`);
     }
 
     const output = result.stdout.trim();
     // Use a regex to catch all possible line endings and filter out empty strings
-    const lines = output
-      .split(/\s+/)
-      .filter((line: string) => line.trim() !== "");
+    const lines = output.split(/\s+/).filter((line: string) => line.trim() !== "");
 
     if (lines.length !== 4) {
-      throw th(
-        `Invalid output from ffprobe (expected 4 values, got ${lines.length}):\n${output}`,
-      );
+      throw th(`Invalid output from ffprobe (expected 4 values, got ${lines.length}):\n${output}`);
     }
 
     const [widthStr, heightStr, fpsRaw, durationStr] = lines;
@@ -86,11 +77,14 @@ export async function extractMetadata(
       throw th(`Invalid duration from ffprobe: ${durationStr}`);
     }
 
+    const stats = statSync(filePath);
+
     return {
       width,
       height,
       fps,
       durationMs,
+      size: stats.size,
     };
   } catch (error: any) {
     throw error;
