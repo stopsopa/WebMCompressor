@@ -9,6 +9,7 @@ interface SettingsFormProps {
   onChange: (config: FormSettings) => void;
   onValidationChange?: (isValid: boolean) => void;
   showScaleToggle?: boolean;
+  onApplyToAll?: () => void;
 }
 
 const SettingsForm: React.FC<SettingsFormProps> = ({ 
@@ -16,7 +17,8 @@ const SettingsForm: React.FC<SettingsFormProps> = ({
   config, 
   onChange, 
   onValidationChange,
-  showScaleToggle = true
+  showScaleToggle = true,
+  onApplyToAll
 }) => {
   // Local state to track which radio button is selected
   // Priority: if width is present -> width, else -> height (default)
@@ -165,6 +167,18 @@ const SettingsForm: React.FC<SettingsFormProps> = ({
         ) : (
           <div className="settings-placeholder">
             Scaling is disabled. Output will use original video dimensions.
+          </div>
+        )}
+
+        {onApplyToAll && (
+          <div className="settings-footer">
+            <button 
+              className="aws-button aws-button-secondary apply-all-btn"
+              onClick={onApplyToAll}
+              title="Apply these settings to all videos in the list"
+            >
+              Apply to All
+            </button>
           </div>
         )}
       </div>

@@ -27,6 +27,7 @@ function App() {
   });
   const [editingFile, setEditingFile] = useState<VideoFile | null>(null);
   const [commandToShow, setCommandToShow] = useState<string | null>(null);
+  const [isConverting, setIsConverting] = useState(false);
 
   useEffect(() => {
     window.electronAPI.loadConfig().then(loadedConfig => {
@@ -84,14 +85,21 @@ function App() {
 
   // Queue Manager (Phase 4)
   useEffect(() => {
+    if (!isConverting) return;
+
     // 1. Check if we can start more jobs
     const activeCount = files.filter(f => f.status === 'processing').length;
     if (activeCount >= config.settings.parallelProcessing) return;
 
     // 2. Find next queued file
-    // Condition: status is 'queued', and NOT isEditing
     const nextFile = files.find(f => f.status === 'queued' && !f.isEditing);
-    if (!nextFile) return;
+    
+    if (!nextFile) {
+      if (activeCount === 0) {
+        setIsConverting(false);
+      }
+      return;
+    }
 
     // 3. Start compression
     setFiles(prev => prev.map(f => 
@@ -104,7 +112,7 @@ function App() {
       settings: nextFile.settings
     });
 
-  }, [files, config.settings.parallelProcessing]);
+  }, [files, config.settings.parallelProcessing, isConverting]);
 
   // Update process count in main process for close confirmation
   useEffect(() => {
@@ -127,6 +135,13 @@ function App() {
   const handleValidationChange = useCallback((isValid: boolean) => {
     setIsConfigValid(isValid);
   }, []);
+
+  const handleApplyToAll = () => {
+    setFiles(prev => prev.map(f => ({
+      ...f,
+      settings: { ...config.form }
+    })));
+  };
 
   const handleStartEdit = (file: VideoFile) => {
     setEditingFile(file);
@@ -242,6 +257,7 @@ function App() {
         form={config.form} 
         onChange={handleFormChange} 
         onValidationChange={handleValidationChange}
+        onApplyToAll={handleApplyToAll}
       />
 
       {/* DROPZONE SECTION (Middle) */}
@@ -255,6 +271,8 @@ function App() {
         onEdit={handleStartEdit} 
         onClear={handleClear}
         onShowCommand={setCommandToShow}
+        isConverting={isConverting}
+        onStartConverting={() => setIsConverting(true)}
       />
 
       {/* Rejection Modal */}

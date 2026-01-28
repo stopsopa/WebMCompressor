@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { VideoFile } from '../types';
+import scaleWandH from '../../tools/scaleWandH';
 import './FileList.css';
 
 interface FileListProps {
@@ -9,6 +10,8 @@ interface FileListProps {
   onEdit: (file: VideoFile) => void;
   onClear: () => void;
   onShowCommand: (command: string) => void;
+  isConverting: boolean;
+  onStartConverting: () => void;
 }
 
 interface ContextMenuState {
@@ -18,7 +21,7 @@ interface ContextMenuState {
   file: VideoFile | null;
 }
 
-function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear, onShowCommand }: FileListProps) {
+function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear, onShowCommand, isConverting, onStartConverting }: FileListProps) {
   const [menu, setMenu] = useState<ContextMenuState>({
     visible: false,
     x: 0,
@@ -101,6 +104,14 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
               </label>
             ))}
           </div>
+          <button 
+            className={`aws-button start-btn ${isConverting ? 'aws-button-secondary' : 'aws-button-primary'}`}
+            onClick={onStartConverting}
+            disabled={isConverting || !files.some(f => f.status === 'queued' && !f.isEditing)}
+            style={{ marginLeft: '16px' }}
+          >
+            {isConverting ? 'Converting...' : 'Start Converting'}
+          </button>
         </div>
       </div>
 
@@ -124,6 +135,33 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                 <tbody>
                   {files.map((file) => {
                     const isEditable = file.status === 'queued' || file.status === 'error';
+
+                    let highlightW = false;
+                    let highlightH = false;
+
+
+
+                    if (file.settings.scale && (file.width || file.height)) {
+                      try {
+                        const scaled = scaleWandH(
+                          { width: file.width, height: file.height },
+                          { 
+                            width: file.settings.videoWidth ?? undefined, 
+                            height: file.settings.videoHeight ?? undefined 
+                          } as any
+                        );
+                        
+                        if (file.settings.videoWidth && scaled.width > file.width) {
+                          highlightW = true;
+                        }
+                        if (file.settings.videoHeight && scaled.height > file.height) {
+                          highlightH = true;
+                        }
+                      } catch (e) {
+                         // ignore scaling errors for highlighting
+                      }
+                    }
+
                     return (
                       <tr 
                         key={file.id} 
@@ -131,7 +169,25 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                         onContextMenu={(e) => handleContextMenu(e, file)}
                       >
                         <td>{file.name}</td>
-                        <td>{file.width ? `w: ${file.width} h: ${file.height}` : '-'}</td>
+                        <td>
+                          {file.width ? (
+                            <>
+                              <span 
+                                className={highlightW ? 'highlight' : ''} 
+                                title={highlightW ? "This dimension is being upscaled." : undefined}
+                              >
+                                w: {file.width}
+                              </span>
+                              {' '}
+                              <span 
+                                className={highlightH ? 'highlight' : ''} 
+                                title={highlightH ? "This dimension is being upscaled." : undefined}
+                              >
+                                h: {file.height}
+                              </span>
+                            </>
+                          ) : '-'}
+                        </td>
                         <td>{file.fps ? `${file.fps} fps` : '-'}</td>
                         <td>{file.durationMs ? formatDuration(file.durationMs) : '-'}</td>
                         <td>

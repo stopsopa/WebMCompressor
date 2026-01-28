@@ -113,6 +113,12 @@ html, body, #root {
   background-color: var(--aws-bg-light);
 }
 
+.aws-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
 /* Common Modal Styles */
 .modal-overlay {
   position: fixed;
