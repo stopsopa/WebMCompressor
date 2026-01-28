@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { VideoFile } from '../types';
+import { COLUMN_WIDTHS } from '../columnWidths';
 import scaleWandH from '../../tools/scaleWandH';
 import './FileList.css';
 
@@ -133,12 +134,13 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                 <thead>
                   <tr>
                     <th>File Name</th>
-                    <th>Dimensions</th>
-                    <th>FPS</th>
-                    <th>Duration</th>
-                    <th>Size</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th style={{ width: COLUMN_WIDTHS.fps }}>FPS</th>
+                    <th style={{ width: COLUMN_WIDTHS.duration }}>Duration</th>
+                    <th style={{ width: COLUMN_WIDTHS.size }}>Size</th>
+                    <th style={{ width: COLUMN_WIDTHS.status }}>Status</th>
+                    <th style={{ width: COLUMN_WIDTHS.dimensions }}>Dimensions</th>
+                    <th style={{ width: COLUMN_WIDTHS.scale }}>Scale</th>
+                    <th style={{ width: COLUMN_WIDTHS.actions }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -177,7 +179,20 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                         className={`file-row ${file.isEditing ? 'is-editing' : ''}`}
                         onContextMenu={(e) => handleContextMenu(e, file)}
                       >
-                        <td>{file.name}</td>
+                        <td className="file-name-cell" title={file.name}>{file.name}</td>
+                        <td>{file.fps ? `${file.fps} fps` : '-'}</td>
+                        <td>{file.durationMs ? formatDuration(file.durationMs) : '-'}</td>
+                        <td>{file.size ? formatBytes(file.size) : '-'}</td>
+                        <td>
+                          <span className={`status-badge status-${file.status}`}>
+                            {file.status}
+                          </span>
+                          {file.isEditing && (
+                            <span className="status-badge status-editing">
+                              Editing...
+                            </span>
+                          )}
+                        </td>
                         <td>
                           {file.width ? (
                             <>
@@ -197,17 +212,14 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                             </>
                           ) : '-'}
                         </td>
-                        <td>{file.fps ? `${file.fps} fps` : '-'}</td>
-                        <td>{file.durationMs ? formatDuration(file.durationMs) : '-'}</td>
-                        <td>{file.size ? formatBytes(file.size) : '-'}</td>
                         <td>
-                          <span className={`status-badge status-${file.status}`}>
-                            {file.status}
-                          </span>
-                          {file.isEditing && (
-                            <span className="status-badge status-editing">
-                              Editing...
-                            </span>
+                          {file.settings.scale ? (
+                            <>
+                              {file.settings.videoWidth && `w:${file.settings.videoWidth}`}
+                              {file.settings.videoHeight && `h:${file.settings.videoHeight}`}
+                            </>
+                          ) : (
+                            'original'
                           )}
                         </td>
                         <td>

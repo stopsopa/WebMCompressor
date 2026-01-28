@@ -93,6 +93,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
+  table-layout: fixed;
 }
 
 th {
@@ -107,12 +108,21 @@ th {
   top: 0;
   background: var(--aws-white);
   z-index: 10;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 td {
   padding: var(--spacing-sm);
   border-bottom: 1px solid var(--aws-border);
   color: var(--aws-text-dark);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.file-name-cell {
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .file-row:hover {
