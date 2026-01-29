@@ -36,9 +36,12 @@ let activeProcessCount = 0;
 async function createWindow() {
   const isDev = !!process.env.VITE_DEV_SERVER_URL;
 
+  const iconPath = path.join(__dirname, "../../public/icon.png");
+
   mainWindow = new BrowserWindow({
     width: isDev ? 1700 : 1100,
     height: 800,
+    icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, "../preload/preload.js"),
       contextIsolation: true,
@@ -48,6 +51,10 @@ async function createWindow() {
     },
     title: "WebM Compressor",
   });
+
+  if (process.platform === "darwin" && app.dock) {
+    app.dock.setIcon(iconPath);
+  }
 
   // Load Vite dev server in development or built files in production
   if (isDev) {
@@ -82,9 +89,7 @@ async function createWindow() {
 app.whenReady().then(createWindow);
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+  app.quit();
 });
 
 app.on("activate", () => {
