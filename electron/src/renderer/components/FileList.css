@@ -303,10 +303,10 @@ td {
 }
 
 .highlight {
-  background-color: #fff4e6;
-  color: var(--aws-orange-hover);
+  background-color: #e35b5b;
+  color: white;
   font-weight: 700;
-  padding: 0 2px;
+  padding: 1px 4px;
   border-radius: 2px;
 }
 
