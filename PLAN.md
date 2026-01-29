@@ -187,6 +187,7 @@ Provide detailed, real-time feedback for the two-pass compression process.
 
 ### UI Columns in LIST SECTION (two columns)
 
+When we launch processing of videos. Let's show progress on the list for each item, like so:
 - **Pass 1 Visual**:
   - While active: A "scanning" pulsing progress bar (indeterminate).
   - Upon completion: Display the duration of the first pass (e.g., "1st: 12.5s").
