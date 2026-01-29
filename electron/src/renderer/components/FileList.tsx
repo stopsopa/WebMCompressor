@@ -34,6 +34,7 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [singleDeleteId, setSingleDeleteId] = useState<string | null>(null);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [hoveredUpscaleRowId, setHoveredUpscaleRowId] = useState<string | null>(null);
   
   useEffect(() => {
     onModalLock(!!singleDeleteId || showBulkDeleteModal);

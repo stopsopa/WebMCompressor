@@ -32,6 +32,7 @@ const EditModal: React.FC<EditModalProps> = ({ file, onSave, onClose }) => {
             config={settings}
             onChange={setSettings}
             onValidationChange={setIsValid}
+            originalDimensions={{ width: file.width, height: file.height }}
           />
         </div>
         <div className="modal-footer">
