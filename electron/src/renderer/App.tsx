@@ -158,16 +158,27 @@ function App() {
     window.electronAPI.setProcessCount(activeCount);
   }, [files]);
 
+  const isFormValid = (f: FormSettings) => {
+    if (!f.scale) return true;
+    const hasWidth = typeof f.videoWidth === 'number' && f.videoWidth > 0;
+    const hasHeight = typeof f.videoHeight === 'number' && f.videoHeight > 0;
+    return (hasWidth || hasHeight) && !(hasWidth && hasHeight);
+  };
+
   const handleFormChange = (newForm: FormSettings) => {
     const newConfig = { ...config, form: newForm };
     setConfig(newConfig);
-    window.electronAPI.saveConfig(newConfig);
+    if (isFormValid(newForm)) {
+      window.electronAPI.saveConfig(newConfig);
+    }
   };
 
   const handleParallelChange = (count: number) => {
     const newConfig = { ...config, settings: { ...config.settings, parallelProcessing: count } };
     setConfig(newConfig);
-    window.electronAPI.saveConfig(newConfig);
+    if (isFormValid(config.form)) {
+      window.electronAPI.saveConfig(newConfig);
+    }
   };
 
   const handleValidationChange = useCallback((isValid: boolean) => {

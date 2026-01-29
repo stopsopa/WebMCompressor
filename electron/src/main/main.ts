@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from "electron";
 import path from "path";
+import os from "os";
 import { fileURLToPath } from "url";
 import { exec } from "child_process";
 import { promisify } from "util";
@@ -17,8 +18,10 @@ const __dirname = path.dirname(__filename);
 let mainWindow: BrowserWindow | null = null;
 
 // Use app.getPath('userData') for app configuration - standard Electron practice
-const getConfigDir = () => path.join(app.getPath("userData"), "config");
-const getConfigPath = () => path.join(getConfigDir(), "config.json");
+// Phase 7: Persistence & Defaults
+const getConfigDir = () => path.join(os.homedir(), ".webmcompressor");
+const getConfigPath = () => path.join(getConfigDir(), "setup.json");
+const getDefaultConfigPath = () => path.join(__dirname, "../../setup.json");
 
 // Track active processes for close confirmation
 let activeProcessCount = 0;
@@ -88,19 +91,32 @@ app.on("activate", () => {
 // Load configuration
 ipcMain.handle("config:load", async () => {
   try {
-    await fs.mkdir(getConfigDir(), { recursive: true });
-    const data = await fs.readFile(getConfigPath(), "utf-8");
+    const configPath = getConfigPath();
+    try {
+      await fs.access(configPath);
+    } catch {
+      // If user config is missing, copy from defaults
+      console.log("Config file missing, initializing from defaults...");
+      await fs.mkdir(getConfigDir(), { recursive: true });
+      await fs.copyFile(getDefaultConfigPath(), configPath);
+    }
+
+    const data = await fs.readFile(configPath, "utf-8");
     return JSON.parse(data);
   } catch (error: any) {
     if (error.code !== "ENOENT") {
       console.error("error loading config:", error.message || error);
     }
-    // Return default config if file doesn't exist or is invalid
+    // Return default config structure if file doesn't exist or is invalid
     return {
-      scale: false,
-      videoWidth: null,
-      videoHeight: null,
-      parallelProcessing: 1,
+      form: {
+        scale: false,
+        videoWidth: null,
+        videoHeight: null,
+      },
+      settings: {
+        parallelProcessing: 1,
+      },
     };
   }
 });
@@ -108,12 +124,17 @@ ipcMain.handle("config:load", async () => {
 // Save configuration
 ipcMain.handle("config:save", async (_event, config) => {
   try {
-    // Strictly filter allowed fields
+    // Strictly filter allowed fields based on the Phase 7 structure
     const filteredConfig = {
-      scale: !!config.scale,
-      videoWidth: typeof config.videoWidth === "number" ? config.videoWidth : null,
-      videoHeight: typeof config.videoHeight === "number" ? config.videoHeight : null,
-      parallelProcessing: typeof config.parallelProcessing === "number" ? config.parallelProcessing : 1,
+      form: {
+        scale: !!config.form?.scale,
+        videoWidth: typeof config.form?.videoWidth === "number" ? config.form.videoWidth : null,
+        videoHeight: typeof config.form?.videoHeight === "number" ? config.form.videoHeight : null,
+      },
+      settings: {
+        parallelProcessing:
+          typeof config.settings?.parallelProcessing === "number" ? config.settings.parallelProcessing : 1,
+      },
     };
 
     await fs.mkdir(getConfigDir(), { recursive: true });

@@ -1,0 +1,10 @@
+{
+  "form": {
+    "scale": false,
+    "videoWidth": null,
+    "videoHeight": null
+  },
+  "settings": {
+    "parallelProcessing": 1
+  }
+}

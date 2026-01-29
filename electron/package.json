@@ -50,7 +50,8 @@
     },
     "files": [
       "dist-electron/**/*",
-      "dist/**/*"
+      "dist/**/*",
+      "setup.json"
     ],
     "publish": {
       "provider": "github",
