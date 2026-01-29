@@ -203,6 +203,14 @@ When we launch processing of videos. Let's show progress on the list for each it
 
 - new columns for progress bar should be between "Scale" and "actions" columns
 
+Example how to track progress for pass 1 and pass 2 can be found in electron/src/tools/driveCompression.run.ts
+
+be aware that tracking progress for pass 1 is impossible. we can only tell when processing has started, we have to use it as a beginning of pass 1 to start showing "scanning" but then we have to way for end() for the fist pass to extract how long did it take. and then we will remove "pulsing" "scanning" bar and show the duration of the first pass.
+
+Then immediatelly whe have to show progress bar as described in "Pass 2 Visual" section in thid document and here we can track progress with event `progressEvent` again see @driveCompression.run.ts.
+
+once that finishes we should show some numbers in the place of progress bar.
+
 ---
 
 ## Phase 6: Error Handling & Status Signaling (STEP 6)
