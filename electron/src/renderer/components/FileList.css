@@ -154,6 +154,15 @@ th {
   transform: translate(-50%, 0);
 }
 
+.aws-tooltip.tooltip-right {
+  transform: translate(0, -50%); /* Center-align vertically for right-side position */
+}
+
+.aws-tooltip.tooltip-right:popover-open {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
 @starting-style {
   .aws-tooltip:popover-open {
     opacity: 0;
