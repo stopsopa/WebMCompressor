@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { VideoFile } from '../types';
 import { COLUMN_WIDTHS } from '../columnWidths';
 import scaleWandH from '../../tools/scaleWandH';
+import ConfirmationModal from './ConfirmationModal';
 import './FileList.css';
 
 interface FileListProps {
@@ -11,6 +12,7 @@ interface FileListProps {
   onEdit: (file: VideoFile) => void;
   onClear: () => void;
   onRemove: (id: string) => void;
+  onRemoveMultiple: (ids: string[]) => void;
   onReorder: (dragIndex: number, hoverIndex: number) => void;
   onShowCommand: (command: string) => void;
   onShowError: (name: string, error: string) => void;
@@ -25,9 +27,12 @@ interface ContextMenuState {
   file: VideoFile | null;
 }
 
-function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear, onRemove, onReorder, onShowCommand, onShowError, isConverting, onStartConverting }: FileListProps) {
+function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear, onRemove, onRemoveMultiple, onReorder, onShowCommand, onShowError, isConverting, onStartConverting }: FileListProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const [singleDeleteId, setSingleDeleteId] = useState<string | null>(null);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     if (files[index].status === 'processing') {
@@ -140,11 +145,69 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
 
   const allProcessed = files.length > 0 && files.every(f => f.status === 'complete' || f.status === 'error');
 
+  const handleToggleCheck = (id: string) => {
+    setCheckedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleAll = () => {
+    const removableFiles = files.filter(f => f.status !== 'processing');
+    setCheckedIds(prev => {
+      if (prev.size === 0) {
+        return new Set(removableFiles.map(f => f.id));
+      }
+      const next = new Set<string>();
+      removableFiles.forEach(f => {
+        if (!prev.has(f.id)) {
+          next.add(f.id);
+        }
+      });
+      return next;
+    });
+  };
+
+  const checkedFiles = useMemo(() => {
+    return files.filter(f => checkedIds.has(f.id));
+  }, [files, checkedIds]);
+
+  const handleBulkDelete = () => {
+    onRemoveMultiple(Array.from(checkedIds));
+    setCheckedIds(new Set());
+    setShowBulkDeleteModal(false);
+  };
+
+  const handleSingleDelete = () => {
+    if (singleDeleteId) {
+      onRemove(singleDeleteId);
+      setCheckedIds(prev => {
+        const next = new Set(prev);
+        next.delete(singleDeleteId);
+        return next;
+      });
+      setSingleDeleteId(null);
+    }
+  };
+
   return (
     <div className="file-list-section card">
       <div className="settings-header">
         <h2 className="section-title">Queue</h2>
         <div className="parallelism-control">
+          {checkedIds.size > 0 && (
+            <button 
+              className="aws-button aws-button-danger bulk-delete-btn"
+              onClick={() => setShowBulkDeleteModal(true)}
+            >
+              Bulk Delete ({checkedIds.size})
+            </button>
+          )}
           <span className="control-label">Parallel Jobs:</span>
           <div className="radio-group">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
@@ -181,6 +244,17 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                 <thead>
                   <tr>
                     <th style={{ width: COLUMN_WIDTHS.reorder }}></th>
+                    <th style={{ width: COLUMN_WIDTHS.checkbox }}>
+                      <button 
+                        className="toggle-all-btn" 
+                        onClick={handleToggleAll}
+                        title="Toggle all checkboxes"
+                      >
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 14H6c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h12c.55 0 1 .45 1 1v10c0 .55-.45 1-1 1zM7 8h10v2H7zm0 3h10v2H7zm0 3h7v2H7z"/>
+                        </svg>
+                      </button>
+                    </th>
                     <th>File Name</th>
                     <th style={{ width: COLUMN_WIDTHS.fps }}>FPS</th>
                     <th style={{ width: COLUMN_WIDTHS.duration }}>Duration</th>
@@ -274,6 +348,15 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                               <path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                             </svg>
                           </div>
+                        </td>
+                        <td className="checkbox-cell">
+                          <input 
+                            type="checkbox" 
+                            checked={checkedIds.has(file.id)}
+                            onChange={() => handleToggleCheck(file.id)}
+                            disabled={file.status === 'processing'}
+                            className="row-checkbox"
+                          />
                         </td>
                         <td className="file-name-cell" title={file.name}>{file.name}</td>
                         <td>{file.fps ? `${file.fps} fps` : '-'}</td>
@@ -375,14 +458,16 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                                   Error
                                 </button>
                               )}
-                              <button 
-                                className="aws-button delete-btn"
-                                onClick={() => onRemove(file.id)}
-                                disabled={file.status === 'processing'}
-                                title="Remove from queue"
-                              >
-                                &times;
-                              </button>
+                                <button 
+                                  className="aws-button delete-btn"
+                                  onClick={() => setSingleDeleteId(file.id)}
+                                  disabled={file.status === 'processing'}
+                                  title="Remove from queue"
+                                >
+                                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                                  </svg>
+                                </button>
                             </div>
                           )}
                         </td>
@@ -425,6 +510,29 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
             Copy FFMPEG Command
           </div>
         </div>
+      )}
+
+      {singleDeleteId && (
+        <ConfirmationModal
+          title="Confirm Deletion"
+          message={`Are you sure you want to remove "${files.find(f => f.id === singleDeleteId)?.name}" from the queue?`}
+          confirmLabel="Delete"
+          type="delete"
+          onConfirm={handleSingleDelete}
+          onCancel={() => setSingleDeleteId(null)}
+        />
+      )}
+
+      {showBulkDeleteModal && (
+        <ConfirmationModal
+          title="Confirm Bulk Deletion"
+          message={`Are you sure you want to remove the following ${checkedIds.size} files from the queue?`}
+          items={checkedFiles.map(f => f.name)}
+          confirmLabel="Delete All"
+          type="delete"
+          onConfirm={handleBulkDelete}
+          onCancel={() => setShowBulkDeleteModal(false)}
+        />
       )}
     </div>
   );

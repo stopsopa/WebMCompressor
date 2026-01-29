@@ -1,0 +1,46 @@
+.confirmation-modal-content {
+  width: fit-content;
+  min-width: 450px;
+  max-width: 90vw;
+}
+
+.confirmation-message {
+  margin: 0 0 var(--spacing-md) 0;
+  line-height: 1.5;
+  color: var(--aws-text-dark);
+}
+
+.confirmation-items {
+  background-color: var(--aws-bg-light);
+  border: 1px solid var(--aws-border);
+  border-radius: 2px;
+  max-height: 300px;
+  overflow: auto;
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.confirmation-items ul {
+  margin: 0;
+  padding-left: var(--spacing-md);
+  list-style-type: disc;
+}
+
+.confirmation-items li {
+  font-size: 0.9rem;
+  padding: 2px 0;
+  color: var(--aws-text-light);
+  white-space: nowrap;
+}
+
+.delete-header h2 {
+  color: var(--aws-red);
+}
+
+.aws-button-danger {
+  background-color: var(--aws-red);
+  color: var(--aws-white);
+}
+
+.aws-button-danger:hover {
+  background-color: #a61d05;
+}

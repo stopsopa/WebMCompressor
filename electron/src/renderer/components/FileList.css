@@ -419,3 +419,48 @@ td {
 .file-row.is-hovered td {
   background-color: rgba(0, 115, 187, 0.05);
 }
+
+.checkbox-cell {
+  text-align: center;
+  padding: 0;
+  width: 40px;
+}
+
+.row-checkbox {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.toggle-all-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--aws-text-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.toggle-all-btn:hover {
+  color: var(--aws-blue);
+}
+
+.bulk-delete-btn {
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  margin-right: 8px;
+}
+
+.aws-button-danger {
+  background-color: var(--aws-red);
+  color: var(--aws-white);
+  border: none;
+}
+
+.aws-button-danger:hover {
+  background-color: #a61d05;
+}

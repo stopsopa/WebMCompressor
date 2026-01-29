@@ -227,6 +227,11 @@ function App() {
     setFiles(prev => prev.filter(f => f.id !== id));
   };
 
+  const handleRemoveMultipleFiles = (ids: string[]) => {
+    const idSet = new Set(ids);
+    setFiles(prev => prev.filter(f => !idSet.has(f.id)));
+  };
+
   const handleReorder = (dragIndex: number, hoverIndex: number) => {
     setFiles(prev => {
       const result = [...prev];
@@ -340,6 +345,7 @@ function App() {
         onEdit={handleStartEdit} 
         onClear={handleClear}
         onRemove={handleRemoveFile}
+        onRemoveMultiple={handleRemoveMultipleFiles}
         onReorder={handleReorder}
         onShowCommand={setCommandToShow}
         onShowError={(name: string, error: string) => setErrorToShow({ name, error })}
