@@ -28,9 +28,7 @@
         {
           "target": "dmg",
           "arch": [
-            "universal",
-            "arm64",
-            "x64"
+            "arm64"
           ]
         }
       ],
@@ -64,8 +62,8 @@
         "to": "bin/darwin/${arch}/ffmpeg"
       },
       {
-        "from": "node_modules/ffprobe-static/bin",
-        "to": "bin"
+        "from": "node_modules/ffprobe-static/bin/darwin/${arch}/ffprobe",
+        "to": "bin/darwin/${arch}/ffprobe"
       }
     ]
   },
