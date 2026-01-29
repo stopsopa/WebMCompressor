@@ -151,6 +151,14 @@ th {
   transform: translate(-50%, 0);
 }
 
+.aws-tooltip.tooltip-top {
+  transform: translate(-50%, 10px);
+}
+
+.aws-tooltip.tooltip-top:popover-open {
+  transform: translate(-50%, 0);
+}
+
 .aws-tooltip.tooltip-right {
   transform: translate(0, -50%); /* Center-align vertically for right-side position */
 }
@@ -164,6 +172,10 @@ th {
   .aws-tooltip:popover-open {
     opacity: 0;
     transform: translate(-50%, -10px);
+  }
+  .aws-tooltip.tooltip-top:popover-open {
+    opacity: 0;
+    transform: translate(-50%, 10px);
   }
 }
 

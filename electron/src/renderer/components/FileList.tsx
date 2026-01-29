@@ -203,6 +203,31 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
     }
   };
 
+  const handleVerticalTooltipEnter = (e: React.MouseEvent<HTMLElement>) => {
+    const popover = e.currentTarget.querySelector('.aws-tooltip') as any;
+    if (!popover) return;
+    
+    // Reset classes and show to measure
+    popover.classList.remove('tooltip-top');
+    popover.showPopover();
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const popoverRect = popover.getBoundingClientRect();
+    const offset = 10;
+    
+    // Check if it overflows the bottom
+    const overflowsBottom = rect.bottom + offset + popoverRect.height > window.innerHeight;
+    
+    if (overflowsBottom) {
+      popover.style.top = `${rect.top - offset - popoverRect.height}px`;
+      popover.classList.add('tooltip-top');
+    } else {
+      popover.style.top = `${rect.bottom + offset}px`;
+    }
+    
+    popover.style.left = `${rect.left + rect.width / 2}px`;
+  };
+
   return (
     <div className="file-list-section card">
       <div className="settings-header">
@@ -261,6 +286,7 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                         }}
                         onMouseEnter={(e) => {
                           const popover = e.currentTarget.querySelector('.aws-tooltip') as any;
+                          if (!popover) return;
                           const rect = e.currentTarget.getBoundingClientRect();
                           popover.style.top = `${rect.top + rect.height / 2}px`;
                           popover.style.left = `${rect.right + 10}px`;
@@ -285,13 +311,7 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                     <th 
                       style={{ width: COLUMN_WIDTHS.pass1 }} 
                       className="has-tooltip"
-                      onMouseEnter={(e) => {
-                        const popover = e.currentTarget.querySelector('.aws-tooltip') as any;
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        popover.style.top = `${rect.bottom + 10}px`;
-                        popover.style.left = `${rect.left + rect.width / 2}px`;
-                        popover.showPopover();
-                      }}
+                      onMouseEnter={handleVerticalTooltipEnter}
                       onMouseLeave={(e) => (e.currentTarget.querySelector('.aws-tooltip') as any)?.hidePopover()}
                     >
                       <span className="header-label">Pass 1</span>
@@ -302,13 +322,7 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                     <th 
                       style={{ width: COLUMN_WIDTHS.pass2 }} 
                       className="has-tooltip"
-                      onMouseEnter={(e) => {
-                        const popover = e.currentTarget.querySelector('.aws-tooltip') as any;
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        popover.style.top = `${rect.bottom + 10}px`;
-                        popover.style.left = `${rect.left + rect.width / 2}px`;
-                        popover.showPopover();
-                      }}
+                      onMouseEnter={handleVerticalTooltipEnter}
                       onMouseLeave={(e) => (e.currentTarget.querySelector('.aws-tooltip') as any)?.hidePopover()}
                     >
                       <span className="header-label">Pass 2</span>
@@ -391,11 +405,7 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                                 onMouseEnter={(e) => {
                                   if (!highlightW) return;
                                   setHoveredUpscaleRowId(file.id);
-                                  const popover = e.currentTarget.querySelector('.aws-tooltip') as any;
-                                  const rect = e.currentTarget.getBoundingClientRect();
-                                  popover.style.top = `${rect.bottom + 10}px`;
-                                  popover.style.left = `${rect.left + rect.width / 2}px`;
-                                  popover.showPopover();
+                                  handleVerticalTooltipEnter(e);
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!highlightW) return;
@@ -416,11 +426,7 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                                 onMouseEnter={(e) => {
                                   if (!highlightH) return;
                                   setHoveredUpscaleRowId(file.id);
-                                  const popover = e.currentTarget.querySelector('.aws-tooltip') as any;
-                                  const rect = e.currentTarget.getBoundingClientRect();
-                                  popover.style.top = `${rect.bottom + 10}px`;
-                                  popover.style.left = `${rect.left + rect.width / 2}px`;
-                                  popover.showPopover();
+                                  handleVerticalTooltipEnter(e);
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!highlightH) return;
