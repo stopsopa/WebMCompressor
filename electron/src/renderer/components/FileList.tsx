@@ -18,6 +18,7 @@ interface FileListProps {
   onShowError: (name: string, error: string) => void;
   isConverting: boolean;
   onStartConverting: () => void;
+  onModalLock: (locked: boolean) => void;
 }
 
 interface ContextMenuState {
@@ -27,12 +28,16 @@ interface ContextMenuState {
   file: VideoFile | null;
 }
 
-function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear, onRemove, onRemoveMultiple, onReorder, onShowCommand, onShowError, isConverting, onStartConverting }: FileListProps) {
+function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear, onRemove, onRemoveMultiple, onReorder, onShowCommand, onShowError, isConverting, onStartConverting, onModalLock }: FileListProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [singleDeleteId, setSingleDeleteId] = useState<string | null>(null);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  
+  useEffect(() => {
+    onModalLock(!!singleDeleteId || showBulkDeleteModal);
+  }, [singleDeleteId, showBulkDeleteModal, onModalLock]);
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     if (files[index].status === 'processing') {
@@ -226,7 +231,7 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
           <button 
             className={`aws-button start-btn ${isConverting ? 'aws-button-secondary' : 'aws-button-primary'}`}
             onClick={onStartConverting}
-            disabled={isConverting || !files.some(f => f.status === 'queued' && !f.isEditing)}
+            disabled={isConverting || !!singleDeleteId || showBulkDeleteModal || !files.some(f => f.status === 'queued' && !f.isEditing)}
             style={{ marginLeft: '16px' }}
           >
             {isConverting ? 'Converting...' : 'Start Converting'}

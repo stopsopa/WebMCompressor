@@ -30,6 +30,7 @@ function App() {
   const [commandToShow, setCommandToShow] = useState<string | null>(null);
   const [errorToShow, setErrorToShow] = useState<{ name: string; error: string } | null>(null);
   const [isConverting, setIsConverting] = useState(false);
+  const [isModalLock, setIsModalLock] = useState(false);
 
   useEffect(() => {
     window.electronAPI.loadConfig().then(loadedConfig => {
@@ -111,7 +112,7 @@ function App() {
 
   // Queue Manager (Phase 4)
   useEffect(() => {
-    if (!isConverting) return;
+    if (!isConverting || isModalLock) return;
 
     // 1. Check if we can start more jobs
     const activeCount = files.filter(f => f.status === 'processing').length;
@@ -150,7 +151,7 @@ function App() {
       }
     });
 
-  }, [files, config.settings.parallelProcessing, isConverting]);
+  }, [files, config.settings.parallelProcessing, isConverting, isModalLock]);
 
   // Update process count in main process for close confirmation
   useEffect(() => {
@@ -183,6 +184,13 @@ function App() {
 
   const handleValidationChange = useCallback((isValid: boolean) => {
     setIsConfigValid(isValid);
+  }, []);
+
+  const handleModalLock = useCallback((locked: boolean) => {
+    setIsModalLock(locked);
+    if (!locked) {
+      setIsConverting(false);
+    }
   }, []);
 
   const handleApplyToAll = () => {
@@ -351,6 +359,7 @@ function App() {
         onShowError={(name: string, error: string) => setErrorToShow({ name, error })}
         isConverting={isConverting}
         onStartConverting={() => setIsConverting(true)}
+        onModalLock={handleModalLock}
       />
 
       {/* Rejection Modal */}
