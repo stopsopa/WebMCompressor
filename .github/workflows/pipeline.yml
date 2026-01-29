@@ -19,7 +19,7 @@ env:
   # Precedence:
   # 1. inputs.tag_name (if provided via workflow_dispatch or workflow_call)
   # 2. github.ref_name (fallback for release:published or manual run without input)
-  RELEASE_TAG: ${{ inputs.tag_name || github.ref_name }}
+  RELEASE_TAG: ${{ github.ref_name }}
 
 jobs:
   # STEP 0: Debug Information
@@ -173,7 +173,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [macos-latest]
     runs-on: ${{ matrix.os }}
     # environment: development # Removed: Handled by gate
     # CROSS-JOB STATE (The "Catcher"):
@@ -216,29 +216,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            npx electron-builder --mac --publish never
-          else
-            npx electron-builder --win --publish never
-          fi
+          npx electron-builder --mac --publish never
         shell: bash
 
       - name: 📤 Upload Artifacts (Mac)
-        if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v4
         with:
           name: qa-release-dmg
           path: electron/release/*.dmg
-          retention-days: 1
-
-      - name: 📤 Upload Artifacts (Windows)
-        if: matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: qa-release-win
-          path: |
-            electron/release/*.exe
-            electron/release/*.msi
           retention-days: 1
 
   # STEP 3: The "Gatekeeper" for Production

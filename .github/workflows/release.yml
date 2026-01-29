@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: 🔍 Audit
@@ -68,14 +68,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            npx electron-builder --mac --publish always
-          else
-            npx electron-builder --win --publish always
-          fi
+          npx electron-builder --mac --publish always
 
-      - name: 📤 Upload Additional Assets
-        if: matrix.os == 'macos-latest'
+      - name: 📤 Upload Build Metadata
         working-directory: ./electron
         shell: bash
         env:
@@ -97,7 +92,7 @@ jobs:
           RELEASE_URL="$REPO_URL/releases/tag/$TAG_NAME"
 
           echo "### 🚀 Release Build Pipeline Complete!" >> $GITHUB_STEP_SUMMARY
-          echo "All builds (macOS and Windows) have finished." >> $GITHUB_STEP_SUMMARY
+          echo "All macOS builds (x64 and arm64) have finished." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "You can view the release and download the artifacts here:" >> $GITHUB_STEP_SUMMARY
           echo "👉 [**$TAG_NAME**]($RELEASE_URL)" >> $GITHUB_STEP_SUMMARY
