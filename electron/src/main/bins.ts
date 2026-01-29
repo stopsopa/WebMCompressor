@@ -1,9 +1,8 @@
 import path from "node:path";
 import { app } from "electron";
-import ffmpegPath from "ffmpeg-static";
-import ffprobeStatic from "ffprobe-static";
+import { createRequire } from "node:module";
 
-const ffprobePath = ffprobeStatic.path;
+const require = createRequire(import.meta.url);
 
 export function getFFmpegPath(): string {
   if (app.isPackaged) {
@@ -14,7 +13,7 @@ export function getFFmpegPath(): string {
   }
 
   // In development, use the ones from node_modules
-  return ffmpegPath as any as string;
+  return require("ffmpeg-static");
 }
 
 export function getFFprobePath(): string {
@@ -26,7 +25,7 @@ export function getFFprobePath(): string {
   }
 
   // In development, use the one from node_modules
-  return ffprobePath!;
+  return require("ffprobe-static").path;
 }
 
 export async function getVersions(): Promise<{ ffmpeg: string; ffprobe: string }> {
