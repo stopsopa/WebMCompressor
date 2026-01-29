@@ -211,6 +211,17 @@ Then immediatelly whe have to show progress bar as described in "Pass 2 Visual" 
 
 once that finishes we should show some numbers in the place of progress bar.
 
+Again to explan one more time:
+When you look into electron/src/tools/driveCompression.run.ts you will see how driveComparison.ts progress is tracked:
+you will see thre that once we call driveCompression.ts then we register two callbacks: `progressEvent` and `end`. 
+Then once processing one video is happening first we know when we have called driveCompression.ts and that indicates start of "scanning" for pass 1. 
+then we wait for first end() callback to be called. Which is happening end("first", null, timeHumanReadable(firstPassDurationMs)); and we need duration passed here to print after removing this bar "scanning" in the column for pass 1 on the LIST SECTION. We remove "scanning" bar and print duration of first pass in the same column.
+Then this is also moment which we should treat as the beginning of the second pass. And from that moment we want to render progress bar for second pass in the column for pass 2 on the LIST SECTION. 
+and from that meoment we will wait for progressEvent to to be triggered in rapid intervals and it provides different data which we will show in human redable format overlayed on the progress bar, but between these human readable information we have also `progressPercentNum` from ProgressData which is number between 0 and 100. 
+That `progressPercentNum` we should use to drive progress bar visually.
+And then the last thing we supposed to wait for is last end("second", null, timeHumanReadable(Date.now() - stepStartTime));
+that will provide total duration which we will show after removing progress bar fro second pass in the same place.
+
 ---
 
 ## Phase 6: Error Handling & Status Signaling (STEP 6)
