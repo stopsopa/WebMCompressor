@@ -382,3 +382,40 @@ td {
 .pass2-progress .progress-bar {
   background-color: var(--aws-blue);
 }
+
+/* Reordering styles */
+.reorder-cell {
+  padding: 0;
+  text-align: center;
+  cursor: grab;
+  width: 40px;
+}
+
+.reorder-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aab7b8;
+  transition: color 0.2s;
+}
+
+.reorder-cell:hover .reorder-handle {
+  color: var(--aws-blue);
+}
+
+.reorder-cell:active {
+  cursor: grabbing;
+}
+
+.file-row.is-dragging {
+  opacity: 0.4;
+  background-color: var(--aws-bg-light);
+}
+
+.file-row.is-hovered {
+  border-top: 2px solid var(--aws-blue);
+}
+
+.file-row.is-hovered td {
+  background-color: rgba(0, 115, 187, 0.05);
+}

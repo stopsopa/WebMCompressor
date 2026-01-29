@@ -11,6 +11,7 @@ interface FileListProps {
   onEdit: (file: VideoFile) => void;
   onClear: () => void;
   onRemove: (id: string) => void;
+  onReorder: (dragIndex: number, hoverIndex: number) => void;
   onShowCommand: (command: string) => void;
   onShowError: (name: string, error: string) => void;
   isConverting: boolean;
@@ -24,7 +25,44 @@ interface ContextMenuState {
   file: VideoFile | null;
 }
 
-function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear, onRemove, onShowCommand, onShowError, isConverting, onStartConverting }: FileListProps) {
+function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear, onRemove, onReorder, onShowCommand, onShowError, isConverting, onStartConverting }: FileListProps) {
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    if (files[index].status === 'processing') {
+      e.preventDefault();
+      return;
+    }
+    setDraggedIndex(index);
+    // Standard DnD feedback
+    e.dataTransfer.effectAllowed = 'move';
+    // Required for Firefox
+    e.dataTransfer.setData('text/plain', index.toString());
+    
+    // Create a ghost image if needed, or just let the default handle it
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+    
+    setHoveredIndex(index);
+  };
+
+  const handleDrop = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex !== null && draggedIndex !== index) {
+      onReorder(draggedIndex, index);
+    }
+    setDraggedIndex(null);
+    setHoveredIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setHoveredIndex(null);
+  };
   const [menu, setMenu] = useState<ContextMenuState>({
     visible: false,
     x: 0,
@@ -142,6 +180,7 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
               <table>
                 <thead>
                   <tr>
+                    <th style={{ width: COLUMN_WIDTHS.reorder }}></th>
                     <th>File Name</th>
                     <th style={{ width: COLUMN_WIDTHS.fps }}>FPS</th>
                     <th style={{ width: COLUMN_WIDTHS.duration }}>Duration</th>
@@ -187,7 +226,7 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                   </tr>
                 </thead>
                 <tbody>
-                  {files.map((file) => {
+                  {files.map((file, index) => {
                     const isEditable = file.status === 'queued' || file.status === 'error';
 
                     let highlightW = false;
@@ -219,9 +258,23 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                     return (
                       <tr 
                         key={file.id} 
-                        className={`file-row ${file.isEditing ? 'is-editing' : ''} ${file.status === 'error' ? 'error-row' : ''}`}
+                        className={`file-row ${file.isEditing ? 'is-editing' : ''} ${file.status === 'error' ? 'error-row' : ''} ${draggedIndex === index ? 'is-dragging' : ''} ${hoveredIndex === index ? 'is-hovered' : ''}`}
                         onContextMenu={(e) => handleContextMenu(e, file)}
+                        onDragOver={(e) => handleDragOver(e, index)}
+                        onDrop={(e) => handleDrop(e, index)}
+                        onDragEnd={handleDragEnd}
                       >
+                        <td 
+                          className="reorder-cell"
+                          draggable={file.status !== 'processing'}
+                          onDragStart={(e) => handleDragStart(e, index)}
+                        >
+                          <div className="reorder-handle">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                              <path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                            </svg>
+                          </div>
+                        </td>
                         <td className="file-name-cell" title={file.name}>{file.name}</td>
                         <td>{file.fps ? `${file.fps} fps` : '-'}</td>
                         <td>{file.durationMs ? formatDuration(file.durationMs) : '-'}</td>

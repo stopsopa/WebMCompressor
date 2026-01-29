@@ -1,4 +1,5 @@
 export const COLUMN_WIDTHS = {
+  reorder: 40,
   dimensions: 140,
   fps: 80,
   duration: 80,

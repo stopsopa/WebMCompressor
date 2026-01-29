@@ -17,9 +17,16 @@ const __dirname = path.dirname(__filename);
 
 let mainWindow: BrowserWindow | null = null;
 
-// Use app.getPath('userData') for app configuration - standard Electron practice
 // Phase 7: Persistence & Defaults
-const getConfigDir = () => path.join(os.homedir(), ".webmcompressor");
+const getHomeDir = () => {
+  try {
+    return os.homedir();
+  } catch (e) {
+    console.warn("os.homedir() failed, attempting fallbacks...");
+    return process.env.HOME || process.env.USERPROFILE || app.getPath("home") || app.getPath("userData");
+  }
+};
+const getConfigDir = () => path.join(getHomeDir(), ".webmcompressor");
 const getConfigPath = () => path.join(getConfigDir(), "setup.json");
 const getDefaultConfigPath = () => path.join(__dirname, "../../setup.json");
 

@@ -227,6 +227,15 @@ function App() {
     setFiles(prev => prev.filter(f => f.id !== id));
   };
 
+  const handleReorder = (dragIndex: number, hoverIndex: number) => {
+    setFiles(prev => {
+      const result = [...prev];
+      const [removed] = result.splice(dragIndex, 1);
+      result.splice(hoverIndex, 0, removed);
+      return result;
+    });
+  };
+
   const handleFilesDrop = async (filePaths: string[]) => {
     if (!isConfigValid) return;
 
@@ -331,6 +340,7 @@ function App() {
         onEdit={handleStartEdit} 
         onClear={handleClear}
         onRemove={handleRemoveFile}
+        onReorder={handleReorder}
         onShowCommand={setCommandToShow}
         onShowError={(name: string, error: string) => setErrorToShow({ name, error })}
         isConverting={isConverting}
