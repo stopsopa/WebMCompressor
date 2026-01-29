@@ -5,6 +5,7 @@ import FileList from './components/FileList';
 import RejectionModal from './components/RejectionModal';
 import GlobalFormSettings from './components/GlobalSettings';
 import EditModal from './components/EditModal';
+import ErrorModal from './components/ErrorModal';
 import CommandModal from './components/CommandModal';
 import Footer from './components/Footer';
 import type { VideoFile, AppConfig, FormSettings } from './types';
@@ -27,6 +28,7 @@ function App() {
   });
   const [editingFile, setEditingFile] = useState<VideoFile | null>(null);
   const [commandToShow, setCommandToShow] = useState<string | null>(null);
+  const [errorToShow, setErrorToShow] = useState<{ name: string; error: string } | null>(null);
   const [isConverting, setIsConverting] = useState(false);
 
   useEffect(() => {
@@ -210,6 +212,10 @@ function App() {
     setFiles([]);
   };
 
+  const handleRemoveFile = (id: string) => {
+    setFiles(prev => prev.filter(f => f.id !== id));
+  };
+
   const handleFilesDrop = async (filePaths: string[]) => {
     if (!isConfigValid) return;
 
@@ -313,7 +319,9 @@ function App() {
         onParallelChange={handleParallelChange}
         onEdit={handleStartEdit} 
         onClear={handleClear}
+        onRemove={handleRemoveFile}
         onShowCommand={setCommandToShow}
+        onShowError={(name: string, error: string) => setErrorToShow({ name, error })}
         isConverting={isConverting}
         onStartConverting={() => setIsConverting(true)}
       />
@@ -340,6 +348,15 @@ function App() {
         <CommandModal 
           command={commandToShow}
           onClose={() => setCommandToShow(null)}
+        />
+      )}
+
+      {/* Error Modal */}
+      {errorToShow && (
+        <ErrorModal 
+          fileName={errorToShow.name}
+          error={errorToShow.error}
+          onClose={() => setErrorToShow(null)}
         />
       )}
 

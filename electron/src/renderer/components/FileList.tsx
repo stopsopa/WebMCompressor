@@ -10,7 +10,9 @@ interface FileListProps {
   onParallelChange: (count: number) => void;
   onEdit: (file: VideoFile) => void;
   onClear: () => void;
+  onRemove: (id: string) => void;
   onShowCommand: (command: string) => void;
+  onShowError: (name: string, error: string) => void;
   isConverting: boolean;
   onStartConverting: () => void;
 }
@@ -22,7 +24,7 @@ interface ContextMenuState {
   file: VideoFile | null;
 }
 
-function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear, onShowCommand, isConverting, onStartConverting }: FileListProps) {
+function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear, onRemove, onShowCommand, onShowError, isConverting, onStartConverting }: FileListProps) {
   const [menu, setMenu] = useState<ContextMenuState>({
     visible: false,
     x: 0,
@@ -217,7 +219,7 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                     return (
                       <tr 
                         key={file.id} 
-                        className={`file-row ${file.isEditing ? 'is-editing' : ''}`}
+                        className={`file-row ${file.isEditing ? 'is-editing' : ''} ${file.status === 'error' ? 'error-row' : ''}`}
                         onContextMenu={(e) => handleContextMenu(e, file)}
                       >
                         <td className="file-name-cell" title={file.name}>{file.name}</td>
@@ -304,13 +306,31 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                         </td>
                         <td>
                           {isEditable && (
-                            <button 
-                              className="aws-button aws-button-secondary edit-btn"
-                              onClick={() => onEdit(file)}
-                              disabled={file.isEditing}
-                            >
-                              Edit
-                            </button>
+                            <div className="action-buttons">
+                              <button 
+                                className="aws-button aws-button-secondary edit-btn"
+                                onClick={() => onEdit(file)}
+                                disabled={file.isEditing}
+                              >
+                                Edit
+                              </button>
+                              {file.status === 'error' && (
+                                <button 
+                                  className="aws-button error-btn"
+                                  onClick={() => onShowError(file.name, file.error || 'Unknown error')}
+                                >
+                                  Error
+                                </button>
+                              )}
+                              <button 
+                                className="aws-button delete-btn"
+                                onClick={() => onRemove(file.id)}
+                                disabled={file.status === 'processing'}
+                                title="Remove from queue"
+                              >
+                                &times;
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>

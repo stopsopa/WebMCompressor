@@ -1,0 +1,48 @@
+.error-modal-content {
+  max-width: 800px;
+  width: 90%;
+}
+
+.error-header {
+  border-bottom: 2px solid #d13212;
+}
+
+.error-header h2 {
+  color: #d13212;
+}
+
+.error-meta {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm);
+  background-color: #fafafa;
+  border-left: 4px solid var(--aws-border);
+}
+
+.error-meta .label {
+  font-weight: 700;
+  margin-right: 8px;
+  color: var(--aws-text-light);
+}
+
+.error-meta .value {
+  color: var(--aws-text-dark);
+  word-break: break-all;
+}
+
+.error-message-container {
+  background-color: #16191f;
+  color: #f1f1f1;
+  padding: var(--spacing-md);
+  border-radius: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.error-stack {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
