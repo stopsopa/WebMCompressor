@@ -212,3 +212,71 @@ td {
   font-weight: 700;
   min-width: 140px;
 }
+
+/* Progress bar styles */
+.progress-container {
+  position: relative;
+  width: 100%;
+  height: 20px;
+  background-color: #eee;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.progress-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background-color: var(--aws-blue);
+  transition: width 0.3s ease;
+  border-radius: 0;
+  z-index: 1;
+}
+
+.progress-bar.indeterminate {
+  width: 30%;
+  animation: indeterminate-progress 2s infinite linear;
+}
+
+@keyframes indeterminate-progress {
+  0% { left: -30%; }
+  100% { left: 100%; }
+}
+
+/* Base text styles */
+.progress-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+  pointer-events: none;
+}
+
+/* Text visible on the background (dark) */
+.progress-text-background {
+  color: var(--aws-text-dark);
+  z-index: 0;
+}
+
+/* Text visible on the bar (white) - using clip-path for perfect alignment */
+.progress-text-foreground {
+  color: #ffffff;
+  z-index: 2;
+}
+
+.pass1-progress .progress-bar {
+  background-color: #5da5da;
+}
+
+.pass2-progress .progress-bar {
+  background-color: var(--aws-blue);
+}

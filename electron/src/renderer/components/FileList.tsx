@@ -140,6 +140,8 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                     <th style={{ width: COLUMN_WIDTHS.status }}>Status</th>
                     <th style={{ width: COLUMN_WIDTHS.dimensions }}>Dimensions</th>
                     <th style={{ width: COLUMN_WIDTHS.scale }}>Scale</th>
+                    <th style={{ width: COLUMN_WIDTHS.pass1 }} title="First pass: Analysis phase. Shows 'scanning' when active and duration when finished.">Pass 1</th>
+                    <th style={{ width: COLUMN_WIDTHS.pass2 }} title="Second pass: Encoding phase. % - Progress, T - Estimated Total time, R - Estimated Remaining time.">Pass 2</th>
                     <th style={{ width: COLUMN_WIDTHS.actions }}>Actions</th>
                   </tr>
                 </thead>
@@ -216,10 +218,49 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                           {file.settings.scale ? (
                             <>
                               {file.settings.videoWidth && `w:${file.settings.videoWidth}`}
+                              {' '}
                               {file.settings.videoHeight && `h:${file.settings.videoHeight}`}
                             </>
                           ) : (
                             'original'
+                          )}
+                        </td>
+                        <td>
+                          {file.status === 'processing' && file.currentPass === 1 ? (
+                            <div className="progress-container pass1-progress">
+                              <div className="progress-bar indeterminate"></div>
+                              <span className="progress-text" style={{ zIndex: 2, color: '#16191f', textShadow: '0 0 4px rgba(255,255,255,0.8)' }}>
+                                scanning...
+                              </span>
+                            </div>
+                          ) : (
+                            file.pass1Duration ? `1st: ${file.pass1Duration}` : '-'
+                          )}
+                        </td>
+                        <td>
+                          {file.status === 'processing' && file.currentPass === 2 ? (() => {
+                            const text = file.pass2ProgressData ? (
+                              `${file.pass2ProgressData.progressPercentNum}% | T:${file.pass2ProgressData.estimatedTotalTimeHuman} | R:${file.pass2ProgressData.estimatedRemainingTimeHuman}`
+                            ) : 'starting...';
+                            const progress = file.pass2ProgressData?.progressPercentNum ?? 0;
+                            
+                            return (
+                              <div className="progress-container pass2-progress">
+                                <div 
+                                  className="progress-bar" 
+                                  style={{ width: `${progress}%` }}
+                                ></div>
+                                <span className="progress-text progress-text-background">{text}</span>
+                                <span 
+                                  className="progress-text progress-text-foreground"
+                                  style={{ clipPath: `inset(0 ${100 - progress}% 0 0)` }}
+                                >
+                                  {text}
+                                </span>
+                              </div>
+                            );
+                          })() : (
+                            file.pass2Duration ? `Total: ${file.pass2Duration}` : '-'
                           )}
                         </td>
                         <td>

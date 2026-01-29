@@ -233,7 +233,7 @@ export default async function driveCompression(options: DriveCompressionOptions)
     currentStep = "second";
     stepStartTime = Date.now();
     await runPass(secondPass.flat(2) as string[], 2);
-    end("second", null, timeHumanReadable(Date.now() - stepStartTime));
+    end("second", null, timeHumanReadable(Date.now() - overallStartTime));
   } catch (err: any) {
     // Notify about the error on the current step
     end(currentStep, err.message || String(err), timeHumanReadable(Date.now() - stepStartTime));

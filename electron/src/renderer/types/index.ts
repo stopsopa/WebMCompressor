@@ -16,6 +16,15 @@ export interface VideoFile {
   endTime: number | null;
   currentPass: 1 | 2 | null;
   isEditing?: boolean;
+  // Phase 5 additions
+  pass1Duration?: string;
+  pass2Duration?: string;
+  pass2ProgressData?: {
+    progressPercentNum: number;
+    totalTimePassedHuman: string;
+    estimatedTotalTimeHuman: string;
+    estimatedRemainingTimeHuman: string;
+  };
 }
 
 export interface FormSettings {

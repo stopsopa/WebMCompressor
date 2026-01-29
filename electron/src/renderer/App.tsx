@@ -57,11 +57,21 @@ function App() {
   useEffect(() => {
     const unbindProgress = window.electronAPI.onCompressionProgress((id: string, progress: any) => {
       setFiles(prev => prev.map(f => 
-        f.id === id ? { ...f, progress: progress.progressPercentNum } : f
+        f.id === id ? { 
+          ...f, 
+          progress: progress.progressPercentNum,
+          currentPass: 2,
+          pass2ProgressData: {
+            progressPercentNum: progress.progressPercentNum,
+            totalTimePassedHuman: progress.totalTimePassedHuman,
+            estimatedTotalTimeHuman: progress.estimatedTotalTimeHuman,
+            estimatedRemainingTimeHuman: progress.estimatedRemainingTimeHuman,
+          }
+        } : f
       ));
     });
 
-    const unbindEnd = window.electronAPI.onCompressionEnd((id: string, step: string, error: string | null, _duration: string) => {
+    const unbindEnd = window.electronAPI.onCompressionEnd((id: string, step: string, error: string | null, duration: string) => {
       setFiles(prev => prev.map(f => {
         if (f.id !== id) return f;
         
@@ -69,8 +79,22 @@ function App() {
           return { ...f, status: 'error', error };
         }
         
+        if (step === 'first') {
+          return { 
+            ...f, 
+            pass1Duration: duration,
+            currentPass: 2
+          };
+        }
+
         if (step === 'second') {
-          return { ...f, status: 'complete', progress: 100 };
+          return { 
+            ...f, 
+            status: 'complete', 
+            progress: 100,
+            pass2Duration: duration,
+            currentPass: null
+          };
         }
         
         return f;
@@ -103,7 +127,14 @@ function App() {
 
     // 3. Start compression
     setFiles(prev => prev.map(f => 
-      f.id === nextFile.id ? { ...f, status: 'processing' } : f
+      f.id === nextFile.id ? { 
+        ...f, 
+        status: 'processing',
+        currentPass: 1,
+        pass1Duration: undefined,
+        pass2Duration: undefined,
+        pass2ProgressData: undefined
+      } : f
     ));
 
     window.electronAPI.startCompression({
