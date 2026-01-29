@@ -6,7 +6,7 @@ import { promisify } from "util";
 import fs from "fs/promises";
 import { extractMetadata } from "../tools/extractMetadata.js";
 import driveCompression from "../tools/driveCompression.js";
-import { generateFFMPEGParamsStrings } from "../tools/generateFFMPEGParams.js";
+import generateFFMPEGParams, { generateFFMPEGParamsStrings } from "../tools/generateFFMPEGParams.js";
 import scaleWandH from "../tools/scaleWandH.js";
 import { getFFmpegPath, getFFprobePath, getVersions } from "./bins.js";
 
@@ -126,13 +126,29 @@ ipcMain.handle("config:save", async (_event, config) => {
 });
 
 // Validate video file and get metadata using FFprobe
-ipcMain.handle("video:validate", async (_event, filePath: string) => {
+ipcMain.handle("video:validate", async (_event, filePath: string, settings: any) => {
   try {
     const meta = await extractMetadata(getFFprobePath(), filePath);
+
+    // Calculate initial output path at ingestion
+    const { secondPass } = generateFFMPEGParams({
+      sourceFile: filePath,
+      scale: !!settings.scale,
+      videoWidth: settings.videoWidth ?? meta.width!,
+      videoHeight: settings.videoHeight ?? meta.height!,
+      frameRate: meta.fps!,
+    });
+
+    // Find the output path argument: ["-y", outputFileName]
+    const yArg = secondPass.find((el) => Array.isArray(el) && el[0] === "-y") as string[];
+    const outputPath = yArg ? yArg[1] : "";
+
+    console.log(`[Validation] Initialized output path for ${filePath}: ${outputPath}`);
 
     return {
       success: true,
       ...meta,
+      outputPath,
     };
   } catch (error: any) {
     return {
@@ -191,39 +207,42 @@ ipcMain.on("process:count", (_event, count: number) => {
 });
 
 // Start Compression (Phase 4)
-ipcMain.on("compression:start", async (event, args: { id: string; sourceFile: string; settings: any }) => {
-  const { id, sourceFile, settings } = args;
+ipcMain.on(
+  "compression:start",
+  async (event, args: { id: string; sourceFile: string; settings: any; metadata: any }) => {
+    const { id, sourceFile, settings, metadata } = args;
 
-  try {
-    await driveCompression({
-      sourceFile,
-      ffmpegPath: getFFmpegPath(),
-      ffprobePath: getFFprobePath(),
-      scale: !!settings.scale,
-      videoWidth: settings.videoWidth,
-      videoHeight: settings.videoHeight,
-      progressEvent: (error, progress) => {
-        if (mainWindow) {
-          mainWindow.webContents.send("compression:progress", { id, progress });
-        }
-      },
-      end: (step, error, duration) => {
-        if (mainWindow) {
-          mainWindow.webContents.send("compression:end", { id, step, error, duration });
-        }
-      },
-    });
-  } catch (error: any) {
-    if (mainWindow) {
-      mainWindow.webContents.send("compression:end", {
-        id,
-        step: "error",
-        error: error.message || String(error),
-        duration: "0s",
+    try {
+      await driveCompression({
+        sourceFile,
+        ffmpegPath: getFFmpegPath(),
+        ffprobePath: getFFprobePath(),
+        scale: !!settings.scale,
+        videoWidth: settings.videoWidth,
+        videoHeight: settings.videoHeight,
+        progressEvent: (error, progress) => {
+          if (mainWindow) {
+            mainWindow.webContents.send("compression:progress", { id, progress });
+          }
+        },
+        end: (step, error, duration) => {
+          if (mainWindow) {
+            mainWindow.webContents.send("compression:end", { id, step, error, duration });
+          }
+        },
       });
+    } catch (error: any) {
+      if (mainWindow) {
+        mainWindow.webContents.send("compression:end", {
+          id,
+          step: "error",
+          error: error.message || String(error),
+          duration: "0s",
+        });
+      }
     }
-  }
-});
+  },
+);
 
 // Reveal file in Finder/Explorer
 ipcMain.on("video:reveal", (_event, filePath: string) => {

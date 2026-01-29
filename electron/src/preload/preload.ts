@@ -8,12 +8,16 @@ contextBridge.exposeInMainWorld("electronAPI", {
   saveConfig: (config: any) => ipcRenderer.invoke("config:save", config),
 
   // Video validation
-  validateVideo: (filePath: string) => ipcRenderer.invoke("video:validate", filePath),
+  validateVideo: (filePath: string, settings: any) => ipcRenderer.invoke("video:validate", filePath, settings),
   getOutputPath: (inputPath: string) => ipcRenderer.invoke("video:getOutputPath", inputPath),
 
   // New Compression IPC (Phase 4)
-  startCompression: (args: { id: string; sourceFile: string; settings: any }) =>
-    ipcRenderer.send("compression:start", args),
+  startCompression: (args: {
+    id: string;
+    sourceFile: string;
+    settings: any;
+    metadata: { width: number; height: number; fps: number };
+  }) => ipcRenderer.send("compression:start", args),
   onCompressionProgress: (callback: (id: string, progress: any) => void) => {
     const listener = (_event: any, data: { id: string; progress: any }) => callback(data.id, data.progress);
     ipcRenderer.on("compression:progress", listener);
@@ -52,17 +56,26 @@ declare global {
     electronAPI: {
       loadConfig: () => Promise<any>;
       saveConfig: (config: any) => Promise<{ success: boolean; error?: string }>;
-      validateVideo: (filePath: string) => Promise<{
+      validateVideo: (
+        filePath: string,
+        settings: any,
+      ) => Promise<{
         success: boolean;
         width?: number;
         height?: number;
         fps?: number;
         durationMs?: number;
         size?: number;
+        outputPath?: string;
         error?: string;
       }>;
       getOutputPath: (inputPath: string) => Promise<string>;
-      startCompression: (args: { id: string; sourceFile: string; settings: any }) => void;
+      startCompression: (args: {
+        id: string;
+        sourceFile: string;
+        settings: any;
+        metadata: { width: number; height: number; fps: number };
+      }) => void;
       onCompressionProgress: (callback: (id: string, progress: any) => void) => () => void;
       onCompressionEnd: (
         callback: (id: string, step: string, error: string | null, duration: string) => void,

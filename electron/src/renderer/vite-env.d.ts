@@ -5,17 +5,26 @@ declare global {
     electronAPI: {
       loadConfig: () => Promise<any>;
       saveConfig: (config: any) => Promise<{ success: boolean; error?: string }>;
-      validateVideo: (filePath: string) => Promise<{
+      validateVideo: (
+        filePath: string,
+        settings: any,
+      ) => Promise<{
         success: boolean;
         width?: number;
         height?: number;
         fps?: number;
         durationMs?: number;
         size?: number;
+        outputPath?: string;
         error?: string;
       }>;
       getOutputPath: (inputPath: string) => Promise<string>;
-      startCompression: (args: { id: string; sourceFile: string; settings: any }) => void;
+      startCompression: (args: {
+        id: string;
+        sourceFile: string;
+        settings: any;
+        metadata: { width: number; height: number; fps: number };
+      }) => void;
       onCompressionProgress: (callback: (id: string, progress: any) => void) => () => void;
       onCompressionEnd: (
         callback: (id: string, step: string, error: string | null, duration: string) => void,

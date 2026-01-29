@@ -53,9 +53,16 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
     };
   }, [closeMenu]);
 
-  const handleReveal = () => {
+  const handleRevealInput = () => {
     if (menu.file) {
       window.electronAPI.revealVideo(menu.file.path);
+    }
+    closeMenu();
+  };
+
+  const handleRevealOutput = () => {
+    if (menu.file && menu.file.outputPath) {
+      window.electronAPI.revealVideo(menu.file.outputPath);
     }
     closeMenu();
   };
@@ -333,9 +340,14 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
           style={{ top: menu.y, left: menu.x }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="context-menu-item" onClick={handleReveal}>
-            Reveal in Finder
+          <div className="context-menu-item" onClick={handleRevealInput}>
+            Reveal Input in Finder
           </div>
+          {menu.file?.status === 'complete' && (
+            <div className="context-menu-item" onClick={handleRevealOutput}>
+              Reveal Output in Finder
+            </div>
+          )}
           <div className="context-menu-item" onClick={handleCopyCommand}>
             Copy FFMPEG Command
           </div>

@@ -140,7 +140,12 @@ function App() {
     window.electronAPI.startCompression({
       id: nextFile.id,
       sourceFile: nextFile.path,
-      settings: nextFile.settings
+      settings: nextFile.settings,
+      metadata: {
+        width: nextFile.width,
+        height: nextFile.height,
+        fps: nextFile.fps
+      }
     });
 
   }, [files, config.settings.parallelProcessing, isConverting]);
@@ -251,7 +256,11 @@ function App() {
       setFiles(prev => [...prev, tempEntry]);
 
       try {
-        const meta = await window.electronAPI.validateVideo(filePath);
+        const meta = await window.electronAPI.validateVideo(filePath, { 
+          scale: config.form.scale,
+          videoWidth: config.form.videoWidth,
+          videoHeight: config.form.videoHeight
+        });
         
         if (meta.success) {
           setFiles(prev => prev.map(f => 
@@ -263,7 +272,8 @@ function App() {
                   height: meta.height!, 
                   fps: meta.fps!, 
                   durationMs: meta.durationMs!,
-                  size: meta.size!
+                  size: meta.size!,
+                  outputPath: meta.outputPath || ''
                 } 
               : f
           ));
