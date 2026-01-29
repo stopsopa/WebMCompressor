@@ -297,6 +297,8 @@ td {
   z-index: 1000;
   padding: 4px 0;
   min-width: 150px;
+.dimensions-cell {
+  overflow: visible;
 }
 
 .context-menu-item {
@@ -304,11 +306,20 @@ td {
   font-size: 0.9rem;
   cursor: pointer;
   color: var(--aws-text-dark);
+@keyframes pulse-edit {
+  0% { box-shadow: 0 0 0 0 rgba(227, 91, 91, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(227, 91, 91, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(227, 91, 91, 0); }
 }
 
 .context-menu-item:hover {
   background-color: var(--aws-blue);
   color: white;
+.edit-btn.pulse-highlight {
+  animation: pulse-edit 1.5s infinite;
+  border-color: #e35b5b;
+  position: relative;
+  z-index: 1;
 }
 
 .highlight {
@@ -351,8 +362,12 @@ td {
 }
 
 @keyframes indeterminate-progress {
-  0% { left: -30%; }
-  100% { left: 100%; }
+  0% {
+    left: -30%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 /* Base text styles */
