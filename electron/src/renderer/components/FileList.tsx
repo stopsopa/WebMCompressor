@@ -137,11 +137,43 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                     <th style={{ width: COLUMN_WIDTHS.fps }}>FPS</th>
                     <th style={{ width: COLUMN_WIDTHS.duration }}>Duration</th>
                     <th style={{ width: COLUMN_WIDTHS.size }}>Size</th>
-                    <th style={{ width: COLUMN_WIDTHS.status }}>Status</th>
                     <th style={{ width: COLUMN_WIDTHS.dimensions }}>Dimensions</th>
                     <th style={{ width: COLUMN_WIDTHS.scale }}>Scale</th>
-                    <th style={{ width: COLUMN_WIDTHS.pass1 }} title="First pass: Analysis phase. Shows 'scanning' when active and duration when finished.">Pass 1</th>
-                    <th style={{ width: COLUMN_WIDTHS.pass2 }} title="Second pass: Encoding phase. % - Progress, T - Estimated Total time, R - Estimated Remaining time.">Pass 2</th>
+                    <th 
+                      style={{ width: COLUMN_WIDTHS.pass1 }} 
+                      className="has-tooltip"
+                      onMouseEnter={(e) => {
+                        const popover = e.currentTarget.querySelector('.aws-tooltip') as any;
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        popover.style.top = `${rect.bottom + 10}px`;
+                        popover.style.left = `${rect.left + rect.width / 2}px`;
+                        popover.showPopover();
+                      }}
+                      onMouseLeave={(e) => (e.currentTarget.querySelector('.aws-tooltip') as any)?.hidePopover()}
+                    >
+                      <span className="header-label">Pass 1</span>
+                      <div popover="manual" className="aws-tooltip">
+                        First pass: Analysis phase. Shows 'scanning' when active and duration when finished.
+                      </div>
+                    </th>
+                    <th 
+                      style={{ width: COLUMN_WIDTHS.pass2 }} 
+                      className="has-tooltip"
+                      onMouseEnter={(e) => {
+                        const popover = e.currentTarget.querySelector('.aws-tooltip') as any;
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        popover.style.top = `${rect.bottom + 10}px`;
+                        popover.style.left = `${rect.left + rect.width / 2}px`;
+                        popover.showPopover();
+                      }}
+                      onMouseLeave={(e) => (e.currentTarget.querySelector('.aws-tooltip') as any)?.hidePopover()}
+                    >
+                      <span className="header-label">Pass 2</span>
+                      <div popover="manual" className="aws-tooltip">
+                        Second pass: Encoding phase. % - Progress, T - Est. Total time, R - Est. Remaining time.
+                      </div>
+                    </th>
+                    <th style={{ width: COLUMN_WIDTHS.status }}>Status</th>
                     <th style={{ width: COLUMN_WIDTHS.actions }}>Actions</th>
                   </tr>
                 </thead>
@@ -185,16 +217,6 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                         <td>{file.fps ? `${file.fps} fps` : '-'}</td>
                         <td>{file.durationMs ? formatDuration(file.durationMs) : '-'}</td>
                         <td>{file.size ? formatBytes(file.size) : '-'}</td>
-                        <td>
-                          <span className={`status-badge status-${file.status}`}>
-                            {file.status}
-                          </span>
-                          {file.isEditing && (
-                            <span className="status-badge status-editing">
-                              Editing...
-                            </span>
-                          )}
-                        </td>
                         <td>
                           {file.width ? (
                             <>
@@ -261,6 +283,16 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                             );
                           })() : (
                             file.pass2Duration ? `Total: ${file.pass2Duration}` : '-'
+                          )}
+                        </td>
+                        <td>
+                          <span className={`status-badge status-${file.status}`}>
+                            {file.status}
+                          </span>
+                          {file.isEditing && (
+                            <span className="status-badge status-editing">
+                              Editing...
+                            </span>
                           )}
                         </td>
                         <td>

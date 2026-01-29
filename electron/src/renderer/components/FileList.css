@@ -108,8 +108,57 @@ th {
   top: 0;
   background: var(--aws-white);
   z-index: 10;
-  overflow: hidden;
+  /* overflow: hidden; Removed to allow tooltip to show */
   white-space: nowrap;
+}
+
+.has-tooltip {
+  position: relative;
+  cursor: help;
+  text-decoration: underline dotted var(--aws-border);
+}
+
+/* Modern HTML5 Popover Tooltip */
+.aws-tooltip {
+  /* Reset default popover styles */
+  border: none;
+  margin: 0;
+  padding: 10px 14px;
+  background-color: #16191f;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 400;
+  border-radius: 4px;
+  white-space: normal;
+  width: 250px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  text-transform: none;
+  line-height: 1.4;
+  
+  /* Top layer positioning */
+  position: fixed;
+  /* top/left set via JS */
+  transform: translate(-50%, -10px);
+  
+  /* Interaction */
+  pointer-events: none;
+  
+  /* Animation */
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease, display 0.2s allow-discrete;
+}
+
+.aws-tooltip:popover-open {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@starting-style {
+  .aws-tooltip:popover-open {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
 }
 
 td {

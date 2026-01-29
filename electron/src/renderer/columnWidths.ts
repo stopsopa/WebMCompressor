@@ -3,9 +3,9 @@ export const COLUMN_WIDTHS = {
   fps: 80,
   duration: 80,
   size: 100,
-  status: 120,
   scale: 100,
   pass1: 100,
-  pass2: 200,
+  pass2: 300,
+  status: 120,
   actions: 120,
 };
