@@ -112,12 +112,6 @@ th {
   white-space: nowrap;
 }
 
-.has-tooltip {
-  position: relative;
-  cursor: help;
-  text-decoration: underline dotted var(--aws-border);
-}
-
 /* Modern HTML5 Popover Tooltip */
 .aws-tooltip {
   /* Reset default popover styles */
@@ -135,18 +129,21 @@ th {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   text-transform: none;
   line-height: 1.4;
-  
+
   /* Top layer positioning */
   position: fixed;
   /* top/left set via JS */
   transform: translate(-50%, -10px);
-  
+
   /* Interaction */
   pointer-events: none;
-  
+
   /* Animation */
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease, display 0.2s allow-discrete;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    display 0.2s allow-discrete;
 }
 
 .aws-tooltip:popover-open {
@@ -168,6 +165,67 @@ th {
     opacity: 0;
     transform: translate(-50%, -10px);
   }
+}
+
+.aws-popover-menu {
+  /* Reset default popover styles */
+  border: 1px solid var(--aws-border);
+  margin: 0 !important;
+  padding: 4px 0;
+  background-color: #ffffff;
+  color: var(--aws-text-dark);
+  font-size: 0.85rem;
+  border-radius: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 140px;
+  z-index: 10000;
+
+  /* Top layer positioning */
+  position: fixed;
+  inset: auto;
+  top: auto;
+  left: auto;
+  margin: 0;
+
+  /* Interaction */
+  pointer-events: auto;
+
+  /* Animation - default state for React rendering */
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.15s ease;
+}
+
+.aws-popover-menu:popover-open {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@starting-style {
+  .aws-popover-menu:popover-open {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+}
+
+.aws-popover-menu .menu-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.aws-popover-menu .menu-item:hover {
+  background-color: var(--aws-blue);
+  color: white;
+}
+
+.aws-popover-menu .menu-divider {
+  height: 1px;
+  background-color: var(--aws-border);
+  margin: 4px 0;
 }
 
 td {
@@ -214,14 +272,29 @@ td {
   text-transform: uppercase;
 }
 
-.status-validating { background: #f2f2f2; color: #666; }
-.status-queued { background: #e6f3ff; color: #0073bb; }
-.status-processing { background: #fff4e6; color: #eb5f07; }
-.status-complete { background: #e6ffed; color: #1d8102; }
-.status-error { background: #fff1f0; color: #d13212; }
-.status-editing { 
-  background: #fff9e6; 
-  color: #856404; 
+.status-validating {
+  background: #f2f2f2;
+  color: #666;
+}
+.status-queued {
+  background: #e6f3ff;
+  color: #0073bb;
+}
+.status-processing {
+  background: #fff4e6;
+  color: #eb5f07;
+}
+.status-complete {
+  background: #e6ffed;
+  color: #1d8102;
+}
+.status-error {
+  background: #fff1f0;
+  color: #d13212;
+}
+.status-editing {
+  background: #fff9e6;
+  color: #856404;
   border: 1px solid #ffeeba;
   margin-left: 8px;
 }
@@ -287,34 +360,33 @@ td {
   font-size: 0.85rem;
 }
 
-/* Context Menu */
-.context-menu {
-  position: fixed;
-  background: white;
-  border: 1px solid var(--aws-border);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  border-radius: 2px;
-  z-index: 1000;
-  padding: 4px 0;
-  min-width: 150px;
+/* Context menu now uses .aws-popover-menu */
+
+.has-tooltip {
+  position: relative;
+  cursor: help;
+}
+
+th.has-tooltip {
+  text-decoration: underline dotted var(--aws-border);
+}
+
 .dimensions-cell {
   overflow: visible;
 }
 
-.context-menu-item {
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  color: var(--aws-text-dark);
 @keyframes pulse-edit {
-  0% { box-shadow: 0 0 0 0 rgba(227, 91, 91, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(227, 91, 91, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(227, 91, 91, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(227, 91, 91, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(227, 91, 91, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(227, 91, 91, 0);
+  }
 }
 
-.context-menu-item:hover {
-  background-color: var(--aws-blue);
-  color: white;
 .edit-btn.pulse-highlight {
   animation: pulse-edit 1.5s infinite;
   border-color: #e35b5b;

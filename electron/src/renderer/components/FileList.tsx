@@ -22,10 +22,10 @@ interface FileListProps {
 }
 
 interface ContextMenuState {
+  file: VideoFile | null;
   visible: boolean;
   x: number;
   y: number;
-  file: VideoFile | null;
 }
 
 function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear, onRemove, onRemoveMultiple, onReorder, onShowCommand, onShowError, isConverting, onStartConverting, onModalLock }: FileListProps) {
@@ -75,26 +75,28 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
     setHoveredIndex(null);
   };
   const [menu, setMenu] = useState<ContextMenuState>({
+    file: null,
     visible: false,
     x: 0,
     y: 0,
-    file: null,
   });
-
-  const handleContextMenu = useCallback((e: React.MouseEvent, file: VideoFile) => {
-    e.preventDefault();
-    e.stopPropagation(); // Stop bubbling to window
-    setMenu({
-      visible: true,
-      x: e.clientX + 2,
-      y: e.clientY + 2,
-      file,
-    });
-  }, []);
 
   const closeMenu = useCallback(() => {
     setMenu(prev => ({ ...prev, visible: false }));
   }, []);
+
+  const handleContextMenu = useCallback((e: React.MouseEvent, file: VideoFile) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setMenu({
+      file,
+      visible: true,
+      x: e.clientX + 2,
+      y: e.clientY + 2,
+    });
+  }, []);
+
 
   useEffect(() => {
     const handleClick = () => closeMenu();
@@ -252,13 +254,26 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                     <th style={{ width: COLUMN_WIDTHS.reorder }}></th>
                     <th style={{ width: COLUMN_WIDTHS.checkbox }}>
                       <button 
-                        className="toggle-all-btn" 
-                        onClick={handleToggleAll}
-                        title="Toggle all checkboxes"
+                        className="toggle-all-btn has-tooltip" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleAll();
+                        }}
+                        onMouseEnter={(e) => {
+                          const popover = e.currentTarget.querySelector('.aws-tooltip') as any;
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          popover.style.top = `${rect.top + rect.height / 2}px`;
+                          popover.style.left = `${rect.right + 10}px`;
+                          popover.showPopover();
+                        }}
+                        onMouseLeave={(e) => (e.currentTarget.querySelector('.aws-tooltip') as any)?.hidePopover()}
                       >
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                           <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 14H6c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h12c.55 0 1 .45 1 1v10c0 .55-.45 1-1 1zM7 8h10v2H7zm0 3h10v2H7zm0 3h7v2H7z"/>
                         </svg>
+                        <div popover="manual" className="aws-tooltip tooltip-right">
+                          Toggle all checkboxes
+                        </div>
                       </button>
                     </th>
                     <th>File Name</th>
@@ -368,21 +383,57 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                         <td>{file.fps ? `${file.fps} fps` : '-'}</td>
                         <td>{file.durationMs ? formatDuration(file.durationMs) : '-'}</td>
                         <td>{file.size ? formatBytes(file.size) : '-'}</td>
-                        <td>
+                        <td className="dimensions-cell">
                           {file.width ? (
                             <>
                               <span 
-                                className={highlightW ? 'highlight' : ''} 
-                                title={highlightW ? "This dimension is being upscaled." : undefined}
+                                className={`${highlightW ? 'highlight has-tooltip' : ''}`}
+                                onMouseEnter={(e) => {
+                                  if (!highlightW) return;
+                                  setHoveredUpscaleRowId(file.id);
+                                  const popover = e.currentTarget.querySelector('.aws-tooltip') as any;
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  popover.style.top = `${rect.bottom + 10}px`;
+                                  popover.style.left = `${rect.left + rect.width / 2}px`;
+                                  popover.showPopover();
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!highlightW) return;
+                                  setHoveredUpscaleRowId(null);
+                                  (e.currentTarget.querySelector('.aws-tooltip') as any)?.hidePopover();
+                                }}
                               >
                                 w: {file.width}
+                                {highlightW && (
+                                  <div popover="manual" className="aws-tooltip">
+                                    This width is being upscaled. The settings determined at the moment of drag and drop were higher than the original width of the video. It can be fixed with the <strong>edit</strong> button on the right side of this row.
+                                  </div>
+                                )}
                               </span>
                               {' '}
                               <span 
-                                className={highlightH ? 'highlight' : ''} 
-                                title={highlightH ? "This dimension is being upscaled." : undefined}
+                                className={`${highlightH ? 'highlight has-tooltip' : ''}`}
+                                onMouseEnter={(e) => {
+                                  if (!highlightH) return;
+                                  setHoveredUpscaleRowId(file.id);
+                                  const popover = e.currentTarget.querySelector('.aws-tooltip') as any;
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  popover.style.top = `${rect.bottom + 10}px`;
+                                  popover.style.left = `${rect.left + rect.width / 2}px`;
+                                  popover.showPopover();
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!highlightH) return;
+                                  setHoveredUpscaleRowId(null);
+                                  (e.currentTarget.querySelector('.aws-tooltip') as any)?.hidePopover();
+                                }}
                               >
                                 h: {file.height}
+                                {highlightH && (
+                                  <div popover="manual" className="aws-tooltip">
+                                    This height is being upscaled. The settings determined at the moment of drag and drop were higher than the original height of the video. It can be fixed with the <strong>edit</strong> button on the right side of this row.
+                                  </div>
+                                )}
                               </span>
                             </>
                           ) : '-'}
@@ -407,7 +458,7 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                               </span>
                             </div>
                           ) : (
-                            file.pass1Duration ? `1st: ${file.pass1Duration}` : '-'
+                            file.pass1Duration ? file.pass1Duration : '-'
                           )}
                         </td>
                         <td>
@@ -450,7 +501,7 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
                           {isEditable && (
                             <div className="action-buttons">
                               <button 
-                                className="aws-button aws-button-secondary edit-btn"
+                                className={`aws-button aws-button-secondary edit-btn ${hoveredUpscaleRowId === file.id ? 'pulse-highlight' : ''}`}
                                 onClick={() => onEdit(file)}
                                 disabled={file.isEditing}
                               >
@@ -498,21 +549,32 @@ function FileList({ files, parallelProcessing, onParallelChange, onEdit, onClear
         </div>
       </div>
 
+
+
       {menu.visible && (
         <div 
-          className="context-menu" 
-          style={{ top: menu.y, left: menu.x }}
+          className="aws-popover-menu"
+          style={{ 
+            minWidth: '180px',
+            top: menu.y,
+            left: menu.x,
+            opacity: 1,
+            display: 'block',
+            position: 'fixed',
+            transform: 'none',
+            zIndex: 10001
+          }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="context-menu-item" onClick={handleRevealInput}>
+          <div className="menu-item" onClick={handleRevealInput}>
             Reveal Input in Finder
           </div>
           {menu.file?.status === 'complete' && (
-            <div className="context-menu-item" onClick={handleRevealOutput}>
+            <div className="menu-item" onClick={handleRevealOutput}>
               Reveal Output in Finder
             </div>
           )}
-          <div className="context-menu-item" onClick={handleCopyCommand}>
+          <div className="menu-item" onClick={handleCopyCommand}>
             Copy FFMPEG Command
           </div>
         </div>
