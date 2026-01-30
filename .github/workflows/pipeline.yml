@@ -29,6 +29,8 @@ env:
   # Set UPLOAD_ARTIFACTS to 'false' to globally disable all artifact uploads (e.g., if quota is hit).
   # If 'true', it follows the 'upload_artifacts' manual input (default: true).
   UPLOAD_ARTIFACTS: "true"
+  # List of environments that MUST be protected by a gate
+  REQUIRED_GATED_ENVS: "test, development, production"
 
 jobs:
   # STEP 0: Debug Information
@@ -47,11 +49,26 @@ jobs:
           env | grep -E "STEP_|GITHUB_|RELEASE_TAG" | sort
           echo "STEP_DEMO_VAL=initialized" >> $GITHUB_ENV
 
+  # STEP 0.1: Security & Gate Check
+  # This job detects if you forgot to set up Environments with "Required Reviewers".
+  # It prevents accidental production deployments without approval.
+  security-check:
+    name: 🛡️ Pre-flight Gate Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 🛡️ Verify Environment Gates
+        env:
+          GH_TOKEN: ${{ secrets.GH_ADMIN_TOKEN || secrets.GITHUB_TOKEN }}
+        run: /bin/bash .github/check-gh-environments.sh "$REQUIRED_GATED_ENVS" "${{ github.repository }}"
+
   # STEP 1: Always Run Tests
   test:
     name: 🧪 Run Tests
     runs-on: ubuntu-latest
-    needs: debug
+    needs:
+      - debug
+      - security-check
     # CROSS-JOB STATE (The "Anouncer"):
     # To pass data to other jobs, you MUST declare them here.
     # It maps a step's internal output to a job-level output.
