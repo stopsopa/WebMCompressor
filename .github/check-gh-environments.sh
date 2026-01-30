@@ -145,8 +145,18 @@ if [ "$FAILED" = true ]; then
 
 ### 🛑 Deployment Safety Violation
 This pipeline is designed to STOP for approval before moving to QA or Production.
+
+**Note for Private Repositories:**
+GitHub only supports **Required Reviewers** for:
+- 🌎 **Public** repositories (Free)
+- 🔒 **Private** repositories on **Pro, Team, or Enterprise** plans.
+
+If you are on a **Free plan with a Private repository**, you cannot use this feature. You must either make the repository Public or upgrade your plan to unblock this check.
+
 To fix this, go to **Settings -> Environments** and add yourself as a **Required Reviewer** for these environments:
 $(for env_name in "${ADDR[@]}"; do echo "- $env_name"; done)
+
+![Environment Setup Guide](https://i.imgur.com/mhT7RCI.png)
 EOF
   exit 1
 fi
