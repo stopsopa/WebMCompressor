@@ -32,11 +32,21 @@ FAILED=false
 
 # 1. Try to fetch environments via API
 # Note: GITHUB_TOKEN might not have permission, so we handle failure gracefully.
-API_DATA=$(gh api "repos/$REPO/environments" 2>/dev/null || echo "PERMISSION_ERROR")
+echo "DEBUG: Testing repository visibility..." >> $GITHUB_STEP_SUMMARY
+REPO_DATA=$(gh api "repos/$REPO" --jq '{name: .full_name, visibility: .visibility}' 2>/dev/null || echo "REPO_HIDDEN")
+
+if [ "$REPO_DATA" == "REPO_HIDDEN" ]; then
+  echo "❌ **ERROR**: Token cannot even see the repository \`$REPO\`!" >> $GITHUB_STEP_SUMMARY
+  echo "   Check that you selected this repository in your PAT settings under **'Repository access'**." >> $GITHUB_STEP_SUMMARY
+  API_DATA="PERMISSION_ERROR"
+else
+  echo "✅ Token can see repository: \`$(echo $REPO_DATA | jq -r .name)\` ($(echo $REPO_DATA | jq -r .visibility))" >> $GITHUB_STEP_SUMMARY
+  API_DATA=$(gh api "repos/$REPO/environments" 2>/dev/null || echo "PERMISSION_ERROR")
+fi
 
 if [ "$API_DATA" == "PERMISSION_ERROR" ]; then
   echo "### 🛑 Permission Denied" >> $GITHUB_STEP_SUMMARY
-  echo "The default \`GITHUB_TOKEN\` does not have permission to read repository Environments via API." >> $GITHUB_STEP_SUMMARY
+  echo "The token provided does not have permission to read repository Environments via API." >> $GITHUB_STEP_SUMMARY
   echo "" >> $GITHUB_STEP_SUMMARY
   echo "To fix this and unblock the pipeline, you must provide a token with higher privileges:" >> $GITHUB_STEP_SUMMARY
   echo "1. Create a **Fine-grained personal access token**:" >> $GITHUB_STEP_SUMMARY
@@ -49,6 +59,10 @@ if [ "$API_DATA" == "PERMISSION_ERROR" ]; then
   echo "**Why?** This pipeline is configured to verify that environments (\`$REQUIRED_ENVS\`) are gated for safety." >> $GITHUB_STEP_SUMMARY
   exit 1
 else
+  # Debug: Show the raw structure (total_count)
+  COUNT=$(echo "$API_DATA" | jq -r '.total_count' 2>/dev/null)
+  echo "DEBUG: API says \`total_count\` is: **$COUNT**" >> $GITHUB_STEP_SUMMARY
+  
   # Debug: Show what we actually found
   FOUND_ENVS=$(echo "$API_DATA" | jq -r '.environments[].name' 2>/dev/null | paste -sd ", " -)
   
@@ -56,10 +70,10 @@ else
     # Check if environment exists in JSON
     if ! echo "$API_DATA" | jq -e ".environments[] | select(.name == \"$env_name\")" >/dev/null 2>&1; then
       echo "❌ **ERROR**: Environment \`$env_name\` does not exist!" >> $GITHUB_STEP_SUMMARY
-      if [ -n "$FOUND_ENVS" ]; then
-        echo "   (Found these instead: \`$FOUND_ENVS\`)" >> $GITHUB_STEP_SUMMARY
+      if [ "$COUNT" == "0" ] || [ -z "$FOUND_ENVS" ]; then
+        echo "   (The API returned ZERO environments. This usually means the PAT is missing the **'Environments: Read-only'** permission.)" >> $GITHUB_STEP_SUMMARY
       else
-        echo "   (The API returned NO environments. Check your settings or token permissions.)" >> $GITHUB_STEP_SUMMARY
+        echo "   (Found these instead: \`$FOUND_ENVS\`)" >> $GITHUB_STEP_SUMMARY
       fi
       FAILED=true
     else
