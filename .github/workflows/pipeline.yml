@@ -9,6 +9,11 @@ on:
         description: "Reason for manual run (optional)"
         required: false
         type: string
+      upload_artifacts:
+        description: "Upload artifacts (DMG) for this run?"
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   contents: write
@@ -20,6 +25,10 @@ env:
   # 1. inputs.tag_name (if provided via workflow_dispatch or workflow_call)
   # 2. github.ref_name (fallback for release:published or manual run without input)
   RELEASE_TAG: ${{ github.ref_name }}
+  # --- ARTIFACT CONTROL ---
+  # Set UPLOAD_ARTIFACTS to 'false' to globally disable all artifact uploads (e.g., if quota is hit).
+  # If 'true', it follows the 'upload_artifacts' manual input (default: true).
+  UPLOAD_ARTIFACTS: "true"
 
 jobs:
   # STEP 0: Debug Information
@@ -220,6 +229,7 @@ jobs:
         shell: bash
 
       - name: 📤 Upload Artifacts (Mac)
+        if: (github.event_name != 'workflow_dispatch' || inputs.upload_artifacts) && env.UPLOAD_ARTIFACTS == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: qa-release-dmg
