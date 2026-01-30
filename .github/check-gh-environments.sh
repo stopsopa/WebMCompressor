@@ -165,7 +165,7 @@ $(for env_name in "${ADDR[@]}"; do echo "- $env_name"; done)
 
 <img src="https://i.imgur.com/s0GKlS5.png" width="800" />
 
-https://i.imgur.com/s0GKlS5.png
+https://i.imgur.com/s0GKlS5.png 
 EOF
   exit 1
 fi
