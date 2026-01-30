@@ -41,7 +41,17 @@ if [ "$REPO_DATA" == "REPO_HIDDEN" ]; then
   API_DATA="PERMISSION_ERROR"
 else
   echo "✅ Token can see repository: \`$(echo $REPO_DATA | jq -r .name)\` ($(echo $REPO_DATA | jq -r .visibility))" >> $GITHUB_STEP_SUMMARY
+  
+  # Fetch data and CAPTURE it for multi-purpose use
   API_DATA=$(gh api "repos/$REPO/environments" 2>/dev/null || echo "PERMISSION_ERROR")
+  
+  # RAW DEBUG DUMP (Collapsed)
+  echo "<details><summary>🔍 Raw API Response Structure (Debug)</summary>" >> $GITHUB_STEP_SUMMARY
+  echo "" >> $GITHUB_STEP_SUMMARY
+  echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+  echo "$API_DATA" | jq '.' >> $GITHUB_STEP_SUMMARY 2>&1 || echo "Invalid JSON or Error: $API_DATA" >> $GITHUB_STEP_SUMMARY
+  echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+  echo "</details>" >> $GITHUB_STEP_SUMMARY
 fi
 
 if [ "$API_DATA" == "PERMISSION_ERROR" ]; then
