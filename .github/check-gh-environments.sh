@@ -128,10 +128,17 @@ EOF
       FAILED=true
     else
       ENV_JSON=$(echo "$API_DATA" | jq -r ".environments[] | select(.name == \"$env_name\")" 2>/dev/null)
+      
+      # Debug: List all rule types found
+      RULE_TYPES=$(echo "$ENV_JSON" | jq -r '.protection_rules[].type' 2>/dev/null | paste -sd ", " -)
+      
       # Check for protection rules (required_reviewers)
       HAS_GATES=$(echo "$ENV_JSON" | jq -r '.protection_rules[] | select(.type == "required_reviewers")' 2>/dev/null)
       if [ -z "$HAS_GATES" ]; then
         echo "- ❌ **ERROR**: Environment \`$env_name\` exists but has **NO Required Reviewers**!" >> "$GITHUB_STEP_SUMMARY"
+        if [ -n "$RULE_TYPES" ]; then
+          echo "  - (Found these other rules instead: \`$RULE_TYPES\`)" >> "$GITHUB_STEP_SUMMARY"
+        fi
         FAILED=true
       else
         echo "- ✅ Environment \`$env_name\` is correctly gated." >> "$GITHUB_STEP_SUMMARY"
