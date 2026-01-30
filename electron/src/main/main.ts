@@ -36,7 +36,13 @@ let activeProcessCount = 0;
 async function createWindow() {
   const isDev = !!process.env.VITE_DEV_SERVER_URL;
 
-  const iconPath = path.join(__dirname, "../../public/icon.png");
+  console.log(`[Main] Creating window...`);
+  console.log(`[Main] __dirname: ${__dirname}`);
+  console.log(`[Main] isPackaged: ${app.isPackaged}`);
+  console.log(`[Main] appPath: ${app.getAppPath()}`);
+
+  const appPath = app.getAppPath();
+  const iconPath = path.join(appPath, "dist/icon.png");
 
   mainWindow = new BrowserWindow({
     width: isDev ? 1700 : 1100,
@@ -46,22 +52,47 @@ async function createWindow() {
       preload: path.join(__dirname, "../preload/preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
-      // Enable file path access for drag-and-drop
       webSecurity: false,
     },
     title: "WebM Compressor",
   });
 
   if (process.platform === "darwin" && app.dock) {
-    app.dock.setIcon(iconPath);
+    try {
+      app.dock.setIcon(iconPath);
+    } catch (e) {
+      console.warn("Failed to set dock icon:", e);
+    }
   }
 
   // Load Vite dev server in development or built files in production
   if (isDev) {
+    console.log(`[Main] Loading Dev URL: ${process.env.VITE_DEV_SERVER_URL}`);
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL!);
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(__dirname, "../../dist/index.html"));
+    const htmlPath = path.join(appPath, "dist/index.html");
+    console.log(`[Main] Loading Production File: ${htmlPath}`);
+
+    // TEMPORARY: Open DevTools in production to debug blank screen
+    mainWindow.webContents.openDevTools();
+
+    mainWindow.loadFile(htmlPath).catch((err) => {
+      console.error(`[Main] Failed to load index.html:`, err);
+      // If loadFile fails, try an absolute path as a fallback
+      const absolutePath = path.resolve(htmlPath);
+      console.log(`[Main] Attempting fallback absolute path: ${absolutePath}`);
+      mainWindow?.loadFile(absolutePath).catch((err2) => {
+        console.error(`[Main] Absolute path fallback also failed:`, err2);
+      });
+    });
+
+    // Allow opening DevTools in production with a shortcut for debugging if needed
+    mainWindow.webContents.on("before-input-event", (_event, input) => {
+      if ((input.control || input.meta) && input.shift && input.key.toLowerCase() === "i") {
+        mainWindow?.webContents.openDevTools();
+      }
+    });
   }
 
   // Handle window close with confirmation if processing
@@ -247,6 +278,7 @@ ipcMain.on(
 
     try {
       await driveCompression({
+        id,
         sourceFile,
         ffmpegPath: getFFmpegPath(),
         ffprobePath: getFFprobePath(),

@@ -1,4 +1,7 @@
 import { spawn } from "node:child_process";
+import os from "node:os";
+import path from "node:path";
+import fs from "node:fs/promises";
 import generateFFMPEGParams from "./generateFFMPEGParams.js";
 import type { Params } from "./generateFFMPEGParams.js";
 import { extractMetadata } from "./extractMetadata.js";
@@ -50,6 +53,7 @@ export type DriveCompressionOptions = Omit<Params, "frameRate" | "videoHeight" |
     end: (step: CompressionStep, error: string | null, duration: string) => void;
     ffmpegPath?: string;
     ffprobePath?: string;
+    id?: string;
   };
 
 /**
@@ -69,6 +73,7 @@ export default async function driveCompression(options: DriveCompressionOptions)
     end,
     ffmpegPath = "ffmpeg",
     ffprobePath = "ffprobe",
+    id = "ffmpeg2pass",
   } = options;
 
   let { videoHeight, videoWidth } = options;
@@ -79,8 +84,17 @@ export default async function driveCompression(options: DriveCompressionOptions)
   let secondPassStartTime: number | null = null;
   let stepStartTime = Date.now();
 
+  // 1. Setup a stable, writable directory for pass logs
+  const logsDir = path.join(os.tmpdir(), "webm-compressor", "ffmpeg2pass");
+  // passLogFilePrefix includes the unique Job ID to prevent collisions during parallel processing
+  const passLogFilePrefix = path.join(logsDir, id);
+
   try {
-    // 1. Extract Metadata to get duration for progress calculation
+    // Ensure the logs directory exists
+    await fs.mkdir(logsDir, { recursive: true });
+    console.log(`[DriveCompression] Using log prefix: ${passLogFilePrefix}`);
+
+    // 2. Extract Metadata
     const {
       durationMs,
       height: metaHeight,
@@ -107,6 +121,7 @@ export default async function driveCompression(options: DriveCompressionOptions)
       extra,
       extrafirst,
       extrasecond,
+      passLogFilePrefix,
     };
 
     const { firstPass, secondPass } = generateFFMPEGParams(finalParams);
@@ -237,5 +252,15 @@ export default async function driveCompression(options: DriveCompressionOptions)
   } catch (err: any) {
     // Notify about the error on the current step
     end(currentStep, err.message || String(err), timeHumanReadable(Date.now() - stepStartTime));
+  } finally {
+    // 5. Cleanup: Remove the pass logs for THIS job
+    try {
+      // FFmpeg appends '-0.log' to the prefix. We remove that specific file.
+      const logFile = `${passLogFilePrefix}-0.log`;
+      await fs.unlink(logFile).catch(() => {});
+      console.log(`[DriveCompression] Cleaned up log for job: ${id}`);
+    } catch (e) {
+      console.warn(`[DriveCompression] Cleanup failed for job ${id}`, e);
+    }
   }
 }

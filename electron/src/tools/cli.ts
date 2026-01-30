@@ -6,7 +6,7 @@
  * So absolutely don't use this library in final application, stick to using directly generateFFMPEGParams.ts library
  * WARNING:
  *
- * NODE_OPTIONS="" /bin/bash ts.sh electron/tools/cli.ts -h 1080 -w 1920 -r 30 -sc -du 10050 -s "input.mp4"
+ * NODE_OPTIONS="" /bin/bash ts.sh electron/src/tools/cli.ts -h 1080 -w 1920 -r 30 -sc -du 10050 -s "input.mp4"
  */
 
 import {

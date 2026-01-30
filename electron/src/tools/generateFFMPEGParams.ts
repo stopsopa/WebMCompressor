@@ -18,6 +18,7 @@ export type Params = {
   extra?: string[]; // some extra parameters like -ss 00:00:17 -to 00:00:22 for cutting video
   extrafirst?: string[]; // or granurally for first pass
   extrasecond?: string[]; // or granurally for second pass
+  passLogFilePrefix?: string; // where to save multi-pass log file
 };
 
 type NestedStringArray = (string | string[])[];
@@ -35,7 +36,8 @@ export default function generateFFMPEGParams(params: Params): {
   firstPass: NestedStringArray;
   secondPass: NestedStringArray;
 } {
-  const { videoHeight, videoWidth, scale, sourceFile, frameRate, extra, extrafirst, extrasecond } = params;
+  const { videoHeight, videoWidth, scale, sourceFile, frameRate, extra, extrafirst, extrasecond, passLogFilePrefix } =
+    params;
 
   let { date } = params;
 
@@ -90,6 +92,11 @@ export default function generateFFMPEGParams(params: Params): {
 
   if (Array.isArray(extrasecond)) {
     buffersp.push(extrasecond);
+  }
+
+  if (passLogFilePrefix) {
+    bufferfp.push([`-passlogfile`, passLogFilePrefix]);
+    buffersp.push([`-passlogfile`, passLogFilePrefix]);
   }
 
   bufferfp.push([`-pass`, `1`, `-f`, `null`, `/dev/null`]);

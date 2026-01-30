@@ -15,5 +15,5 @@ if [[ "${@}" == *"--test"* ]]; then
   # requires npm install -g c8
   c8 --reporter=lcov --reporter=html --reporter=text node --experimental-config-file=node.config.json ${@}
 else
-  node --experimental-config-file=node.config.json ${@}
+  node --experimental-config-file=node.config.json --experimental-loader=./ts-resolver.js ${@}
 fi
