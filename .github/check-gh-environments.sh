@@ -43,14 +43,22 @@ else
   echo "✅ Token can see repository: \`$(echo $REPO_DATA | jq -r .name)\` ($(echo $REPO_DATA | jq -r .visibility))" >> $GITHUB_STEP_SUMMARY
   
   # Fetch data and CAPTURE it for multi-purpose use
-  API_DATA=$(gh api "repos/$REPO/environments" 2>/dev/null || echo "PERMISSION_ERROR")
+  # We capture stderr to see the EXACT error message from GitHub
+  ERR_FILE=$(mktemp)
+  API_DATA=$(gh api "repos/$REPO/environments" 2>"$ERR_FILE" || echo "PERMISSION_ERROR")
+  API_ERR=$(cat "$ERR_FILE")
+  rm -f "$ERR_FILE"
   
   # RAW DEBUG DUMP (Collapsed)
   echo "<details><summary>🔍 Raw API Response Structure (Debug)</summary>" >> $GITHUB_STEP_SUMMARY
   echo "" >> $GITHUB_STEP_SUMMARY
-  echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
-  echo "$API_DATA" | jq '.' >> $GITHUB_STEP_SUMMARY 2>&1 || echo "Invalid JSON or Error: $API_DATA" >> $GITHUB_STEP_SUMMARY
-  echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+  if [ "$API_DATA" == "PERMISSION_ERROR" ]; then
+    echo "❌ **API Error**: $API_ERR" >> $GITHUB_STEP_SUMMARY
+  else
+    echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+    echo "$API_DATA" | jq '.' >> $GITHUB_STEP_SUMMARY 2>&1 || echo "Invalid JSON: $API_DATA" >> $GITHUB_STEP_SUMMARY
+    echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+  fi
   echo "</details>" >> $GITHUB_STEP_SUMMARY
 fi
 
