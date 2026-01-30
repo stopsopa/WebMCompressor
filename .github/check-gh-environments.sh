@@ -75,7 +75,10 @@ if [ "$API_DATA" == "PERMISSION_ERROR" ]; then
   echo "1. Create a **Fine-grained personal access token**:" >> $GITHUB_STEP_SUMMARY
   echo "   - **Repository access**: Select **'Only select repositories'**." >> $GITHUB_STEP_SUMMARY
   echo "   - **Select repositories**: Choose this repository (\`$REPO\`)." >> $GITHUB_STEP_SUMMARY
-  echo "   - **Permissions**: Under 'Repository permissions', set both **'Environments'** AND **'Deployments'** to **'Read-only'**." >> $GITHUB_STEP_SUMMARY
+  echo "   - **Permissions**: Under 'Repository permissions', set the following to **'Read-only'**:" >> $GITHUB_STEP_SUMMARY
+  echo "     - **'Environments'**" >> $GITHUB_STEP_SUMMARY
+  echo "     - **'Deployments'**" >> $GITHUB_STEP_SUMMARY
+  echo "     - **'Administration'** (Required to list settings-level resources)" >> $GITHUB_STEP_SUMMARY
   echo "2. Add the token to this repository's SECRET (not VARIABLE) as \`GH_ADMIN_TOKEN\` IN THE 'Repository secrets' section." >> $GITHUB_STEP_SUMMARY
   echo "3. Update your YAML (\`pipeline.yml\`) to use \`GH_TOKEN: \${{ secrets.GH_ADMIN_TOKEN }}\`." >> $GITHUB_STEP_SUMMARY
   echo "" >> $GITHUB_STEP_SUMMARY
