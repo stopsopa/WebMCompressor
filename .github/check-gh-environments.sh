@@ -13,6 +13,18 @@ fi
 
 echo "### 🛡️ Pre-flight Environment Check" >> $GITHUB_STEP_SUMMARY
 
+# --- Token Diagnostics ---
+TOKEN_TYPE="Unknown"
+if [[ "$GH_TOKEN" == ghs_* ]]; then TOKEN_TYPE="Default GITHUB_TOKEN (Restricted)"; fi
+if [[ "$GH_TOKEN" == github_pat_* ]]; then TOKEN_TYPE="Fine-grained PAT"; fi
+if [[ "$GH_TOKEN" == ghp_* ]]; then TOKEN_TYPE="Classic PAT"; fi
+
+if [ -z "$GH_TOKEN" ]; then TOKEN_TYPE="EMPTY (Not found)"; fi
+
+echo "DEBUG: Repository: \`$REPO\`" >> $GITHUB_STEP_SUMMARY
+echo "DEBUG: Token detected: **$TOKEN_TYPE**" >> $GITHUB_STEP_SUMMARY
+# -------------------------
+
 ENVS_TO_CHECK=$(echo "$REQUIRED_ENVS" | tr -d ' ')
 IFS=',' read -ra ADDR <<< "$ENVS_TO_CHECK"
 
