@@ -89,9 +89,7 @@ To fix this and unblock the pipeline, you must provide a token with higher privi
    - **Repository access**: Select **'Only select repositories'** -> Choose this repository (\`$REPO\`).
    - **Permissions**: Under 'Repository permissions', set the following to **'Read-only'**:
      - **'Environments'**
-     - **'Deployments'**
-     - **'Administration'** (Required to list settings-level resources)
-     - **'Actions'** (Optional: some accounts require this for environment metadata)
+     - **'Actions'** (Required to access environment metadata)
 
 2. **Option B: Classic personal access token** (Most Reliable Fallback):
    - If Option A continues to return **403 Forbidden**, use a Classic PAT.
@@ -107,7 +105,11 @@ EOF
 else
   # Debug: Show the raw structure (total_count)
   COUNT=$(echo "$API_DATA" | jq -r '.total_count' 2>/dev/null)
-  echo "DEBUG: API says \`total_count\` is: **$COUNT**" >> "$GITHUB_STEP_SUMMARY"
+  
+  cat <<EOF >> "$GITHUB_STEP_SUMMARY"
+
+DEBUG: API says \`total_count\` is: **$COUNT**
+EOF
   
   # Debug: Show what we actually found
   FOUND_ENVS=$(echo "$API_DATA" | jq -r '.environments[].name' 2>/dev/null | paste -sd ", " -)
@@ -116,11 +118,11 @@ else
     # Check if environment exists in JSON
     if ! echo "$API_DATA" | jq -e ".environments[] | select(.name == \"$env_name\")" >/dev/null 2>&1; then
       cat <<EOF >> "$GITHUB_STEP_SUMMARY"
-❌ **ERROR**: Environment \`$env_name\` does not exist!
+- ❌ **ERROR**: Environment \`$env_name\` does not exist!
 $(if [ "$COUNT" == "0" ] || [ -z "$FOUND_ENVS" ]; then
-  echo "   (The API returned ZERO environments. This usually means the PAT is missing the **'Environments: Read-only'** permission.)"
+  echo "  - (The API returned ZERO environments. This usually means the PAT is missing the **'Environments: Read-only'** permission.)"
 else
-  echo "   (Found these instead: \`$FOUND_ENVS\`)"
+  echo "  - (Found these instead: \`$FOUND_ENVS\`)"
 fi)
 EOF
       FAILED=true
@@ -129,10 +131,10 @@ EOF
       # Check for protection rules (required_reviewers)
       HAS_GATES=$(echo "$ENV_JSON" | jq -r '.protection_rules[] | select(.type == "required_reviewers")' 2>/dev/null)
       if [ -z "$HAS_GATES" ]; then
-        echo "❌ **ERROR**: Environment \`$env_name\` exists but has **NO Required Reviewers**!" >> "$GITHUB_STEP_SUMMARY"
+        echo "- ❌ **ERROR**: Environment \`$env_name\` exists but has **NO Required Reviewers**!" >> "$GITHUB_STEP_SUMMARY"
         FAILED=true
       else
-        echo "✅ Environment \`$env_name\` is correctly gated." >> "$GITHUB_STEP_SUMMARY"
+        echo "- ✅ Environment \`$env_name\` is correctly gated." >> "$GITHUB_STEP_SUMMARY"
       fi
     fi
   done
