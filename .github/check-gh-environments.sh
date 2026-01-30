@@ -58,6 +58,7 @@ EOF
   API_ERR=$(cat "$ERR_FILE")
   rm -f "$ERR_FILE"
   
+  
   if [ $EXIT_CODE -ne 0 ]; then
     API_DATA="PERMISSION_ERROR"
   fi
