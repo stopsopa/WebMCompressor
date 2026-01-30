@@ -37,14 +37,21 @@ if [ "$API_DATA" == "PERMISSION_ERROR" ]; then
   echo "**Why?** This pipeline is configured to verify that environments (\`$REQUIRED_ENVS\`) are gated for safety." >> $GITHUB_STEP_SUMMARY
   exit 1
 else
+  # Debug: Show what we actually found
+  FOUND_ENVS=$(echo "$API_DATA" | jq -r '.environments[].name' 2>/dev/null | paste -sd ", " -)
+  
   for env_name in "${ADDR[@]}"; do
     # Check if environment exists in JSON
-    ENV_JSON=$(echo "$API_DATA" | jq -r ".environments[] | select(.name == \"$env_name\")" 2>/dev/null)
-    
-    if [ -z "$ENV_JSON" ]; then
+    if ! echo "$API_DATA" | jq -e ".environments[] | select(.name == \"$env_name\")" >/dev/null 2>&1; then
       echo "❌ **ERROR**: Environment \`$env_name\` does not exist!" >> $GITHUB_STEP_SUMMARY
+      if [ -n "$FOUND_ENVS" ]; then
+        echo "   (Found these instead: \`$FOUND_ENVS\`)" >> $GITHUB_STEP_SUMMARY
+      else
+        echo "   (The API returned NO environments. Check your settings or token permissions.)" >> $GITHUB_STEP_SUMMARY
+      fi
       FAILED=true
     else
+      ENV_JSON=$(echo "$API_DATA" | jq -r ".environments[] | select(.name == \"$env_name\")" 2>/dev/null)
       # Check for protection rules (required_reviewers)
       HAS_GATES=$(echo "$ENV_JSON" | jq -r '.protection_rules[] | select(.type == "required_reviewers")' 2>/dev/null)
       if [ -z "$HAS_GATES" ]; then
