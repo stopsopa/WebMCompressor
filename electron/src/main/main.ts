@@ -36,11 +36,6 @@ let activeProcessCount = 0;
 async function createWindow() {
   const isDev = !!process.env.VITE_DEV_SERVER_URL;
 
-  console.log(`[Main] Creating window...`);
-  console.log(`[Main] __dirname: ${__dirname}`);
-  console.log(`[Main] isPackaged: ${app.isPackaged}`);
-  console.log(`[Main] appPath: ${app.getAppPath()}`);
-
   const appPath = app.getAppPath();
   const iconPath = path.join(appPath, "dist/icon.png");
 
@@ -72,19 +67,8 @@ async function createWindow() {
     mainWindow.webContents.openDevTools();
   } else {
     const htmlPath = path.join(appPath, "dist/index.html");
-    console.log(`[Main] Loading Production File: ${htmlPath}`);
-
-    // TEMPORARY: Open DevTools in production to debug blank screen
-    mainWindow.webContents.openDevTools();
-
     mainWindow.loadFile(htmlPath).catch((err) => {
       console.error(`[Main] Failed to load index.html:`, err);
-      // If loadFile fails, try an absolute path as a fallback
-      const absolutePath = path.resolve(htmlPath);
-      console.log(`[Main] Attempting fallback absolute path: ${absolutePath}`);
-      mainWindow?.loadFile(absolutePath).catch((err2) => {
-        console.error(`[Main] Absolute path fallback also failed:`, err2);
-      });
     });
 
     // Allow opening DevTools in production with a shortcut for debugging if needed
