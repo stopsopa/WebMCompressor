@@ -156,7 +156,9 @@ If you are on a **Free plan with a Private repository**, you cannot use this fea
 To fix this, go to **Settings -> Environments** and add yourself as a **Required Reviewer** for these environments:
 $(for env_name in "${ADDR[@]}"; do echo "- $env_name"; done)
 
-![Environment Setup Guide](https://i.imgur.com/mhT7RCI.png)
+<img src="https://i.imgur.com/mhT7RCI.png" width="400" />
+
+https://i.imgur.com/mhT7RCI.png
 EOF
   exit 1
 fi
