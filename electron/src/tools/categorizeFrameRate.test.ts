@@ -4,7 +4,7 @@ import assert from "node:assert";
 import categorizeFrameRate from "./categorizeFrameRate.js";
 
 /**
- * /bin/bash ts.sh --test electron/tools/categorizeFrameRate.test.ts
+ * /bin/bash ts.sh --test electron/src/tools/categorizeFrameRate.test.ts
  */
 describe("categorizeFrameRate", () => {
   it("basic", () => {

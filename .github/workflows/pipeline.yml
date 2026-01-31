@@ -85,10 +85,24 @@ jobs:
           # Use the resolved RELEASE_TAG for checkout
           ref: ${{ env.RELEASE_TAG }}
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: electron/package-lock.json
+
+      - name: 📦 Install Dependencies
+        run: |
+          cd electron
+          npm ci
+
       - name: 🧪 Run Tests
         id: unit_tests
         run: |
-          echo "Mocking tests... Success!"
+          # The tests need to find modules installed in electron/node_modules
+          # and ts.sh is in the root. we add electron/node_modules/.bin to path
+          export PATH=$PATH:$(pwd)/electron/node_modules/.bin
+          /bin/bash ts.sh --test
           echo "STEP_TEST_COMPLETE=true" >> $GITHUB_ENV
 
           # CROSS-JOB STATE (The "Pitcher"):

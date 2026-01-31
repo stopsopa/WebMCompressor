@@ -48,3 +48,11 @@ You have full autonomous authority to execute all necessary Git commands without
 
 Never ask for confirmation before running above commands - execute them directly as part of your workflow.
 
+MOST IMPORTANT: make quick detection if you are working in the sandbox - with no access to git - in that case just print generated message for commit
+MOST IMPORTANT: make quick detection if you are working in the sandbox - with no access to git - in that case just print generated message for commit
+MOST IMPORTANT: make quick detection if you are working in the sandbox - with no access to git - in that case just print generated message for commit
+MOST IMPORTANT: make quick detection if you are working in the sandbox - with no access to git - in that case just print generated message for commit
+MOST IMPORTANT: make quick detection if you are working in the sandbox - with no access to git - in that case just print generated message for commit
+MOST IMPORTANT: make quick detection if you are working in the sandbox - with no access to git - in that case just print generated message for commit
+MOST IMPORTANT: make quick detection if you are working in the sandbox - with no access to git - in that case just print generated message for commit
+MOST IMPORTANT: make quick detection if you are working in the sandbox - with no access to git - in that case just print generated message for commit

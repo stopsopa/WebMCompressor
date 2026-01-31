@@ -5,7 +5,7 @@ import { spawnSync } from "node:child_process";
 import determineName from "./determineName.js";
 
 /**
- * /bin/bash ts.sh --test electron/tools/determineName.test.ts
+ * /bin/bash ts.sh --test electron/src/tools/determineName.test.ts
  */
 describe("determineName", () => {
   it("basic", () => {
@@ -17,7 +17,7 @@ describe("determineName", () => {
   it("cli", () => {
     const result = spawnSync("node", [
       "--experimental-config-file=node.config.json",
-      "src/tools/determineName.ts",
+      "electron/src/tools/determineName.ts",
       "abc/def/file.mov",
       "webm",
     ]);
