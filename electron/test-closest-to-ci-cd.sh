@@ -1,6 +1,13 @@
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 set -e
 
-rm -rf release/mac-arm64
+# Replicate being in the 'electron' directory
+cd "${DIR}"
+
+rm -rf "${DIR}/release/mac-arm64"
+
+/bin/bash "${DIR}/download-bins.sh"
 
 npx electron-builder --mac --arm64 --publish never
 
@@ -9,6 +16,3 @@ npx electron-builder --mac --arm64 --publish never
 
 # then I should run
 # ./release/mac-arm64/WebMCompressor.app/Contents/MacOS/WebMCompressor
-
-
-

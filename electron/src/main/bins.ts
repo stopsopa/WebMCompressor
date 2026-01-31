@@ -1,9 +1,5 @@
 import path from "node:path";
 import { app } from "electron";
-import { createRequire } from "node:module";
-
-const require = createRequire(import.meta.url);
-
 import { existsSync } from "node:fs";
 
 export function getFFmpegPath(): string {
@@ -29,8 +25,21 @@ export function getFFmpegPath(): string {
     return fullPath;
   }
 
-  // In development, use the ones from node_modules
-  const devPath = require("ffmpeg-static");
+  // In development, use the downloaded binaries in electron/bin
+  const platform = process.platform;
+  const arch = process.arch;
+  const exe = platform === "win32" ? "ffmpeg.exe" : "ffmpeg";
+  const devPath = path.join(app.getAppPath(), "bin", platform, arch, exe);
+
+  if (platform === "darwin" && !existsSync(devPath)) {
+    const fallbackArch = arch === "arm64" ? "x64" : "arm64";
+    const fallbackPath = path.join(app.getAppPath(), "bin", platform, fallbackArch, exe);
+    if (existsSync(fallbackPath)) {
+      console.log(`[Bins] Dev FFmpeg ${arch} not found, using fallback ${fallbackArch}: ${fallbackPath}`);
+      return fallbackPath;
+    }
+  }
+
   console.log(`[Bins] Dev FFmpeg path: ${devPath}`);
   return devPath;
 }
@@ -58,8 +67,21 @@ export function getFFprobePath(): string {
     return fullPath;
   }
 
-  // In development, use the one from node_modules
-  const devPath = require("ffprobe-static").path;
+  // In development, use the downloaded binaries in electron/bin
+  const platform = process.platform;
+  const arch = process.arch;
+  const exe = platform === "win32" ? "ffprobe.exe" : "ffprobe";
+  const devPath = path.join(app.getAppPath(), "bin", platform, arch, exe);
+
+  if (platform === "darwin" && !existsSync(devPath)) {
+    const fallbackArch = arch === "arm64" ? "x64" : "arm64";
+    const fallbackPath = path.join(app.getAppPath(), "bin", platform, fallbackArch, exe);
+    if (existsSync(fallbackPath)) {
+      console.log(`[Bins] Dev FFprobe ${arch} not found, using fallback ${fallbackArch}: ${fallbackPath}`);
+      return fallbackPath;
+    }
+  }
+
   console.log(`[Bins] Dev FFprobe path: ${devPath}`);
   return devPath;
 }

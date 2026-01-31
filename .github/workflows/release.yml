@@ -53,6 +53,7 @@ jobs:
         shell: bash
         run: |
           npm ci
+          /bin/bash download-bins.sh
 
           # Version Sync
           REF_NAME=${{ inputs.tag_name || github.ref_name }}

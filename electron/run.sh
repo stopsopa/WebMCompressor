@@ -1,8 +1,8 @@
-#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 # Ensures the app is built before running, or assumes it is built.
 # To be safe, we can just run the electron executable against the current directory,
 # which uses package.json 'main' entry point (dist-electron/main/main.js).
 
-/bin/bash compile.sh
-npx electron .
-
+/bin/bash "${DIR}/compile.sh"
+npx electron "${DIR}"

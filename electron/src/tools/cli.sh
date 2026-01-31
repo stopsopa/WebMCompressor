@@ -1,3 +1,5 @@
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT="$(cd "${DIR}/../../.." && pwd)"
 
 # WARNING:
 # this is just a demo of general logic how it could be potentially used in the future
@@ -6,7 +8,7 @@
 # and inject this information to cli.ts library for further calculations to determine target bitrate
 # WARNING:
 
-# /bin/bash electron/tools/cli.sh [file.mov]
+# /bin/bash ${DIR}/cli.sh [file.mov]
 FILE="${1}"
 
 if [ ! -f "${FILE}" ]; then
@@ -14,14 +16,18 @@ if [ ! -f "${FILE}" ]; then
     exit 1
 fi
 
-LINES_ARRAY=($(/bin/bash electron/tools/extractMetadata.sh "${FILE}"))
+METADATA_SCRIPT="${DIR}/extractMetadata.sh"
+LINES_ARRAY=($(/bin/bash "${METADATA_SCRIPT}" "${FILE}"))
 
 # declare -p LINES_ARRAY
 # declare -a LINES_ARRAY='([0]="1920" [1]="1080" [2]="60" [3]="10050")'
 
 TMP=$(mktemp)
 
-NODE_OPTIONS="" /bin/bash ts.sh electron/tools/cli.ts -s "${FILE}" -h ${LINES_ARRAY[1]} -w ${LINES_ARRAY[0]} -r ${LINES_ARRAY[2]} -du ${LINES_ARRAY[3]} -e ffmpeg > "${TMP}"
+TS_SH="${ROOT}/ts.sh"
+CLI_TS="${DIR}/cli.ts"
+
+NODE_OPTIONS="" /bin/bash "${TS_SH}" "${CLI_TS}" -s "${FILE}" -h ${LINES_ARRAY[1]} -w ${LINES_ARRAY[0]} -r ${LINES_ARRAY[2]} -du ${LINES_ARRAY[3]} -e ffmpeg > "${TMP}"
 
 if [ "${?}" != "0" ]; then
     
@@ -46,4 +52,3 @@ fi
 
 
 /bin/bash "${TMP}"
-

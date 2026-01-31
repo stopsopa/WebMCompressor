@@ -250,6 +250,7 @@ jobs:
       - name: 📦 Install & Build
         run: |
           npm ci
+          /bin/bash download-bins.sh
           npm run build
 
       - name: 🏗️ Build Electron App for QA

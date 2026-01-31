@@ -10,10 +10,10 @@ set -e
 export NODE_NO_WARNINGS=1
 
 if [[ "${@}" == *"--test"* ]]; then
-  rm -rf coverage
+  rm -rf "${DIR}/coverage"
   # without c8 ... - test will work like nothing happened but coverage directory won't be created
   # requires c8 (npx will handle it)
-  npx c8 --reporter=lcov --reporter=html --reporter=text node --experimental-loader=./ts-resolver.js --experimental-config-file=node.config.json ${@}
+  npx c8 --reporter=lcov --reporter=html --reporter=text node --experimental-loader="${DIR}/ts-resolver.js" --experimental-config-file="${DIR}/node.config.json" ${@}
 else
-  node --experimental-config-file=node.config.json --experimental-loader=./ts-resolver.js ${@}
+  node --experimental-config-file="${DIR}/node.config.json" --experimental-loader="${DIR}/ts-resolver.js" ${@}
 fi
