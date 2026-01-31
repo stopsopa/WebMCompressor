@@ -4,16 +4,35 @@ import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 
+import { existsSync } from "node:fs";
+
 export function getFFmpegPath(): string {
   if (app.isPackaged) {
     const platform = process.platform;
     const arch = process.arch;
     const exe = platform === "win32" ? "ffmpeg.exe" : "ffmpeg";
-    return path.join(process.resourcesPath, "bin", platform, arch, exe);
+
+    // Primary path: resources/bin/[platform]/[arch]/ffmpeg
+    let fullPath = path.join(process.resourcesPath, "bin", platform, arch, exe);
+
+    // Fallback for macOS: if arm64 not found, try x64 (Rosetta)
+    if (platform === "darwin" && !existsSync(fullPath)) {
+      const fallbackArch = arch === "arm64" ? "x64" : "arm64";
+      const fallbackPath = path.join(process.resourcesPath, "bin", platform, fallbackArch, exe);
+      if (existsSync(fallbackPath)) {
+        console.log(`[Bins] FFmpeg ${arch} not found, using fallback ${fallbackArch}: ${fallbackPath}`);
+        return fallbackPath;
+      }
+    }
+
+    console.log(`[Bins] Packaged FFmpeg path (arch: ${arch}): ${fullPath}`);
+    return fullPath;
   }
 
   // In development, use the ones from node_modules
-  return require("ffmpeg-static");
+  const devPath = require("ffmpeg-static");
+  console.log(`[Bins] Dev FFmpeg path: ${devPath}`);
+  return devPath;
 }
 
 export function getFFprobePath(): string {
@@ -21,11 +40,28 @@ export function getFFprobePath(): string {
     const platform = process.platform;
     const arch = process.arch;
     const exe = platform === "win32" ? "ffprobe.exe" : "ffprobe";
-    return path.join(process.resourcesPath, "bin", platform, arch, exe);
+
+    // Primary path: resources/bin/[platform]/[arch]/ffprobe
+    let fullPath = path.join(process.resourcesPath, "bin", platform, arch, exe);
+
+    // Fallback for macOS: if arm64 not found, try x64 (Rosetta)
+    if (platform === "darwin" && !existsSync(fullPath)) {
+      const fallbackArch = arch === "arm64" ? "x64" : "arm64";
+      const fallbackPath = path.join(process.resourcesPath, "bin", platform, fallbackArch, exe);
+      if (existsSync(fallbackPath)) {
+        console.log(`[Bins] FFprobe ${arch} not found, using fallback ${fallbackArch}: ${fallbackPath}`);
+        return fallbackPath;
+      }
+    }
+
+    console.log(`[Bins] Packaged FFprobe path (arch: ${arch}): ${fullPath}`);
+    return fullPath;
   }
 
   // In development, use the one from node_modules
-  return require("ffprobe-static").path;
+  const devPath = require("ffprobe-static").path;
+  console.log(`[Bins] Dev FFprobe path: ${devPath}`);
+  return devPath;
 }
 
 export async function getVersions(): Promise<{ ffmpeg: string; ffprobe: string }> {

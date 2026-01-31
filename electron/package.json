@@ -62,8 +62,8 @@
         "to": "bin/darwin/${arch}/ffmpeg"
       },
       {
-        "from": "node_modules/ffprobe-static/bin/darwin/${arch}/ffprobe",
-        "to": "bin/darwin/${arch}/ffprobe"
+        "from": "node_modules/ffprobe-static/bin",
+        "to": "bin"
       }
     ]
   },

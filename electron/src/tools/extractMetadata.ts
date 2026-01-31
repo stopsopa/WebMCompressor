@@ -33,10 +33,20 @@ export async function extractMetadata(ffprobePath: string = "ffprobe", filePath:
   ];
 
   try {
+    if (!existsSync(ffprobePath)) {
+      throw th(`ffprobe binary not found at path: ${ffprobePath}`);
+    }
+
     const result = spawnSync(ffprobePath, args, { encoding: "utf8" });
 
+    if (result.error) {
+      throw th(`ffprobe failed to spawn: ${result.error.message} (path: ${ffprobePath})`);
+    }
+
     if (result.status !== 0) {
-      throw th(`ffprobe failed with exit code ${result.status}${result.stderr ? `: ${result.stderr.trim()}` : ""}`);
+      throw th(
+        `ffprobe failed with exit code ${result.status}${result.stderr ? `: ${result.stderr.trim()}` : ""} (path: ${ffprobePath})`,
+      );
     }
 
     const output = result.stdout.trim();
