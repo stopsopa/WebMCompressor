@@ -20,4 +20,3 @@ ffmpeg*.log
 *.mov
 example/*.png
 example/*.gif
-example.restore.sh
