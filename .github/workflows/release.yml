@@ -136,7 +136,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: built-code-release
-          path: .
+          path: electron
 
       - name: "📦 Step A: Prepare & Download Binaries"
         working-directory: ./electron

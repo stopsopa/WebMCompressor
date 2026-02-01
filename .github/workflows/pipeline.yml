@@ -350,7 +350,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: built-code
-          path: .
+          path: electron
 
       - name: "📦 Step A: Prepare & Download Binaries"
         run: |
