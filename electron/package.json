@@ -37,6 +37,7 @@
       ],
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
       "extraResources": [
         {
           "from": "bin/darwin/${arch}",
@@ -59,7 +60,8 @@
           "from": "bin/win32/${arch}",
           "to": "bin/win32/${arch}"
         }
-      ]
+      ],
+      "artifactName": "${productName}-${version}-${arch}-setup.${ext}"
     },
     "files": [
       "dist-electron/**/*",
