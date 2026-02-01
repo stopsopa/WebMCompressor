@@ -455,14 +455,14 @@ jobs:
             ### 🚀 Release Created
             - **New Tag**: $NEW_TAG
             - **Old Tag**: $OLD_TAG
-            EOF
+          EOF
           else
             echo "released=false" >> $GITHUB_OUTPUT
             echo "STEP_BUMP_RELEASE_SKIPPED=true" >> $GITHUB_ENV
             cat <<EOF >> $GITHUB_STEP_SUMMARY
             ### ℹ️ Release Skipped
             No changes detected since $OLD_TAG.
-            EOF
+          EOF
           fi
 
       - name: 🔍 State Check (Final)
