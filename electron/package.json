@@ -62,8 +62,7 @@
         }
       ],
       "artifactName": "${productName}-${version}-${arch}-setup.${ext}",
-      "icon": "public/icon.ico",
-      "sign": null
+      "icon": "public/icon.ico"
     },
     "nsis": {
       "installerIcon": "public/icon.ico",
