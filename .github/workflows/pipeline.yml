@@ -14,6 +14,11 @@ on:
         required: false
         default: true
         type: boolean
+      run_electron_build:
+        description: "Run official Electron build steps (QA & Release)?"
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   contents: write
@@ -328,6 +333,7 @@ jobs:
           EOF
 
       - name: 🏗️ Build Electron App for QA
+        if: github.event_name != 'workflow_dispatch' || inputs.run_electron_build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -473,4 +479,5 @@ jobs:
     uses: ./.github/workflows/release.yml
     with:
       tag_name: ${{ needs.bump.outputs.new_tag }}
+      run_electron_build: ${{ github.event_name != 'workflow_dispatch' || inputs.run_electron_build }}
     secrets: inherit
