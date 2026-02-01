@@ -31,7 +31,7 @@ export function determineBinaryAbsolutePath(binaryName: "ffmpeg" | "ffprobe", se
         allFiles.push(fullPath);
       }
     }
-  };
+  }; 
 
   search(binDir);
 
