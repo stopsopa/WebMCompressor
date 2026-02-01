@@ -6,6 +6,8 @@
     "url": "git+https://github.com/stopsopa/webmcompressor.git"
   },
   "version": "1.0.0",
+  "description": "High-efficiency WebM video compressor using two-pass encoding.",
+  "author": "stopsopa",
   "type": "module",
   "main": "dist-electron/main/main.js",
   "scripts": {
@@ -34,7 +36,13 @@
         }
       ],
       "hardenedRuntime": true,
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "extraResources": [
+        {
+          "from": "bin/darwin/${arch}",
+          "to": "bin/darwin/${arch}"
+        }
+      ]
     },
     "win": {
       "target": [
@@ -44,6 +52,12 @@
             "x64",
             "arm64"
           ]
+        }
+      ],
+      "extraResources": [
+        {
+          "from": "bin/win32/${arch}",
+          "to": "bin/win32/${arch}"
         }
       ]
     },
@@ -55,13 +69,7 @@
     "publish": {
       "provider": "github",
       "releaseType": "release"
-    },
-    "extraResources": [
-      {
-        "from": "bin/${platform}/${arch}",
-        "to": "bin/${platform}/${arch}"
-      }
-    ]
+    }
   },
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.15",
