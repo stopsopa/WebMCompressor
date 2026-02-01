@@ -222,11 +222,11 @@ jobs:
             arch: arm64
             target: mac
             bins_os: darwin
-          - os: windows-latest
+          - os: ubuntu-latest
             arch: x64
             target: win
             bins_os: win32
-          - os: windows-latest
+          - os: ubuntu-latest
             arch: arm64
             target: win
             bins_os: win32
@@ -266,7 +266,7 @@ jobs:
       - name: 📦 Install & Build
         run: |
           npm ci
-          /bin/bash download-bins.sh ${{ matrix.bins_os }} ${{ matrix.arch }}
+          bash download-bins.sh ${{ matrix.bins_os }} ${{ matrix.arch }}
           npm run build
 
       - name: 🏗️ Build Electron App for QA

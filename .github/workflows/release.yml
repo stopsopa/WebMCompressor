@@ -33,11 +33,11 @@ jobs:
             arch: arm64
             target: mac
             bins_os: darwin
-          - os: windows-latest
+          - os: ubuntu-latest
             arch: x64
             target: win
             bins_os: win32
-          - os: windows-latest
+          - os: ubuntu-latest
             arch: arm64
             target: win
             bins_os: win32
@@ -69,7 +69,7 @@ jobs:
         shell: bash
         run: |
           npm ci
-          /bin/bash download-bins.sh ${{ matrix.bins_os }} ${{ matrix.arch }}
+          bash download-bins.sh ${{ matrix.bins_os }} ${{ matrix.arch }}
 
           # Version Sync
           REF_NAME=${{ inputs.tag_name || github.ref_name }}
