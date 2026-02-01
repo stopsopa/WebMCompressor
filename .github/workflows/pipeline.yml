@@ -48,6 +48,13 @@ jobs:
           echo "--- Environment (Filtered) ---"
           env | grep -E "STEP_|GITHUB_|RELEASE_TAG" | sort
           echo "STEP_DEMO_VAL=initialized" >> $GITHUB_ENV
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 📝 Debug Context
+          - **Triggered by**: ${{ github.event_name }}
+          - **Manual reason**: ${{ inputs.manual_run_reason || 'N/A' }}
+          - **Ref**: ${{ github.ref_name }}
+          - **Resolved RELEASE_TAG**: ${{ env.RELEASE_TAG }}
+          EOF
 
   # STEP 0.1: Security & Gate Check
   # This job detects if you forgot to set up Environments with "Required Reviewers".
@@ -79,6 +86,10 @@ jobs:
         run: |
           echo "### Test Job Initial State ###"
           env | grep -E "STEP_|GITHUB_|RELEASE_TAG" | sort
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 📝 Test Job Initial State
+          - **Resolved RELEASE_TAG**: ${{ env.RELEASE_TAG }}
+          EOF
 
       - uses: actions/checkout@v4
         with:
@@ -95,6 +106,10 @@ jobs:
         run: |
           cd electron
           npm ci
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 📦 Install Dependencies
+          Dependencies installed successfully.
+          EOF
 
       - name: 🧪 Run Tests
         id: unit_tests
@@ -108,11 +123,19 @@ jobs:
           # CROSS-JOB STATE (The "Pitcher"):
           # Echoing to $GITHUB_OUTPUT makes the value available to the job's 'outputs' section above.
           echo "test_complete=true" >> $GITHUB_OUTPUT
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 🧪 Run Tests
+          Tests completed successfully!
+          EOF
 
       - name: 📝 Step Debug (End)
         run: |
           echo "Markers after test: STEP_TEST_COMPLETE=>$STEP_TEST_COMPLETE<"
           env | grep -E "STEP_|GITHUB_|RELEASE_TAG" | sort
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 📝 Step Debug (End)
+          - **test_complete**: ${{ steps.unit_tests.outputs.test_complete }}
+          EOF
 
   # STEP 2a: Test Build (Optional Fork)
   # Gate: Test Approval
@@ -136,7 +159,12 @@ jobs:
     steps:
       - name: ✅ Mark Approved
         id: check
-        run: echo "approved=true" >> $GITHUB_OUTPUT
+        run: |
+          echo "approved=true" >> $GITHUB_OUTPUT
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 🛡️ Test Gate
+          - **Status**: Approved
+          EOF
       - run: echo "Test Gate - Approved"
 
   test-build:
@@ -163,6 +191,10 @@ jobs:
         run: |
           env | grep -E "STEP_|GITHUB_|RELEASE_TAG" | sort
           echo "GITHUB_ENV path: >$GITHUB_ENV<"
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 🔍 State Check
+          - **STEP_TEST_COMPLETE**: ${{ env.STEP_TEST_COMPLETE }}
+          EOF
 
       - run: echo "This is a dummy test deployment triggered by approval."
 
@@ -183,7 +215,12 @@ jobs:
     steps:
       - name: ✅ Mark Approved
         id: check
-        run: echo "approved=true" >> $GITHUB_OUTPUT
+        run: |
+          echo "approved=true" >> $GITHUB_OUTPUT
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 🛡️ QA Gate
+          - **Status**: Approved
+          EOF
       - run: echo "QA Gate - Approved"
 
   # 🚨 CONFIGURATION REQUIRED:
@@ -250,12 +287,21 @@ jobs:
         run: |
           echo "ENV Path: $GITHUB_ENV"
           env | grep -E "STEP_|GITHUB_|RELEASE_TAG" | sort || echo "No markers yet"
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 🔍 Audit (${{ matrix.target }} ${{ matrix.arch }})
+          - **OS**: ${{ matrix.os }}
+          - **Arch**: ${{ matrix.arch }}
+          EOF
 
       - name: 🔍 State Check (2)
         shell: bash
         run: |
           echo "STEP_QA_CHECKOUT=true" >> $GITHUB_ENV
           env | grep "STEP_" | sort || echo "No STEP markers"
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 🔍 State Check (2) (${{ matrix.target }} ${{ matrix.arch }})
+          - **STEP_QA_CHECKOUT**: true
+          EOF
 
       - uses: actions/setup-node@v4
         with:
@@ -276,12 +322,20 @@ jobs:
           npm ci
           bash download-bins.sh ${{ matrix.bins_os }} ${{ matrix.arch }}
           npm run build
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 📦 Install & Build (${{ matrix.target }} ${{ matrix.arch }})
+          Dependencies installed, binaries downloaded, and build completed.
+          EOF
 
       - name: 🏗️ Build Electron App for QA
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npx electron-builder --${{ matrix.target }} --${{ matrix.arch }} --publish never
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 🏗️ Build Electron App for QA (${{ matrix.target }} ${{ matrix.arch }})
+          Build finished for ${{ matrix.target }} (${{ matrix.arch }}).
+          EOF
         shell: bash
 
       - name: 📤 Upload Artifacts (${{ matrix.target }} ${{ matrix.arch }})
@@ -293,6 +347,17 @@ jobs:
             electron/release/*.dmg
             electron/release/*.exe
           retention-days: 1
+
+      - name: 📢 QA Build Summary (${{ matrix.target }} ${{ matrix.arch }})
+        if: always()
+        shell: bash
+        run: |
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 📢 QA Build Summary (${{ matrix.target }} ${{ matrix.arch }})
+          - **Status**: ${{ job.status }}
+          - **Artifact Name**: qa-release-${{ matrix.target }}-${{ matrix.arch }}
+          - **Download**: [View Artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts)
+          EOF
 
   # STEP 3: The "Gatekeeper" for Production
   # Gate: Production Approval
@@ -308,7 +373,12 @@ jobs:
     steps:
       - name: ✅ Mark Approved
         id: check
-        run: echo "approved=true" >> $GITHUB_OUTPUT
+        run: |
+          echo "approved=true" >> $GITHUB_OUTPUT
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 🛡️ Bump Gate
+          - **Status**: Approved
+          EOF
       - run: echo "Bump Gate - Approved"
 
   bump:
@@ -342,7 +412,12 @@ jobs:
           persist-credentials: false
 
       - name: 🔍 Audit
-        run: env | grep -E "STEP_|GITHUB_|RELEASE_TAG" | sort
+        run: |
+          env | grep -E "STEP_|GITHUB_|RELEASE_TAG" | sort
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 🔍 Audit (Bump)
+          Checking environment variables for release.
+          EOF
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -376,14 +451,27 @@ jobs:
             echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
             echo "released=true" >> $GITHUB_OUTPUT
             echo "STEP_BUMP_RELEASE_CREATED=true" >> $GITHUB_ENV
+            cat <<EOF >> $GITHUB_STEP_SUMMARY
+            ### 🚀 Release Created
+            - **New Tag**: $NEW_TAG
+            - **Old Tag**: $OLD_TAG
+            EOF
           else
             echo "released=false" >> $GITHUB_OUTPUT
             echo "STEP_BUMP_RELEASE_SKIPPED=true" >> $GITHUB_ENV
+            cat <<EOF >> $GITHUB_STEP_SUMMARY
+            ### ℹ️ Release Skipped
+            No changes detected since $OLD_TAG.
+            EOF
           fi
 
       - name: 🔍 State Check (Final)
         run: |
           env | grep "STEP_" | sort
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 🔍 State Check (Final)
+          Bump process completed.
+          EOF
 
   # STEP 4: Build & Publish (Only if Step 3 released something)
   build-release:

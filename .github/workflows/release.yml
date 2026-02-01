@@ -52,6 +52,11 @@ jobs:
           echo "Ref ${{ github.ref_name }}:   >${{ github.ref_name }}<"
           echo "ENV Path: $GITHUB_ENV"
           env | grep -E "STEP_|GITHUB_" | sort || echo "No markers yet"
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 🔍 Audit (Release - ${{ matrix.target }} ${{ matrix.arch }})
+          - **Event**: ${{ github.event_name }}
+          - **Tag**: ${{ inputs.tag_name || github.ref_name }}
+          EOF
 
       - uses: actions/checkout@v4
         with:
@@ -86,6 +91,11 @@ jobs:
           npm version $VERSION --no-git-tag-version --allow-same-version
 
           npm run build
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 📦 Install, Build & Sync (${{ matrix.target }} ${{ matrix.arch }})
+          - **Version**: $VERSION
+          - **Status**: Completed
+          EOF
 
       - name: 🏗️ Build and Publish Electron App
         working-directory: ./electron
@@ -94,6 +104,10 @@ jobs:
         shell: bash
         run: |
           npx electron-builder --${{ matrix.target }} --${{ matrix.arch }} --publish always
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 🏗️ Build and Publish Electron App (${{ matrix.target }} ${{ matrix.arch }})
+          Version published for ${{ matrix.target }} (${{ matrix.arch }}).
+          EOF
 
       - name: 📤 Upload Build Metadata
         working-directory: ./electron
@@ -103,6 +117,10 @@ jobs:
         run: |
           TAG_NAME=${{ inputs.tag_name || github.ref_name }}
           gh release upload $TAG_NAME package.json --clobber
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 📤 Upload Build Metadata (${{ matrix.target }} ${{ matrix.arch }})
+          Metadata (\`package.json\`) uploaded to release.
+          EOF
 
   summary:
     name: 📢 Release Summary
@@ -116,10 +134,10 @@ jobs:
           REPO_URL="https://github.com/${{ github.repository }}"
           RELEASE_URL="$REPO_URL/releases/tag/$TAG_NAME"
 
-          echo "### 🚀 Release Build Pipeline Complete!" >> $GITHUB_STEP_SUMMARY
-          echo "All macOS and Windows builds (x64 and arm64) have finished." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "You can view the release and download the artifacts here:" >> $GITHUB_STEP_SUMMARY
-          echo "👉 [**$TAG_NAME**]($RELEASE_URL)" >> $GITHUB_STEP_SUMMARY
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 🚀 Release Build Pipeline Complete!
+          All macOS and Windows builds (x64 and arm64) have finished.
 
-          
+          You can view the release and download the artifacts here:
+          👉 [**$TAG_NAME**]($RELEASE_URL)
+          EOF
