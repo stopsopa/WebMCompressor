@@ -1,10 +1,11 @@
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # This is original script - prototype - written in bash
 # at lates stages of implementing final UI wrapper I've decided to rewrite it in TypeScript (extractMetadata.ts)
 # to don't relay on presence of bash on target machine
 # -----------------------------------------------------------------------------------------
 
-# /bin/bash electron/tools/extractMetadata.sh [file.mov]
+# /bin/bash ${DIR}/extractMetadata.sh [file.mov]
 # This script extracts the width, height, and frame rate (FPS) from a video file using ffprobe.
 # It normalizes the FPS to its numerator (leading digits) and outputs four values on separate lines:
 # 1. Width
@@ -20,7 +21,7 @@
 FILE="${1}"
 
 if [ ! -f "${FILE}" ]; then
-    echo "${0} error: File not found: ${FILE}"
+    echo "${0} error: File not found FILE=>${FILE}<"
     exit 1
 fi
 
@@ -28,8 +29,8 @@ fi
 LINES_ARRAY=($(ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${FILE}"))
 
 
-if [ ${#LINES_ARRAY[@]} -ne 4 ]; then
-    echo "${0} error: Invalid output from ffprobe (expected 4 values, got ${#LINES_ARRAY[@]})"
+if [ "${#LINES_ARRAY[@]}" -ne 4 ]; then
+    echo "${0} error: Invalid output from ffprobe (expected 4 values, got ${#LINES_ARRAY[@]}) for FILE=>${FILE}<"
     exit 1
 fi
 
@@ -46,25 +47,25 @@ fi
 
 # check if width matches regex ^[0-9]+$
 if ! [[ "${WIDTH}" =~ ^[0-9]+$ ]]; then
-    echo "${0} error: Invalid width from ffprobe: ${WIDTH}"
+    echo "${0} error: Invalid width from ffprobe WIDTH=>${WIDTH}< for FILE=>${FILE}<"
     exit 1
 fi
 
 # check if height matches regex ^[0-9]+$
 if ! [[ "${HEIGHT}" =~ ^[0-9]+$ ]]; then
-    echo "${0} error: Invalid height from ffprobe: ${HEIGHT}"
+    echo "${0} error: Invalid height from ffprobe HEIGHT=>${HEIGHT}< for FILE=>${FILE}<"
     exit 1
 fi
 
 # check if fps matches regex ^[0-9]+$
 if ! [[ "${FPS}" =~ ^[0-9]+$ ]]; then
-    echo "${0} error: Invalid fps from ffprobe: ${FPS}"
+    echo "${0} error: Invalid fps from ffprobe FPS=>${FPS}< for FILE=>${FILE}<"
     exit 1
 fi
 
 # check if duration matches regex ^[0-9]+(\.[0-9]+)?$
 if ! [[ "${DURATION}" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-    echo "${0} error: Invalid duration from ffprobe: ${DURATION}"
+    echo "${0} error: Invalid duration from ffprobe DURATION=>${DURATION}< for FILE=>${FILE}<"
     exit 1
 fi
 

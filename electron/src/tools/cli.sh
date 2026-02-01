@@ -12,7 +12,7 @@ ROOT="$(cd "${DIR}/../../.." && pwd)"
 FILE="${1}"
 
 if [ ! -f "${FILE}" ]; then
-    echo "${0} error: File not found: ${FILE}"
+    echo "${0} error: File not found FILE=>${FILE}<"
     exit 1
 fi
 
@@ -27,12 +27,12 @@ TMP=$(mktemp)
 TS_SH="${ROOT}/ts.sh"
 CLI_TS="${DIR}/cli.ts"
 
-NODE_OPTIONS="" /bin/bash "${TS_SH}" "${CLI_TS}" -s "${FILE}" -h ${LINES_ARRAY[1]} -w ${LINES_ARRAY[0]} -r ${LINES_ARRAY[2]} -du ${LINES_ARRAY[3]} -e ffmpeg > "${TMP}"
+NODE_OPTIONS="" /bin/bash "${TS_SH}" "${CLI_TS}" -s "${FILE}" -h "${LINES_ARRAY[1]}" -w "${LINES_ARRAY[0]}" -r "${LINES_ARRAY[2]}" -du "${LINES_ARRAY[3]}" -e ffmpeg > "${TMP}"
 
 if [ "${?}" != "0" ]; then
     
     cat <<EEE
-${0} error: cli.ts failed, see more details:
+${0} error: cli.ts failed for FILE=>${FILE}<, see more details:
   cat "${TMP}"
 
 EEE

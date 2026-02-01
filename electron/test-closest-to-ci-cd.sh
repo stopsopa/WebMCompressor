@@ -9,22 +9,22 @@ rm -rf "${DIR}/release/mac-arm64"
 
 # Detect OS and ARCH for download-bins.sh
 OS_NAME="unknown"
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [[ "${OSTYPE}" == "darwin"* ]]; then
     OS_NAME="darwin"
-elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
+elif [[ "${OSTYPE}" == "msys" || "${OSTYPE}" == "cygwin" || "${OSTYPE}" == "win32" ]]; then
     OS_NAME="win32"
 fi
 
 ARCH_NAME="unknown"
 UNAME_M=$(uname -m)
-if [[ "$UNAME_M" == "arm64" || "$UNAME_M" == "aarch64" ]]; then
+if [[ "${UNAME_M}" == "arm64" || "${UNAME_M}" == "aarch64" ]]; then
     ARCH_NAME="arm64"
-elif [[ "$UNAME_M" == "x86_64" ]]; then
+elif [[ "${UNAME_M}" == "x86_64" ]]; then
     ARCH_NAME="x64"
 fi
 
 if [ "${OS_NAME}" = "unknown" ] || [ "${ARCH_NAME}" = "unknown" ]; then
-    echo "Error: Could not determine OS or ARCH (OS_NAME=>${OS_NAME}<, ARCH_NAME=>${ARCH_NAME}<)"
+    echo "${0} error: Could not determine OS or ARCH (OS_NAME=>${OS_NAME}<, ARCH_NAME=>${ARCH_NAME}<)"
     exit 1
 fi
 

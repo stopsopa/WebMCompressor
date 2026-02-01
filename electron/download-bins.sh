@@ -15,23 +15,23 @@ OS_ARG="${1}"
 ARCH_ARG="${2}"
 
 if [ -z "${OS_ARG}" ]; then
-    echo "${0} error: OS argument (1) is missing. Usage: ${0} [darwin|win32] [x64|arm64]"
+    echo "${0} error: OS argument (1) is missing. Usage: /bin/bash ${DIR}/download-bins.sh [darwin|win32] [x64|arm64]"
     exit 1
 fi
 
 if [ -z "${ARCH_ARG}" ]; then
-    echo "${0} error: ARCH argument (2) is missing. Usage: ${0} [darwin|win32] [x64|arm64]"
+    echo "${0} error: ARCH argument (2) is missing. Usage: /bin/bash ${DIR}/download-bins.sh [darwin|win32] [x64|arm64]"
     exit 1
 fi
 
 # Validation and mapping
 if [ "${OS_ARG}" != "darwin" ] && [ "${OS_ARG}" != "win32" ]; then
-    echo "${0} error: Unsupported OS=>${OS_ARG}<. Only 'darwin' and 'win32' are supported."
+    echo "${0} error: Unsupported OS_ARG=>${OS_ARG}<. Only 'darwin' and 'win32' are supported."
     exit 1
 fi
 
 if [ "${ARCH_ARG}" != "x64" ] && [ "${ARCH_ARG}" != "arm64" ]; then
-    echo "${0} error: Unsupported ARCH=>${ARCH_ARG}<. Only 'x64' and 'arm64' are supported."
+    echo "${0} error: Unsupported ARCH_ARG=>${ARCH_ARG}<. Only 'x64' and 'arm64' are supported."
     exit 1
 fi
 
@@ -94,7 +94,7 @@ download_bin() {
     else
         echo "   [+] ${local_file_name} (${TARGET_OS}/${TARGET_ARCH}) -> ${target}"
         if ! curl -L -f -o "${target}" "${url}"; then
-            echo "${0} error: Failed to download ${name} for ${TARGET_OS}/${TARGET_ARCH} from source url=>${url}<"
+            echo "${0} error: Failed to download name=>${name}< for TARGET_OS=>${TARGET_OS}< / TARGET_ARCH=>${TARGET_ARCH}< from source url=>${url}<"
             exit 1
         fi
         chmod +x "${target}"

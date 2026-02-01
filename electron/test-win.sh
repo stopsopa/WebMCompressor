@@ -1,9 +1,7 @@
-#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Script to replicate the Windows build process locally as closely as possible to CI/CD
 # This script is designed to be run from the root of the project or the electron/ directory.
-
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 set -e
 
@@ -20,9 +18,9 @@ if [ -z "${ARCH_ARG}" ]; then
         options=("x64" "arm64")
         select opt in "${options[@]}"
         do
-            case $opt in
+            case "${opt}" in
                 "x64"|"arm64")
-                    ARCH_ARG=$opt
+                    ARCH_ARG="${opt}"
                     break
                     ;;
                 *) echo "❌ Invalid selection. Please try again.";;
@@ -30,8 +28,8 @@ if [ -z "${ARCH_ARG}" ]; then
         done
         echo ""
     else
-        echo "Error: Architecture argument is required when not running interactively."
-        echo "Usage: ${0} [x64|arm64]"
+        echo "${0} error: Architecture argument is required when not running interactively."
+        echo "Usage: /bin/bash ${DIR}/test-win.sh [x64|arm64]"
         exit 1
     fi
 fi
@@ -43,7 +41,7 @@ if [[ "${ARCH_ARG}" == "arm" || "${ARCH_ARG}" == "arm64" ]]; then
 elif [[ "${ARCH_ARG}" == "x64" ]]; then
     TARGET_ARCH="x64"
 else
-    echo "Error: Invalid architecture '${ARCH_ARG}'. Use 'x64' or 'arm64'."
+    echo "${0} error: Invalid architecture ARCH_ARG=>${ARCH_ARG}<. Use 'x64' or 'arm64'."
     exit 1
 fi
 
@@ -69,7 +67,7 @@ if [ -d "bin" ]; then
     find bin -maxdepth 4 -ls
   fi
 else
-  echo "⚠️ ERROR: bin directory NOT FOUND in $(pwd)"
+  echo "${0} error: bin directory NOT FOUND in $(pwd)"
   exit 1
 fi
 
