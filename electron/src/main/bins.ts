@@ -9,16 +9,10 @@ export function getFFmpegPath(): string {
     const exe = platform === "win32" ? "ffmpeg.exe" : "ffmpeg";
 
     // Primary path: resources/bin/[platform]/[arch]/ffmpeg
-    let fullPath = path.join(process.resourcesPath, "bin", platform, arch, exe);
+    const fullPath = path.join(process.resourcesPath, "bin", platform, arch, exe);
 
-    // Fallback for macOS: if arm64 not found, try x64 (Rosetta)
-    if (platform === "darwin" && !existsSync(fullPath)) {
-      const fallbackArch = arch === "arm64" ? "x64" : "arm64";
-      const fallbackPath = path.join(process.resourcesPath, "bin", platform, fallbackArch, exe);
-      if (existsSync(fallbackPath)) {
-        console.log(`[Bins] FFmpeg ${arch} not found, using fallback ${fallbackArch}: ${fallbackPath}`);
-        return fallbackPath;
-      }
+    if (!existsSync(fullPath)) {
+      throw new Error(`FFmpeg binary not found at expected path: ${fullPath}`);
     }
 
     console.log(`[Bins] Packaged FFmpeg path (arch: ${arch}): ${fullPath}`);
@@ -26,21 +20,10 @@ export function getFFmpegPath(): string {
   }
 
   // In development, use the downloaded binaries in electron/bin
-  const platform = process.platform;
-  const arch = process.arch;
-  const exe = platform === "win32" ? "ffmpeg.exe" : "ffmpeg";
-  const devPath = path.join(app.getAppPath(), "bin", platform, arch, exe);
+  const { determineBinaryAbsolutePath } = require("../tools/determineBinaryAbsolutePath.js");
+  const devPath = determineBinaryAbsolutePath("ffmpeg");
 
-  if (platform === "darwin" && !existsSync(devPath)) {
-    const fallbackArch = arch === "arm64" ? "x64" : "arm64";
-    const fallbackPath = path.join(app.getAppPath(), "bin", platform, fallbackArch, exe);
-    if (existsSync(fallbackPath)) {
-      console.log(`[Bins] Dev FFmpeg ${arch} not found, using fallback ${fallbackArch}: ${fallbackPath}`);
-      return fallbackPath;
-    }
-  }
-
-  console.log(`[Bins] Dev FFmpeg path: ${devPath}`);
+  console.log(`[Bins] Dev FFmpeg path resolved via determineBinaryAbsolutePath: ${devPath}`);
   return devPath;
 }
 
@@ -51,16 +34,10 @@ export function getFFprobePath(): string {
     const exe = platform === "win32" ? "ffprobe.exe" : "ffprobe";
 
     // Primary path: resources/bin/[platform]/[arch]/ffprobe
-    let fullPath = path.join(process.resourcesPath, "bin", platform, arch, exe);
+    const fullPath = path.join(process.resourcesPath, "bin", platform, arch, exe);
 
-    // Fallback for macOS: if arm64 not found, try x64 (Rosetta)
-    if (platform === "darwin" && !existsSync(fullPath)) {
-      const fallbackArch = arch === "arm64" ? "x64" : "arm64";
-      const fallbackPath = path.join(process.resourcesPath, "bin", platform, fallbackArch, exe);
-      if (existsSync(fallbackPath)) {
-        console.log(`[Bins] FFprobe ${arch} not found, using fallback ${fallbackArch}: ${fallbackPath}`);
-        return fallbackPath;
-      }
+    if (!existsSync(fullPath)) {
+      throw new Error(`FFprobe binary not found at expected path: ${fullPath}`);
     }
 
     console.log(`[Bins] Packaged FFprobe path (arch: ${arch}): ${fullPath}`);
@@ -68,21 +45,10 @@ export function getFFprobePath(): string {
   }
 
   // In development, use the downloaded binaries in electron/bin
-  const platform = process.platform;
-  const arch = process.arch;
-  const exe = platform === "win32" ? "ffprobe.exe" : "ffprobe";
-  const devPath = path.join(app.getAppPath(), "bin", platform, arch, exe);
+  const { determineBinaryAbsolutePath } = require("../tools/determineBinaryAbsolutePath.js");
+  const devPath = determineBinaryAbsolutePath("ffprobe");
 
-  if (platform === "darwin" && !existsSync(devPath)) {
-    const fallbackArch = arch === "arm64" ? "x64" : "arm64";
-    const fallbackPath = path.join(app.getAppPath(), "bin", platform, fallbackArch, exe);
-    if (existsSync(fallbackPath)) {
-      console.log(`[Bins] Dev FFprobe ${arch} not found, using fallback ${fallbackArch}: ${fallbackPath}`);
-      return fallbackPath;
-    }
-  }
-
-  console.log(`[Bins] Dev FFprobe path: ${devPath}`);
+  console.log(`[Bins] Dev FFprobe path resolved via determineBinaryAbsolutePath: ${devPath}`);
   return devPath;
 }
 

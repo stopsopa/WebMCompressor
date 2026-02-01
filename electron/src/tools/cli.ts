@@ -9,10 +9,8 @@
  * NODE_OPTIONS="" /bin/bash ts.sh electron/src/tools/cli.ts -h 1080 -w 1920 -r 30 -sc -du 10050 -s "input.mp4"
  */
 
-import {
-  generateFFMPEGParamsStrings,
-  type Params,
-} from "./generateFFMPEGParams.js";
+import { generateFFMPEGParamsStrings, type Params } from "./generateFFMPEGParams.js";
+import { determineBinaryAbsolutePath } from "./determineBinaryAbsolutePath.js";
 
 const args = process.argv.slice(2);
 
@@ -57,8 +55,10 @@ const params: Partial<Params> & {
 } = {
   scale: false, // default scale to false
   pass: "both",
-  mainExec: "ffmpeg",
+  mainExec: "",
 };
+
+params.mainExec = determineBinaryAbsolutePath("ffmpeg");
 
 for (let i = 0; i < args.length; i++) {
   const arg = args[i];
@@ -111,16 +111,10 @@ for (let i = 0; i < args.length; i++) {
       break;
     case "-p":
     case "--pass":
-      if (
-        nextArg === "both" ||
-        nextArg === "firstPass" ||
-        nextArg === "secondPass"
-      ) {
+      if (nextArg === "both" || nextArg === "firstPass" || nextArg === "secondPass") {
         params.pass = nextArg as PassOption;
       } else {
-        console.error(
-          `Error: -p, --pass must be one of 'both', 'firstPass', 'secondPass'`,
-        );
+        console.error(`Error: -p, --pass must be one of 'both', 'firstPass', 'secondPass'`);
         process.exit(1);
       }
       i++;
@@ -131,17 +125,12 @@ for (let i = 0; i < args.length; i++) {
 // Basic validation
 const missing: string[] = [];
 if (!params.sourceFile) missing.push("-s, --sourceFile");
-if (params.videoHeight === undefined || isNaN(params.videoHeight))
-  missing.push("-h, --videoHeight (must be a number)");
-if (params.videoWidth === undefined || isNaN(params.videoWidth))
-  missing.push("-w, --videoWidth (must be a number)");
-if (params.frameRate === undefined || isNaN(params.frameRate))
-  missing.push("-r, --frameRate (must be a number)");
+if (params.videoHeight === undefined || isNaN(params.videoHeight)) missing.push("-h, --videoHeight (must be a number)");
+if (params.videoWidth === undefined || isNaN(params.videoWidth)) missing.push("-w, --videoWidth (must be a number)");
+if (params.frameRate === undefined || isNaN(params.frameRate)) missing.push("-r, --frameRate (must be a number)");
 
 if (missing.length > 0) {
-  console.error(
-    `Error: Missing or invalid required arguments: ${missing.join(", ")}`,
-  );
+  console.error(`Error: Missing or invalid required arguments: ${missing.join(", ")}`);
   printHelp();
   process.exit(1);
 }

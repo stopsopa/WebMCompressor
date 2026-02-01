@@ -213,7 +213,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest]
+        include:
+          - os: macos-latest
+            arch: x64
+            target: mac
+            bins_os: darwin
+          - os: macos-latest
+            arch: arm64
+            target: mac
+            bins_os: darwin
+          - os: windows-latest
+            arch: x64
+            target: win
+            bins_os: win32
+          - os: windows-latest
+            arch: arm64
+            target: win
+            bins_os: win32
     runs-on: ${{ matrix.os }}
     # environment: development # Removed: Handled by gate
     # CROSS-JOB STATE (The "Catcher"):
@@ -250,22 +266,24 @@ jobs:
       - name: 📦 Install & Build
         run: |
           npm ci
-          /bin/bash download-bins.sh
+          /bin/bash download-bins.sh ${{ matrix.bins_os }} ${{ matrix.arch }}
           npm run build
 
       - name: 🏗️ Build Electron App for QA
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npx electron-builder --mac --publish never
+          npx electron-builder --${{ matrix.target }} --${{ matrix.arch }} --publish never
         shell: bash
 
-      - name: 📤 Upload Artifacts (Mac)
+      - name: 📤 Upload Artifacts (${{ matrix.target }} ${{ matrix.arch }})
         if: (github.event_name != 'workflow_dispatch' || inputs.upload_artifacts) && env.UPLOAD_ARTIFACTS == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: qa-release-dmg
-          path: electron/release/*.dmg
+          name: qa-release-${{ matrix.target }}-${{ matrix.arch }}
+          path: |
+            electron/release/*.dmg
+            electron/release/*.exe
           retention-days: 1
 
   # STEP 3: The "Gatekeeper" for Production

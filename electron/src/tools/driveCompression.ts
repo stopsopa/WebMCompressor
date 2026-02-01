@@ -7,6 +7,7 @@ import type { Params } from "./generateFFMPEGParams.js";
 import { extractMetadata } from "./extractMetadata.js";
 import scaleWandH from "./scaleWandH.js";
 import { timeHumanReadable } from "./timeHumanReadable.js";
+import { determineBinaryAbsolutePath } from "./determineBinaryAbsolutePath.js";
 
 export type CompressionStep = "first" | "second";
 
@@ -71,10 +72,20 @@ export default async function driveCompression(options: DriveCompressionOptions)
     extrasecond,
     progressEvent,
     end,
-    ffmpegPath = "ffmpeg",
-    ffprobePath = "ffprobe",
+    ffmpegPath,
+    ffprobePath,
     id = "ffmpeg2pass",
   } = options;
+
+  let resolveFfmpegPath = ffmpegPath;
+  if (!resolveFfmpegPath) {
+    resolveFfmpegPath = determineBinaryAbsolutePath("ffmpeg");
+  }
+
+  let resolveFfprobePath = ffprobePath;
+  if (!resolveFfprobePath) {
+    resolveFfprobePath = determineBinaryAbsolutePath("ffprobe");
+  }
 
   let { videoHeight, videoWidth } = options;
 
@@ -100,7 +111,7 @@ export default async function driveCompression(options: DriveCompressionOptions)
       height: metaHeight,
       width: metaWidth,
       fps: metaFps,
-    } = await extractMetadata(ffprobePath, sourceFile);
+    } = await extractMetadata(resolveFfprobePath, sourceFile);
 
     if (scale) {
       ({ height: videoHeight, width: videoWidth } = scaleWandH({ height: metaHeight, width: metaWidth }, {
@@ -137,7 +148,7 @@ export default async function driveCompression(options: DriveCompressionOptions)
           secondPassStartTime = Date.now();
         }
 
-        const child = spawn(ffmpegPath, flattenedArgs);
+        const child = spawn(resolveFfmpegPath, flattenedArgs);
 
         let stderr = "";
         let stdoutBuffer = "";

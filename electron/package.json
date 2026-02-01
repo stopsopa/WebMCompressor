@@ -29,7 +29,8 @@
         {
           "target": "dmg",
           "arch": [
-            "arm64"
+            "arm64",
+            "x64"
           ]
         }
       ],
@@ -42,8 +43,7 @@
           "target": "nsis",
           "arch": [
             "x64",
-            "arm64",
-            "ia32"
+            "arm64"
           ]
         }
       ]
@@ -59,8 +59,8 @@
     },
     "extraResources": [
       {
-        "from": "bin/darwin",
-        "to": "bin/darwin"
+        "from": "bin/${platform}/${arch}",
+        "to": "bin/${platform}/${arch}"
       }
     ]
   },

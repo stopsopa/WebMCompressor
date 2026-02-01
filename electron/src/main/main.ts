@@ -34,6 +34,18 @@ const getDefaultConfigPath = () => path.join(__dirname, "../../setup.json");
 let activeProcessCount = 0;
 
 async function createWindow() {
+  // Check for critical binaries at startup
+  try {
+    getFFmpegPath();
+    getFFprobePath();
+  } catch (error: any) {
+    const msg = `Critical Error: Missing binaries.\n\n${error.message || String(error)}\n\nThe application cannot function without FFmpeg and FFprobe. Please ensure they are downloaded and placed in the correct directory.`;
+    console.error(`[Main] ${msg}`);
+    dialog.showErrorBox("Startup Error", msg);
+    app.quit();
+    return;
+  }
+
   const isDev = !!process.env.VITE_DEV_SERVER_URL;
 
   const appPath = app.getAppPath();
@@ -208,7 +220,16 @@ ipcMain.handle("video:validate", async (_event, filePath: string, settings: any)
 
 // Get tool versions (Phase 4)
 ipcMain.handle("app:getVersions", async () => {
-  return await getVersions();
+  try {
+    return await getVersions();
+  } catch (error: any) {
+    console.error("Failed to get versions:", error);
+    return {
+      ffmpeg: "not found",
+      ffprobe: "not found",
+      error: error.message || String(error),
+    };
+  }
 });
 
 // Generate output path with collision handling

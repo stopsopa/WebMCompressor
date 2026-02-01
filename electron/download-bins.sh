@@ -11,9 +11,61 @@ if ! command -v curl &> /dev/null; then
     exit 1
 fi
 
+OS_ARG="${1}"
+ARCH_ARG="${2}"
+
+if [ -z "${OS_ARG}" ]; then
+    echo "${0} error: OS argument (1) is missing. Usage: ${0} [darwin|win32] [x64|arm64]"
+    exit 1
+fi
+
+if [ -z "${ARCH_ARG}" ]; then
+    echo "${0} error: ARCH argument (2) is missing. Usage: ${0} [darwin|win32] [x64|arm64]"
+    exit 1
+fi
+
+# Validation and mapping
+if [ "${OS_ARG}" != "darwin" ] && [ "${OS_ARG}" != "win32" ]; then
+    echo "${0} error: Unsupported OS=>${OS_ARG}<. Only 'darwin' and 'win32' are supported."
+    exit 1
+fi
+
+if [ "${ARCH_ARG}" != "x64" ] && [ "${ARCH_ARG}" != "arm64" ]; then
+    echo "${0} error: Unsupported ARCH=>${ARCH_ARG}<. Only 'x64' and 'arm64' are supported."
+    exit 1
+fi
+
+# Target architecture for the directory structure
+TARGET_OS="${OS_ARG}"
+TARGET_ARCH="${ARCH_ARG}"
+
+# Architecture to actually download (might be different due to fallbacks)
+DOWNLOAD_OS="${OS_ARG}"
+DOWNLOAD_ARCH="${ARCH_ARG}"
+
+# Specific check for Windows arm64 which is often not available for ffmpeg-static
+# If Windows arm64 is requested, we fallback to x64 as Windows can run x64 binaries via emulation
+if [ "${OS_ARG}" = "win32" ] && [ "${ARCH_ARG}" = "arm64" ]; then
+    cat <<EEE
+
+    ⚠️  NOTE: FFmpeg binaries for Windows arm64 are not available from the source.
+       Falling back to win32/x64 binaries (Windows on ARM can run these via emulation).
+       OS_ARG=>${OS_ARG}< ARCH_ARG=>${ARCH_ARG}< -> Using x64 for download, keeping arm64 directory.
+
+EEE
+
+    DOWNLOAD_ARCH="x64"
+fi
+
+# Clear only the specific target directory to ensure fresh binaries for this OS/ARCH
+BIN_DIR="${DIR}/bin"
+TARGET_DIR="${BIN_DIR}/${TARGET_OS}/${TARGET_ARCH}"
+
+echo "🧹 Clearing existing binaries in ${TARGET_DIR}..."
+rm -rf "${TARGET_DIR}"
+
 # Create directory structure
-mkdir -p "${DIR}/bin/darwin/x64"
-mkdir -p "${DIR}/bin/darwin/arm64"
+mkdir -p "${TARGET_DIR}"
 
 # Version of binaries to download
 # Based on eugeneware/ffmpeg-static b6.1.1 release which contains both ffmpeg and ffprobe
@@ -21,37 +73,39 @@ VERSION="b6.1.1"
 BASE_URL="https://github.com/eugeneware/ffmpeg-static/releases/download/${VERSION}"
 
 echo "--------------------------------------------------------"
-echo "📥 Downloading FFmpeg and FFprobe binaries for macOS..."
+echo "📥 Downloading FFmpeg and FFprobe binaries for ${TARGET_OS} ${TARGET_ARCH}..."
 echo "--------------------------------------------------------"
 
 # Download function
 download_bin() {
     local name="${1}"
-    local arch="${2}"
-    local target="${DIR}/bin/darwin/${arch}/${name}"
-    local url="${BASE_URL}/${name}-darwin-${arch}"
+    
+    # On Windows, we append .exe to the local filename
+    local local_file_name="${name}"
+    if [ "${TARGET_OS}" = "win32" ]; then
+        local_file_name="${name}.exe"
+    fi
+    
+    local target="${DIR}/bin/${TARGET_OS}/${TARGET_ARCH}/${local_file_name}"
+    local url="${BASE_URL}/${name}-${DOWNLOAD_OS}-${DOWNLOAD_ARCH}"
     
     if [ -f "${target}" ]; then
-        echo "   [ok] ${name} (${arch}) already exists."
+        echo "   [ok] ${local_file_name} (${TARGET_OS}/${TARGET_ARCH}) already exists."
     else
-        echo "   [+] ${name} (${arch}) -> ${target}"
+        echo "   [+] ${local_file_name} (${TARGET_OS}/${TARGET_ARCH}) -> ${target}"
         if ! curl -L -f -o "${target}" "${url}"; then
-            echo "${0} error: Failed to download ${name} for ${arch} from source url=>${url}<"
+            echo "${0} error: Failed to download ${name} for ${TARGET_OS}/${TARGET_ARCH} from source url=>${url}<"
             exit 1
         fi
         chmod +x "${target}"
     fi
 }
 
-# x64 binaries
-download_bin "ffmpeg" "x64"
-download_bin "ffprobe" "x64"
-
-# arm64 binaries
-download_bin "ffmpeg" "arm64"
-download_bin "ffprobe" "arm64"
+# Download both ffmpeg and ffprobe
+download_bin "ffmpeg"
+download_bin "ffprobe"
 
 echo "--------------------------------------------------------"
-echo "✅ All binaries ready in electron/bin/"
+echo "✅ Binaries ready in ${BIN_DIR}"
 echo "--------------------------------------------------------"
-ls -R "${DIR}/bin/"
+ls -R -lah "${BIN_DIR}"

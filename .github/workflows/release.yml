@@ -24,7 +24,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest]
+        include:
+          - os: macos-latest
+            arch: x64
+            target: mac
+            bins_os: darwin
+          - os: macos-latest
+            arch: arm64
+            target: mac
+            bins_os: darwin
+          - os: windows-latest
+            arch: x64
+            target: win
+            bins_os: win32
+          - os: windows-latest
+            arch: arm64
+            target: win
+            bins_os: win32
     runs-on: ${{ matrix.os }}
     steps:
       - name: 🔍 Audit
@@ -53,7 +69,7 @@ jobs:
         shell: bash
         run: |
           npm ci
-          /bin/bash download-bins.sh
+          /bin/bash download-bins.sh ${{ matrix.bins_os }} ${{ matrix.arch }}
 
           # Version Sync
           REF_NAME=${{ inputs.tag_name || github.ref_name }}
@@ -69,7 +85,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          npx electron-builder --mac --publish always
+          npx electron-builder --${{ matrix.target }} --${{ matrix.arch }} --publish always
 
       - name: 📤 Upload Build Metadata
         working-directory: ./electron
@@ -93,7 +109,7 @@ jobs:
           RELEASE_URL="$REPO_URL/releases/tag/$TAG_NAME"
 
           echo "### 🚀 Release Build Pipeline Complete!" >> $GITHUB_STEP_SUMMARY
-          echo "All macOS builds (x64 and arm64) have finished." >> $GITHUB_STEP_SUMMARY
+          echo "All macOS and Windows builds (x64 and arm64) have finished." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "You can view the release and download the artifacts here:" >> $GITHUB_STEP_SUMMARY
           echo "👉 [**$TAG_NAME**]($RELEASE_URL)" >> $GITHUB_STEP_SUMMARY
