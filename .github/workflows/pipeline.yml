@@ -332,11 +332,28 @@ jobs:
           Dependencies installed, binaries downloaded, and build completed.
           EOF
 
+      - name: 🔍 Binary Audit
+        run: |
+          echo "Listing bin directory content:"
+          if [ -d "bin" ]; then
+            find bin -maxdepth 4 -ls
+          else
+            echo "⚠️ ERROR: bin directory NOT FOUND in $(pwd)"
+          fi
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 🔍 Binary Audit
+          $(if [ -d "bin" ]; then find bin -maxdepth 4 -not -path '*/.*'; else echo "bin directory not found"; fi)
+          EOF
+
       - name: 🏗️ Build Electron App for QA
         if: github.event_name != 'workflow_dispatch' || inputs.run_electron_build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEBUG: electron-builder
         run: |
+          echo "Listing dist and dist-electron before packaging:"
+          ls -R dist 2>/dev/null || echo "dist not found"
+          ls -R dist-electron 2>/dev/null || echo "dist-electron not found"
           npx electron-builder --${{ matrix.target }} --${{ matrix.arch }} --publish never
           cat <<EOF >> $GITHUB_STEP_SUMMARY
           ### 🏗️ Build Electron App for QA (${{ matrix.target }} ${{ matrix.arch }})

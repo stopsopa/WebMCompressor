@@ -102,13 +102,31 @@ jobs:
           - **Status**: Completed
           EOF
 
+      - name: 🔍 Binary Audit
+        working-directory: ./electron
+        run: |
+          echo "Listing bin directory content:"
+          if [ -d "bin" ]; then
+            find bin -maxdepth 4 -ls
+          else
+            echo "⚠️ ERROR: bin directory NOT FOUND in $(pwd)"
+          fi
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 🔍 Binary Audit
+          $(if [ -d "bin" ]; then find bin -maxdepth 4 -not -path '*/.*'; else echo "bin directory not found"; fi)
+          EOF
+
       - name: 🏗️ Build and Publish Electron App
         if: github.event_name == 'release' || inputs.run_electron_build
         working-directory: ./electron
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEBUG: electron-builder
         shell: bash
         run: |
+          echo "Listing dist and dist-electron before packaging:"
+          ls -R dist 2>/dev/null || echo "dist not found"
+          ls -R dist-electron 2>/dev/null || echo "dist-electron not found"
           npx electron-builder --${{ matrix.target }} --${{ matrix.arch }} --publish always
           cat <<EOF >> $GITHUB_STEP_SUMMARY
           ### 🏗️ Build and Publish Electron App (${{ matrix.target }} ${{ matrix.arch }})

@@ -17,6 +17,16 @@ ROOT="$(cd "${DIR}/../.." && pwd)"
 
 ... depends how many directories up we have to go
 
+But to be specific:
+
+- DIR is to determine current script location
+- ROOT is to determine project root location
+  Depending from where you refer to the files use this or that
+
+When you have to go up from current script location use ../ or ../../ but the general target is to reach root directory of the project and then from there somewhere else then define ROOT by rerriving it from DIR and from that point use ROOT to reach wherever you need to reach.
+
+# shebang
+
 Don't use shebang at the top of the file.
 
 Call script like this:
