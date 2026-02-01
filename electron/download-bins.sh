@@ -57,12 +57,12 @@ EEE
     DOWNLOAD_ARCH="x64"
 fi
 
-# Clear only the specific target directory to ensure fresh binaries for this OS/ARCH
+# Clear the entire bin directory to ensure only the requested binaries for this OS/ARCH are present
 BIN_DIR="${DIR}/bin"
 TARGET_DIR="${BIN_DIR}/${TARGET_OS}/${TARGET_ARCH}"
 
-echo "🧹 Clearing existing binaries in ${TARGET_DIR}..."
-rm -rf "${TARGET_DIR}"
+echo "🧹 Clearing existing binaries in ${BIN_DIR}..."
+rm -rf "${BIN_DIR}"
 
 # Create directory structure
 mkdir -p "${TARGET_DIR}"
@@ -109,3 +109,13 @@ echo "--------------------------------------------------------"
 echo "✅ Binaries ready in ${BIN_DIR}"
 echo "--------------------------------------------------------"
 ls -R -lah "${BIN_DIR}"
+
+# Audit: Check if there are EXACTLY 2 files in the bin directory
+FILE_COUNT=$(find "${BIN_DIR}" -type f | wc -l | xargs)
+if [ "${FILE_COUNT}" != "2" ]; then
+    echo "${0} error: Audit failed. Expected 2 files in ${BIN_DIR}, but found ${FILE_COUNT}."
+    echo "Directory structure:"
+    find "${BIN_DIR}" -maxdepth 4 -ls
+    exit 1
+fi
+echo "Audit passed: found exactly ${FILE_COUNT} files in ${BIN_DIR}."

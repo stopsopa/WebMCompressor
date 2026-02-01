@@ -49,6 +49,11 @@ echo "--------------------------------------------------------"
 echo "🛠️  Starting Windows Test Build for: win32 / ${TARGET_ARCH}"
 echo "--------------------------------------------------------"
 
+# 0. Clear release directory
+echo "🧹 Step 0: Clearing release directory..."
+rm -rf "release/*"
+rm -rf "release/.*"
+
 # 1. Download binaries (exactly as CI does)
 echo "📥 Step 1: Downloading binaries..."
 /bin/bash "${DIR}/download-bins.sh" "win32" "${TARGET_ARCH}"
@@ -66,6 +71,15 @@ if [ -d "bin" ]; then
   else
     find bin -maxdepth 4 -ls
   fi
+  
+  # Audit: Check if there are EXACTLY 2 files in the bin directory
+  BIN_DIR="${DIR}/bin"
+  FILE_COUNT=$(find "${BIN_DIR}" -type f | wc -l | xargs)
+  if [ "${FILE_COUNT}" != "2" ]; then
+      echo "${0} error: Binary Audit failed. Expected 2 files in ${BIN_DIR}, but found ${FILE_COUNT}."
+      exit 1
+  fi
+  echo "Audit passed: found exactly ${FILE_COUNT} files."
 else
   echo "${0} error: bin directory NOT FOUND in $(pwd)"
   exit 1
