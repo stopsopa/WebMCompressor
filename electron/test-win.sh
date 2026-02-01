@@ -1,6 +1,6 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Script to replicate the Windows build process locally as closely as possible to CI/CD
+# Script to replicate the build process locally as closely as possible to CI/CD
 # This script is designed to be run from the root of the project or the electron/ directory.
 
 set -e
@@ -8,19 +8,33 @@ set -e
 # Replicate being in the 'electron' directory
 cd "${DIR}"
 
+# Define the full sequence of targets
+ALL_TARGETS=(
+  "win32 x64"
+  "win32 arm64"
+  "darwin x64"
+  "darwin arm64"
+)
+
+declare -a TARGETS_TO_BUILD
+
 ARCH_ARG="${1}"
 
 if [ -z "${ARCH_ARG}" ]; then
     if [ -t 0 ]; then
-        echo "⚠️  Architecture argument is required."
-        echo "Please select a target architecture:"
-        PS3="Enter choice [1-2]: "
-        options=("x64" "arm64")
+        echo "⚠️  Selection is required."
+        echo "Please select a target or 'all':"
+        PS3="Enter choice [1-5]: "
+        options=("win32 x64" "win32 arm64" "darwin x64" "darwin arm64" "all")
         select opt in "${options[@]}"
         do
             case "${opt}" in
-                "x64"|"arm64")
-                    ARCH_ARG="${opt}"
+                "win32 x64"|"win32 arm64"|"darwin x64"|"darwin arm64")
+                    TARGETS_TO_BUILD=("${opt}")
+                    break
+                    ;;
+                "all")
+                    TARGETS_TO_BUILD=("${ALL_TARGETS[@]}")
                     break
                     ;;
                 *) echo "❌ Invalid selection. Please try again.";;
@@ -28,77 +42,84 @@ if [ -z "${ARCH_ARG}" ]; then
         done
         echo ""
     else
-        echo "${0} error: Architecture argument is required when not running interactively."
-        echo "Usage: /bin/bash ${DIR}/test-win.sh [x64|arm64]"
+        echo "${0} error: Argument is required when not running interactively."
+        echo "Usage: /bin/bash ${DIR}/test-win.sh [win32 x64 | win32 arm64 | darwin x64 | darwin arm64 | all]"
         exit 1
+    fi
+else
+    if [ "${ARCH_ARG}" = "all" ]; then
+        TARGETS_TO_BUILD=("${ALL_TARGETS[@]}")
+    else
+        # Allow passing "win32 x64" etc if quoted
+        # Or just match against known targets
+        MATCHED=0
+        for T in "${ALL_TARGETS[@]}"; do
+            if [ "${ARCH_ARG}" = "${T}" ]; then
+                TARGETS_TO_BUILD=("${T}")
+                MATCHED=1
+                break
+            fi
+        done
+        
+        if [ "${MATCHED}" = "0" ]; then
+            # Fallback for simple "x64" or "arm64" (defaulting to win32 for backward compatibility of this script's name)
+            if [ "${ARCH_ARG}" = "x64" ]; then
+                TARGETS_TO_BUILD=("win32 x64")
+            elif [ "${ARCH_ARG}" = "arm64" ]; then
+                TARGETS_TO_BUILD=("win32 arm64")
+            else
+                echo "${0} error: Invalid target ARCH_ARG=>${ARCH_ARG}<. Use 'win32 x64', 'win32 arm64', 'darwin x64', 'darwin arm64' or 'all'."
+                exit 1
+            fi
+        fi
     fi
 fi
 
-# Normalize architecture name
-TARGET_ARCH="x64"
-if [[ "${ARCH_ARG}" == "arm" || "${ARCH_ARG}" == "arm64" ]]; then
-    TARGET_ARCH="arm64"
-elif [[ "${ARCH_ARG}" == "x64" ]]; then
-    TARGET_ARCH="x64"
-else
-    echo "${0} error: Invalid architecture ARCH_ARG=>${ARCH_ARG}<. Use 'x64' or 'arm64'."
-    exit 1
-fi
-
 echo "--------------------------------------------------------"
-echo "🛠️  Starting Windows Test Build for: win32 / ${TARGET_ARCH}"
+echo "🛠️  Starting Build Sequence"
 echo "--------------------------------------------------------"
 
 # 0. Clear release directory
 echo "🧹 Step 0: Clearing release directory..."
-rm -rf "release/*"
-rm -rf "release/.*"
+# Use globbing to clear contents of the symlinked directory
+rm -rf release/* 2>/dev/null || true
+rm -rf release/.* 2>/dev/null || true
 
-# 1. Download binaries (exactly as CI does)
-echo "📥 Step 1: Downloading binaries..."
-/bin/bash "${DIR}/download-bins.sh" "win32" "${TARGET_ARCH}"
-
-# 2. Build the app (Vite + TS)
-echo "📦 Step 2: Building application..."
+# 1. Build the frontend (once for all)
+echo "📦 Step 1: Building frontend application..."
 npm run build
 
-# 3. Binary Audit (replicated from CI/CD pipeline)
-echo "🔍 Step 3: Binary Audit..."
-echo "Listing bin directory content:"
-if [ -d "bin" ]; then
-  if command -v tree &> /dev/null; then
-    tree bin
-  else
-    find bin -maxdepth 4 -ls
-  fi
-  
-  # Audit: Check if there are EXACTLY 2 files in the bin directory
-  BIN_DIR="${DIR}/bin"
-  FILE_COUNT=$(find "${BIN_DIR}" -type f | wc -l | xargs)
-  if [ "${FILE_COUNT}" != "2" ]; then
-      echo "${0} error: Binary Audit failed. Expected 2 files in ${BIN_DIR}, but found ${FILE_COUNT}."
-      exit 1
-  fi
-  echo "Audit passed: found exactly ${FILE_COUNT} files."
-else
-  echo "${0} error: bin directory NOT FOUND in $(pwd)"
-  exit 1
-fi
+for TARGET in "${TARGETS_TO_BUILD[@]}"; do
+    # Split the target into OS and ARCH
+    # Using read to handle "win32 x64" format
+    read -r OS ARCH <<< "${TARGET}"
+    
+    echo ""
+    echo "========================================================"
+    echo "🚀 BUILDING TARGET: ${OS} / ${ARCH}"
+    echo "========================================================"
+    
+    # a. Download binaries (this handles clearing bin/ and auditing)
+    echo "📥 Step A: Downloading binaries for ${OS}/${ARCH}..."
+    /bin/bash "${DIR}/download-bins.sh" "${OS}" "${ARCH}"
+    
+    # b. Packaging
+    echo "🏗️  Step B: Packaging Electron App..."
+    export DEBUG=electron-builder
+    
+    if [ "${OS}" = "win32" ]; then
+        npx electron-builder --win "--${ARCH}" --publish never
+    elif [ "${OS}" = "darwin" ]; then
+        npx electron-builder --mac "--${ARCH}" --publish never
+    fi
+    
+    echo "✅ Completed: ${OS} / ${ARCH}"
+done
 
-# 4. Packaging
-echo "🏗️  Step 4: Packaging Electron App..."
-# Enable verbose logging just like in CI/CD
-export DEBUG=electron-builder
-
-# Run electron-builder for windows
-# Note: On non-Windows platforms (like macOS), this will use Wine if available or just generate the unpacked dir
-npx electron-builder --win "--${TARGET_ARCH}" --publish never
-
-echo "--------------------------------------------------------"
-echo "✅ Build completed for ${TARGET_ARCH}"
-echo "--------------------------------------------------------"
-echo "Check the 'release' directory for the generated installer:"
 echo ""
-ls -lh release/*.exe 2>/dev/null || ls -lh release/
+echo "--------------------------------------------------------"
+echo "🎉 Requested builds completed!"
+echo "--------------------------------------------------------"
+echo "Check the 'release' directory for the generated installers:"
 echo ""
-echo "The binary is located in: $(pwd)/release"
+ls -lh release/
