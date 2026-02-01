@@ -24,8 +24,53 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    name: 🏗️ Build (${{ matrix.os }})
+  build-code:
+    name: "📦 Step 1: Build Application Code (Release)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag_name || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+          cache-dependency-path: electron/package-lock.json
+
+      - name: "📦 Install, Sync & Build"
+        working-directory: ./electron
+        shell: bash
+        run: |
+          npm ci
+          # Version Sync
+          REF_NAME=${{ inputs.tag_name || github.ref_name }}
+          VERSION=${REF_NAME#v}
+          echo "Setting package.json version to $VERSION"
+          npm version $VERSION --no-git-tag-version --allow-same-version
+
+          npm run build
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 📦 Step 1: Build Application Code
+          - **Version**: $VERSION
+          - **Status**: Completed
+          EOF
+
+      - name: 📤 Upload Built Code
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-code-release
+          path: |
+            electron/dist/
+            electron/dist-electron/
+            electron/package.json
+            electron/setup.json
+          retention-days: 1
+
+  package:
+    name: 🏗️ Package (${{ matrix.target }} ${{ matrix.arch }})
+    needs: build-code
     strategy:
       fail-fast: false
       matrix:
@@ -48,15 +93,13 @@ jobs:
             bins_os: win32
     runs-on: ${{ matrix.os }}
     steps:
-      - name: 🔍 Audit
+      - name: "🔍 Audit"
         shell: bash
         run: |
           echo "### Release Context ###"
           echo "Event ${{ github.event_name }}: >${{ github.event_name }}<"
           echo "Tag ${{ inputs.tag_name }}:   >${{ inputs.tag_name }}<"
           echo "Ref ${{ github.ref_name }}:   >${{ github.ref_name }}<"
-          echo "ENV Path: $GITHUB_ENV"
-          env | grep -E "STEP_|GITHUB_" | sort || echo "No markers yet"
           cat <<EOF >> $GITHUB_STEP_SUMMARY
           ### 🔍 Audit (Release - ${{ matrix.target }} ${{ matrix.arch }})
           - **Event**: ${{ github.event_name }}
@@ -82,24 +125,28 @@ jobs:
           sudo apt-get install -y --no-install-recommends wine64 wine32 wine
           wine --version
 
-      - name: 📦 Install, Build & Sync
+      - name: "🧹 Step 0: Clearing release directory"
+        working-directory: ./electron
+        run: |
+          mkdir -p release
+          rm -rf release/* 2>/dev/null || true
+          rm -rf release/.* 2>/dev/null || true
+
+      - name: 📥 Download Built Code
+        uses: actions/download-artifact@v4
+        with:
+          name: built-code-release
+          path: .
+
+      - name: "📦 Step A: Prepare & Download Binaries"
         working-directory: ./electron
         shell: bash
         run: |
           npm ci
-          bash download-bins.sh ${{ matrix.bins_os }} ${{ matrix.arch }}
-
-          # Version Sync
-          REF_NAME=${{ inputs.tag_name || github.ref_name }}
-          VERSION=${REF_NAME#v}
-          echo "Setting package.json version to $VERSION"
-          npm version $VERSION --no-git-tag-version --allow-same-version
-
-          npm run build
+          /bin/bash download-bins.sh ${{ matrix.bins_os }} ${{ matrix.arch }}
           cat <<EOF >> $GITHUB_STEP_SUMMARY
-          ### 📦 Install, Build & Sync (${{ matrix.target }} ${{ matrix.arch }})
-          - **Version**: $VERSION
-          - **Status**: Completed
+          ### 📦 Step A: Prepare & Download Binaries (${{ matrix.target }} ${{ matrix.arch }})
+          Dependencies installed and binaries downloaded.
           EOF
 
       - name: 🔍 Binary Audit
@@ -116,7 +163,7 @@ jobs:
           $(if [ -d "bin" ]; then find bin -maxdepth 4 -not -path '*/.*'; else echo "bin directory not found"; fi)
           EOF
 
-      - name: 🏗️ Build and Publish Electron App
+      - name: "🏗️ Step B: Packaging Electron App (Publish)"
         if: github.event_name == 'release' || inputs.run_electron_build
         working-directory: ./electron
         env:
@@ -124,12 +171,15 @@ jobs:
           DEBUG: electron-builder
         shell: bash
         run: |
-          echo "Listing dist and dist-electron before packaging:"
           ls -R dist 2>/dev/null || echo "dist not found"
           ls -R dist-electron 2>/dev/null || echo "dist-electron not found"
-          npx electron-builder --${{ matrix.target }} --${{ matrix.arch }} --publish always
+          if [ "${{ matrix.target }}" = "win" ]; then
+            npx electron-builder --win "--${{ matrix.arch }}" --publish always
+          else
+            npx electron-builder --mac "--${{ matrix.arch }}" --publish always
+          fi
           cat <<EOF >> $GITHUB_STEP_SUMMARY
-          ### 🏗️ Build and Publish Electron App (${{ matrix.target }} ${{ matrix.arch }})
+          ### 🏗️ Step B: Packaging Electron App (Publish) (${{ matrix.target }} ${{ matrix.arch }})
           Version published for ${{ matrix.target }} (${{ matrix.arch }}).
           EOF
 
@@ -148,7 +198,7 @@ jobs:
 
   summary:
     name: 📢 Release Summary
-    needs: build
+    needs: package
     runs-on: ubuntu-latest
     if: always()
     steps:

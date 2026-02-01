@@ -74,9 +74,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_ADMIN_TOKEN || secrets.GITHUB_TOKEN }}
         run: /bin/bash .github/check-gh-environments.sh "$REQUIRED_GATED_ENVS" "${{ github.repository }}"
 
-  # STEP 1: Always Run Tests
-  test:
-    name: 🧪 Run Tests
+  # STEP 1: Always Run Tests and Build Code
+  test-and-build:
+    name: 🧪 Run Tests & Build
     runs-on: ubuntu-latest
     needs:
       - debug
@@ -133,6 +133,26 @@ jobs:
           Tests completed successfully!
           EOF
 
+      - name: "📦 Step 1: Build Application Code"
+        run: |
+          cd electron
+          npm run build
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### 📦 Step 1: Build Application Code
+          Frontend and Electron code built successfully.
+          EOF
+
+      - name: 📤 Upload Built Code
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-code
+          path: |
+            electron/dist/
+            electron/dist-electron/
+            electron/package.json
+            electron/setup.json
+          retention-days: 1
+
       - name: 📝 Step Debug (End)
         run: |
           echo "Markers after test: STEP_TEST_COMPLETE=>$STEP_TEST_COMPLETE<"
@@ -155,7 +175,7 @@ jobs:
     # this is to don't get email 30 days after nobody triggered environment approval for consecutive steps
     # more about this gate trick: https://github.com/stopsopa/WebMCompressor/commit/b18add75efb6f6f3cd6af12551cd5ebfccc25d38
     name: 🛡️ Test Gate
-    needs: test
+    needs: test-and-build
     runs-on: ubuntu-latest
     environment: test
     continue-on-error: true
@@ -175,7 +195,7 @@ jobs:
   test-build:
     name: 🍴 Test Build - Fork test
     needs:
-      - test # WARNING: this will actually generate extra lines on the graph - don't be alarmed: https://i.imgur.com/EvTAriN.png & https://github.com/user-attachments/assets/6841fd35-72eb-4c56-bb4e-0836354b411d
+      - test-and-build # WARNING: this will actually generate extra lines on the graph - don't be alarmed: https://i.imgur.com/EvTAriN.png & https://github.com/user-attachments/assets/6841fd35-72eb-4c56-bb4e-0836354b411d
       - test-gate
     if: needs.test-gate.outputs.approved == 'true'
     # LOGIC SUMMARY:
@@ -187,10 +207,8 @@ jobs:
     runs-on: ubuntu-latest
     # environment: test # Removed: Handled by gate <--- that would normally be uncommented if test-gate wouldn't be defined
     # CROSS-JOB STATE (The "Catcher"):
-    # Since this is a fresh machine, we must 'catch' the output from the 'test' job
-    # and map it back into this job's environment.
     env:
-      STEP_TEST_COMPLETE: ${{ needs.test.outputs.test_complete }}
+      STEP_TEST_COMPLETE: ${{ needs.test-and-build.outputs.test_complete }}
     steps:
       - name: 🔍 State Check
         run: |
@@ -211,7 +229,7 @@ jobs:
     # this is to don't get email 30 days after nobody triggered environment approval for consecutive steps
     # more about this gate trick: https://github.com/stopsopa/WebMCompressor/commit/b18add75efb6f6f3cd6af12551cd5ebfccc25d38
     name: 🛡️ QA Gate
-    needs: test
+    needs: test-and-build
     runs-on: ubuntu-latest
     environment: development
     continue-on-error: true
@@ -243,7 +261,7 @@ jobs:
   qa-build:
     name: 🚧 QA Build (${{ matrix.os }})
     needs:
-      - test # WARNING: this will actually generate extra lines on the graph - don't be alarmed: https://i.imgur.com/EvTAriN.png & https://github.com/user-attachments/assets/6841fd35-72eb-4c56-bb4e-0836354b411d
+      - test-and-build
       - qa-gate
     if: needs.qa-gate.outputs.approved == 'true'
     # LOGIC SUMMARY:
@@ -277,7 +295,7 @@ jobs:
     # CROSS-JOB STATE (The "Catcher"):
     # Mapping the test result here so the Audit dump below can see it.
     env:
-      STEP_TEST_COMPLETE: ${{ needs.test.outputs.test_complete }}
+      STEP_TEST_COMPLETE: ${{ needs.test-and-build.outputs.test_complete }}
     defaults:
       run:
         working-directory: ./electron
@@ -322,14 +340,25 @@ jobs:
           sudo apt-get install -y --no-install-recommends wine64 wine32 wine
           wine --version
 
-      - name: 📦 Install & Build
+      - name: "🧹 Step 0: Clearing release directory"
+        run: |
+          mkdir -p release
+          rm -rf release/* 2>/dev/null || true
+          rm -rf release/.* 2>/dev/null || true
+
+      - name: 📥 Download Built Code
+        uses: actions/download-artifact@v4
+        with:
+          name: built-code
+          path: .
+
+      - name: "📦 Step A: Prepare & Download Binaries"
         run: |
           npm ci
-          bash download-bins.sh ${{ matrix.bins_os }} ${{ matrix.arch }}
-          npm run build
+          /bin/bash download-bins.sh ${{ matrix.bins_os }} ${{ matrix.arch }}
           cat <<EOF >> $GITHUB_STEP_SUMMARY
-          ### 📦 Install & Build (${{ matrix.target }} ${{ matrix.arch }})
-          Dependencies installed, binaries downloaded, and build completed.
+          ### 📦 Step A: Prepare & Download Binaries (${{ matrix.target }} ${{ matrix.arch }})
+          Dependencies installed and binaries downloaded.
           EOF
 
       - name: 🔍 Binary Audit
@@ -345,18 +374,21 @@ jobs:
           $(if [ -d "bin" ]; then find bin -maxdepth 4 -not -path '*/.*'; else echo "bin directory not found"; fi)
           EOF
 
-      - name: 🏗️ Build Electron App for QA
+      - name: "🏗️ Step B: Packaging Electron App (QA)"
         if: github.event_name != 'workflow_dispatch' || inputs.run_electron_build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEBUG: electron-builder
         run: |
-          echo "Listing dist and dist-electron before packaging:"
           ls -R dist 2>/dev/null || echo "dist not found"
           ls -R dist-electron 2>/dev/null || echo "dist-electron not found"
-          npx electron-builder --${{ matrix.target }} --${{ matrix.arch }} --publish never
+          if [ "${{ matrix.target }}" = "win" ]; then
+            npx electron-builder --win "--${{ matrix.arch }}" --publish never
+          else
+            npx electron-builder --mac "--${{ matrix.arch }}" --publish never
+          fi
           cat <<EOF >> $GITHUB_STEP_SUMMARY
-          ### 🏗️ Build Electron App for QA (${{ matrix.target }} ${{ matrix.arch }})
+          ### 🏗️ Step B: Packaging Electron App (QA) (${{ matrix.target }} ${{ matrix.arch }})
           Build finished for ${{ matrix.target }} (${{ matrix.arch }}).
           EOF
         shell: bash
