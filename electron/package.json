@@ -59,8 +59,7 @@
           "from": "bin/win32/${arch}",
           "to": "bin/win32/${arch}"
         }
-      ],
-      "sign": null
+      ]
     },
     "files": [
       "dist-electron/**/*",
