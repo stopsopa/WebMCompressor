@@ -39,10 +39,7 @@
       "gatekeeperAssess": false,
       "artifactName": "${productName}-${version}-${arch}.${ext}",
       "extraResources": [
-        {
-          "from": "bin/darwin/${arch}",
-          "to": "bin/darwin/${arch}"
-        }
+        "bin"
       ]
     },
     "win": {
@@ -56,10 +53,7 @@
         }
       ],
       "extraResources": [
-        {
-          "from": "bin/win32/${arch}",
-          "to": "bin/win32/${arch}"
-        }
+        "bin"
       ],
       "artifactName": "${productName}-${version}-${arch}-setup.${ext}",
       "icon": "public/icon.ico"
