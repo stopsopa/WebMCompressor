@@ -41,10 +41,10 @@ jobs:
       - name: 📝 Debug Context
         run: |
           echo "### Pipeline Context ###"
-          echo "Triggered by {{ github.event_name }}: >${{ github.event_name }}<"
-          echo "Manual reason {{ inputs.manual_run_reason }}: >${{ inputs.manual_run_reason }}<"
-          echo "Ref {{ github.ref_name }} (will be branch or tag name): >${{ github.ref_name }}<"
-          echo "Resolved RELEASE_TAG: {{ env.RELEASE_TAG }}: >${{ env.RELEASE_TAG }}<"
+          echo "Triggered by ${{ github.event_name }}: >${{ github.event_name }}<"
+          echo "Manual reason ${{ inputs.manual_run_reason }}: >${{ inputs.manual_run_reason }}<"
+          echo "Ref ${{ github.ref_name }} (will be branch or tag name): >${{ github.ref_name }}<"
+          echo "Resolved RELEASE_TAG: ${{ env.RELEASE_TAG }}: >${{ env.RELEASE_TAG }}<"
           echo "--- Environment (Filtered) ---"
           env | grep -E "STEP_|GITHUB_|RELEASE_TAG" | sort
           echo "STEP_DEMO_VAL=initialized" >> $GITHUB_ENV
@@ -451,18 +451,11 @@ jobs:
             echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
             echo "released=true" >> $GITHUB_OUTPUT
             echo "STEP_BUMP_RELEASE_CREATED=true" >> $GITHUB_ENV
-            cat <<EOF >> $GITHUB_STEP_SUMMARY
-            ### 🚀 Release Created
-            - **New Tag**: $NEW_TAG
-            - **Old Tag**: $OLD_TAG
-          EOF
+            printf "### 🚀 Release Created\n- **New Tag**: %s\n- **Old Tag**: %s\n" "$NEW_TAG" "$OLD_TAG" >> $GITHUB_STEP_SUMMARY
           else
             echo "released=false" >> $GITHUB_OUTPUT
             echo "STEP_BUMP_RELEASE_SKIPPED=true" >> $GITHUB_ENV
-            cat <<EOF >> $GITHUB_STEP_SUMMARY
-            ### ℹ️ Release Skipped
-            No changes detected since $OLD_TAG.
-          EOF
+            printf "### ℹ️ Release Skipped\nNo changes detected since %s.\n" "$OLD_TAG" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: 🔍 State Check (Final)
