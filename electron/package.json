@@ -55,13 +55,19 @@
           ]
         }
       ],
+      "nsis": {
+        "installerIcon": "public/icon.png",
+        "uninstallerIcon": "public/icon.png",
+        "deleteAppDataOnUninstall": true
+      },
       "extraResources": [
         {
           "from": "bin/win32/${arch}",
           "to": "bin/win32/${arch}"
         }
       ],
-      "artifactName": "${productName}-${version}-${arch}-setup.${ext}"
+      "artifactName": "${productName}-${version}-${arch}-setup.${ext}",
+      "icon": "public/icon.png"
     },
     "files": [
       "dist-electron/**/*",
