@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="electron/public/banner.png" alt="WebMCompressor Banner" width="600">
+  <img src="electron/public/icon.png" alt="WebMCompressor Icon" width="128">
 </p>
 
 # WebMCompressor
 
 [![Latest Release](https://img.shields.io/github/v/release/stopsopa/webmcompressor)](https://github.com/stopsopa/webmcompressor/releases)
 
-A premium desktop application for high-efficiency video recompression to WebM format using **two-pass VP9 encoding**. Built with Electron, React, and Vite, it provides a powerful yet intuitive interface for batch processing videos with professional-grade quality.
+A premium desktop application for high-efficiency video recompression to WebM format using **two-pass VP9 encoding**, following [Google's VP9 VOD recommendations](https://developers.google.com/media/vp9/settings/vod/#bitrate). Built with Electron, React, and Vite, it provides a powerful yet intuitive interface for batch processing videos with professional-grade quality.
 
 ## ✨ Key Features
 
