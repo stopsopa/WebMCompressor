@@ -4,6 +4,8 @@
 
 # WebMCompressor
 
+![Image](https://github.com/user-attachments/assets/2c552c07-5b02-4edb-95e8-1ad4d0a1c94a)
+
 [![Latest Release](https://img.shields.io/github/v/release/stopsopa/webmcompressor)](https://github.com/stopsopa/webmcompressor/releases)
 
 A desktop application for **macOS and Windows** for high-efficiency video recompression to WebM format using **two-pass VP9 encoding**, following [Google's VP9 VOD recommendations](https://developers.google.com/media/vp9/settings/vod/) (essentially the same method used by YouTube to optimize its video delivery). Built with Electron, React, and Vite, it provides a powerful yet intuitive interface for batch processing videos with professional-grade quality.
@@ -63,7 +65,10 @@ _Note: You don't need to install FFmpeg manually for production builds; the app 
 3. Download platform-specific binaries for development:
 
    ```bash
+   # Automatically downloads binaries for your current OS/ARCH:
    ./download-bins.sh
+
+   # Or specify explicitly: ./download-bins.sh [darwin|win32] [x64|arm64]
    ```
 
 4. Launch the application:
@@ -75,7 +80,7 @@ _Note: You don't need to install FFmpeg manually for production builds; the app 
 
 For specialized build tasks or testing CI/CD logic locally, several utility scripts are available in the `electron/` directory:
 
-- **`./download-bins.sh [os] [arch]`**: Manual FFmpeg/FFprobe binary downloader. Defaults to your current system if no arguments are provided.
+- **`./download-bins.sh [os] [arch]`**: Manual FFmpeg/FFprobe binary downloader. Automatically detects your system if no arguments are provided, otherwise requires `darwin` or `win32` as the OS, and `x64` or `arm64` as the architecture.
 - **`./build.dmg.sh`**: (macOS only) A complete "clean build" script that replicates the automated Mac production build process.
 - **`./test-win.sh`**: A versatile script to test various target builds (Windows/Mac, x64/ARM64). It features an interactive menu to select your target.
 - **`./run.sh`**: A quick-launch script to run the local development build.
@@ -107,16 +112,6 @@ Artifacts will be generated in the `electron/release` directory.
 | **Medium** | 32  | 1800k          | Standard web usage, optimized size    |
 | **Low**    | 36  | 1000k          | Bandwidth saving, mobile-friendly     |
 | **Tiny**   | 40  | 500k           | Maximum compression, small thumbnails |
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ## 📄 License
 

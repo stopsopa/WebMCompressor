@@ -14,14 +14,33 @@ fi
 OS_ARG="${1}"
 ARCH_ARG="${2}"
 
+# If arguments are missing, try to detect the current system
 if [ -z "${OS_ARG}" ]; then
-    echo "${0} error: OS argument (1) is missing. Usage: /bin/bash ${DIR}/download-bins.sh [darwin|win32] [x64|arm64]"
-    exit 1
+    DETECTED_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+    if [ "${DETECTED_OS}" = "darwin" ]; then
+        OS_ARG="darwin"
+    elif [[ "${DETECTED_OS}" == "mingw"* ]] || [[ "${DETECTED_OS}" == "msys"* ]] || [[ "${DETECTED_OS}" == "cygwin"* ]]; then
+        OS_ARG="win32"
+    else
+        # Default to win32 only if we are on a system that looks like windows
+        if [ "$OS" = "Windows_NT" ]; then
+            OS_ARG="win32"
+        else
+            echo "${0} error: OS argument (1) is missing and could not be detected. Usage: /bin/bash ${DIR}/download-bins.sh [darwin|win32] [x64|arm64]"
+            exit 1
+        fi
+    fi
+    echo "🔍 Detected OS: ${OS_ARG}"
 fi
 
 if [ -z "${ARCH_ARG}" ]; then
-    echo "${0} error: ARCH argument (2) is missing. Usage: /bin/bash ${DIR}/download-bins.sh [darwin|win32] [x64|arm64]"
-    exit 1
+    DETECTED_ARCH=$(uname -m)
+    if [ "${DETECTED_ARCH}" = "arm64" ] || [ "${DETECTED_ARCH}" = "aarch64" ]; then
+        ARCH_ARG="arm64"
+    else
+        ARCH_ARG="x64"
+    fi
+    echo "🔍 Detected ARCH: ${ARCH_ARG}"
 fi
 
 # Validation and mapping
