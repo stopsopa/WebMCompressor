@@ -17,6 +17,7 @@ A desktop application for **macOS and Windows** for high-efficiency video recomp
 - 📦 **Bulk Operations** – Select multiple files for removal or reconfiguration.
 - 🖱️ **Contextual Power** – Right-click rows to reveal files in Finder/Explorer or copy the exact FFmpeg command used.
 - 🧠 **Smart Defaults** – Automatically calculates aspect ratios and suggests optimal settings based on the source.
+- 🌐 **Native Browser Support** – WebM is natively supported by all [modern browsers](https://caniuse.com/webm), including **Chrome**, **Firefox**, **Edge**, and **Safari**, ensuring seamless playback across the web.
 - 🎨 **Modern Aesthetics** – Sleek dark-mode interface with glassmorphism elements and smooth transitions.
 
 ## 🛠 Tech Stack
