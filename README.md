@@ -6,7 +6,7 @@
 
 [![Latest Release](https://img.shields.io/github/v/release/stopsopa/webmcompressor)](https://github.com/stopsopa/webmcompressor/releases)
 
-A premium desktop application for high-efficiency video recompression to WebM format using **two-pass VP9 encoding**, following [Google's VP9 VOD recommendations](https://developers.google.com/media/vp9/settings/vod/#bitrate). Built with Electron, React, and Vite, it provides a powerful yet intuitive interface for batch processing videos with professional-grade quality.
+A desktop application for **macOS and Windows** for high-efficiency video recompression to WebM format using **two-pass VP9 encoding**, following [Google's VP9 VOD recommendations](https://developers.google.com/media/vp9/settings/vod/) (essentially the same method used by YouTube to optimize its video delivery). Built with Electron, React, and Vite, it provides a powerful yet intuitive interface for batch processing videos with professional-grade quality.
 
 ## ✨ Key Features
 
