@@ -1,5 +1,5 @@
-<p align="center">
-  <img src="electron/public/icon.png" alt="WebMCompressor Icon" width="128">
+<p align="left">
+  <img src="electron/public/icon.png" alt="WebMCompressor Icon" width="128">  
 </p>
 
 # WebMCompressor
