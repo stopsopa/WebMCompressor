@@ -1,0 +1,27 @@
+/**
+ * BROWSER IMPLEMENTATION
+ *
+ * Yes, the logic is exactly the same!
+ * lz-string is commonly used in browsers.
+ */
+
+// --- OPTION A: If you are using a bundler (Vite, Webpack, etc.) ---
+import LZString from "lz-string";
+
+const encoded =
+  "PQKhCgAIUgVALAlgZ0gM0QGwKaQCbYC2A9gHbIAuATgIYXarzEDukFxk2AHtTQMYVIABxq1C2elVRoqxQpBqQAqgCUAMpEpVEpAOaQArsh26oMWAE8h2AMp9tQigHJUsIkMx1caxJJqY4KwYFUjxIKmw+AylEADdcCiDIHTRsCNI+bAA6M2BwcGBgSABGLMgbD182eFwtE2TSdgVlUkQySGI0TWxdcUbUAAps3TKAIiM00cgAH0hRgC55iaoASTwp2dGhYkpRgEpwROtIAHEJGx6+imQAHlhOHmxQ1Dq9AD5IAF44B-pnyAABgASADeKTSkAACqIKABfYCg8FUSAqBhwgGQAD8UJhM1O50uT2uN1RlA+8zgAG58oVIAAmMoAMSwkkMrXaTTImAsDT4mAMBG6vSJLwoMPqzF88EgTkWThCYTqQmquCEEQwXEOSVgxGhYgAcjRxHdfk88KLtO8vj9uH9zYDFojSKlkYbxLCMdi3bgKaRsPEqNSCkUAMxlACCyGQRAARjgVR0YwArSKCIz1ADS2B5qMINCEQnqAycNGQTgOR1wAFEeLQBCpiAZ6Hqjbd7razRaTB9viCoJAANoZhr4igXYX9O4fUtwXWiI3em4Zt4AXQpr101NhQcgu8gtIAtEfIFWABrhgCykLUVZskAA8ozIAAJKtqSFVlRwACaH7vA2fYgAw6YCKBqaMRwsRtkRWAARKsAEI9kgI8D0gWIMP7Pc91pUpR3HK5UBjCIaAAazwFhSHmLDsP3IoVkEZBKmuBMN0gGMeScYB5RoUJIHsbAvFQRQlHZUgOi6fwAhEKhrhyWi90rcpCX6GsjQ8XBvjOMcVOJUZgGWYBFmWNZgG2SgjPmcyKDWUY3mpBTd1pUkDEwCgKVGDY5mWLyFiWaNVnWPEth2ChfMWazbPyRy6PpModRbQhvXYkjyMo6iYtpBiXEgTBEFI3BFAwNy0jKBjkl0UhiAiVAqqoPMAmjCcWN4sIuR5PMhFQWV5nlJrCLYDgwOwRBkVII0GHkxylO9YprQS+ckomm4-JM9Z7Nily3I8tbRho7CZomul5rnA1lvGAK7MpTaGFc9zID9YCBgQFA2GwTBMFcII7AcQQmlGZBSMQIQpjA16Cp5ZganEzrCz0A59pw0MygAYTkGMdHqYbCAyxzaW0giRUgXQ4mCIxmjyygJLmPhWsQPAhNGKaFNpBazvEdAWTSVAwLoXKUEECjmFIZnaKUgA1fx6e9ZA1MIDSTsSxcCd0259MM4yAtM6zLMi9b7MRpyii2+6LrSWzgr1vbsMPY8z0va9bwfJ9X3fT8fz-SAAKAiEfeRYaIJ0SAoOiSA4MQ5DUMgAA9WOaSKBlIFgogyC0Og2lIcA0AMDIKAz-BsAwP0GybbAbmhMDTX+Dc3gGEQwIpCv4AAGkgeBWpwKgKTrxbkApGteHrRtm178u6HgN5kM+D5YmIenkL7Xc+FT4gcCyTBiF0AYARL+gC6L7A8ApUF6-gD09i3ePDGQGhdGwaiCAP3fsAGdWAsstazNC3XQtMkgIksv-bAtlW49zEMgKeHxF6xUAsBP2MoZKtnlE0aMuBfA8yCAhfsWVBCvSqqwRQfJBLiWIMmVMFIQTX3NkfTQ1ATDXT1uuOhehrpALWEwy0m5ICwn7Mvcgq9sgby3ogwgyAshrQvrwlea8hFgNbFkPWkil7SMEZvORoishsLwJI7BRQRFiJ0LEKWeBrqsyQKgZgjZMBhBjIVQI1gfrA0EGkWQVAsFG34io9eaj9FZEMcYyRsIdGgAgNAE8p5rzhn1OGWAKx7z6gyqEmAeE3Dy08HvHwfgAiWGsH3exth7BOP4rxOYG9iCkQaMYAgUwNyoEQF0YaHU6B8GlIoeukgRZmGwsCEEG5YTzCdC6HEYgPQKA+iwVwd4mi2jrH9GowhcQ0DQKyYaniN6dOgF0xOqIogxHiGHZ0aQniZAcA==";
+
+const code = LZString.decompressFromEncodedURIComponent(encoded);
+console.log("Decompressed code (Bundled/Vite):", code);
+
+/*
+--- OPTION B: In a plain HTML file (no build step) ---
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+<script>
+  const encoded = "...";
+  // In plain script tags, it is often global as 'LZString'
+  const code = LZString.decompressFromEncodedURIComponent(encoded);
+  console.log(code);
+</script>
+*/
