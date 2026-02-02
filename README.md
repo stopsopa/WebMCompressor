@@ -4,7 +4,6 @@
 
 # WebMCompressor
 
-[![CI/CD Pipeline](https://github.com/stopsopa/webmcompressor/actions/workflows/pipeline.yml/badge.svg)](https://github.com/stopsopa/webmcompressor/actions/workflows/pipeline.yml)
 [![Latest Release](https://img.shields.io/github/v/release/stopsopa/webmcompressor)](https://github.com/stopsopa/webmcompressor/releases)
 
 A premium desktop application for high-efficiency video recompression to WebM format using **two-pass VP9 encoding**. Built with Electron, React, and Vite, it provides a powerful yet intuitive interface for batch processing videos with professional-grade quality.
@@ -29,14 +28,14 @@ A premium desktop application for high-efficiency video recompression to WebM fo
 - **Styling:** Vanilla CSS with modern CSS features
 - **CI/CD:** GitHub Actions with automated releases for Win/Mac (x64 & ARM64)
 
-## � Installation
+## 📥 Installation
 
 You can download the latest production-ready installers for Windows and macOS directly from the **[Releases](https://github.com/stopsopa/webmcompressor/releases)** page.
 
 - **Windows:** Download the `.exe` installer (available for x64 and ARM64).
 - **macOS:** Download the `.dmg` installer (available for Intel/x64 and Apple Silicon/ARM64).
 
-## �🚀 Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
