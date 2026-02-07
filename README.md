@@ -33,10 +33,7 @@ Minimalistic desktop application for **macOS and Windows** for high-efficiency v
 
 ## 📥 Installation
 
-You can download the latest production-ready installers for Windows and macOS directly from the **[Releases](https://github.com/stopsopa/webmcompressor/releases)** page.
-
-- **Windows:** Download the `.exe` installer (available for x64 and ARM64).
-- **macOS:** Download the `.dmg` installer (available for Intel/x64 and Apple Silicon/ARM64).
+Pretty much follow instruction for other similar tool [LaymanSync](https://github.com/stopsopa/LaymanSync?tab=readme-ov-file#installation) (installation is described there in details) but obviously download from this repository [release page](https://github.com/stopsopa/WebMCompressor/releases)
 
 
 ## 📄 License
