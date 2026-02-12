@@ -164,7 +164,6 @@ jobs:
           EOF
 
       - name: "🏗️ Step B: Packaging Electron App (Publish)"
-        if: github.event_name == 'release' || inputs.run_electron_build
         working-directory: ./electron
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
