@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Download Helper</title>
+    <style>
+      :root {
+        --color-border-default: #d0d7de;
+        --color-canvas-subtle: #f6f8fa;
+        --color-accent-fg: #0969da;
+        --color-fg-muted: #636c76;
+        --color-success-fg: #1a7f37;
+        --color-success-bg: #dafbe1;
+        --color-success-border: rgba(31, 35, 40, 0.15);
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        line-height: 1.5;
+        color: #1f2328;
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 0 20px;
+      }
+      h1 {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 16px;
+      }
+      .Box {
+        border: 1px solid var(--color-border-default);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .Box-header {
+        background-color: var(--color-canvas-subtle);
+        padding: 16px;
+        border-bottom: 1px solid var(--color-border-default);
+        font-weight: 600;
+      }
+      .Box-row {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--color-border-default);
+        text-decoration: none;
+        color: inherit;
+        transition: background-color 0.2s;
+      }
+      .Box-row:last-child {
+        border-bottom: 0;
+      }
+      .Box-row:hover {
+        background-color: var(--color-canvas-subtle);
+      }
+      .asset-icon {
+        margin-right: 12px;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+      }
+      .asset-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .asset-name {
+        color: var(--color-accent-fg);
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .Box-row:hover .asset-name {
+        text-decoration: underline;
+      }
+      .asset-filename {
+        color: var(--color-fg-muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+      .download-icon {
+        color: var(--color-fg-muted);
+        margin-left: 12px;
+      }
+      .badge {
+        display: none;
+        padding: 2px 8px;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 2em;
+        margin-left: 8px;
+        border: 1px solid var(--color-success-border);
+      }
+      .badge-recommended {
+        background-color: var(--color-success-bg);
+        color: var(--color-success-fg);
+      }
+      .is-recommended .badge-recommended {
+        display: inline-block;
+      }
+      .is-recommended {
+        background-color: #f0fff4;
+      }
+    </style>
+    <script
+      src="https://cdn.jsdelivr.net/gh/MarketingPipeline/GitHub-Ribbon-Web-Component/dist/github-ribbon-wc.min.js"
+      defer
+    ></script>
+  </head>
+  <body>
+    <h1 id="project-title"></h1>
+
+    <div class="Box">
+      <div class="Box-header" id="project-version">Assets</div>
+      <div id="links"></div>
+      <div id="additions"></div>
+    </div>
+
+    <script type="module">
+      import { UAParser } from "https://cdn.jsdelivr.net/npm/ua-parser-js@2.0.9/+esm";
+
+      const uap = new UAParser();
+      const result = uap.getResult();
+
+      console.log("os:", JSON.stringify(result, null, 2));
+      // {
+      //   "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+      //   "browser": {
+      //     "name": "Chrome",
+      //     "version": "144.0.0.0",
+      //     "major": "144"
+      //   },
+      //   "cpu": {},
+      //   "device": {
+      //     "model": "Macintosh",
+      //     "vendor": "Apple"
+      //   },
+      //   "engine": {
+      //     "name": "Blink",
+      //     "version": "144.0.0.0"
+      //   },
+      //   "os": {
+      //     "name": "macOS",
+      //     "version": "10.15.7"
+      //   }
+      // }
+
+      const osName = (result.os.name || "").toLowerCase();
+      const os = osName.includes("mac")
+        ? "mac"
+        : osName.includes("win")
+          ? "win"
+          : osName.includes("linux")
+            ? "linux"
+            : "unknown";
+
+      const cpuArch = (result.cpu.architecture || "").toLowerCase();
+      let arch = cpuArch.includes("arm") || cpuArch.includes("aarch64") ? "arm64" : "x64";
+
+      // alternative detection since ua-parser-js v2 can't detect cpu architecture
+      if (navigator.userAgentData) {
+        try {
+          // https://developer.mozilla.org/en-US/docs/Web/API/NavigatorUAData/getHighEntropyValues
+          let rawArch = await navigator.userAgentData.getHighEntropyValues(["architecture"]);
+          rawArch = rawArch.architecture.toLowerCase();
+
+          arch = rawArch.includes("arm") || rawArch.includes("aarch64") ? "arm64" : "x64";
+        } catch (e) {
+          console.log(`navigator.userAgentData.getHighEntropyValues(["architecture"]) error: ${e}`);
+        }
+      }
+
+      console.log("Detected OS:", os);
+      console.log("Detected Arch:", arch);
+
+      const box = document.querySelector(".Box");
+      const minimalLinks = box.querySelectorAll("a");
+
+      minimalLinks.forEach((link) => {
+        const rowOs = link.getAttribute("data-os");
+        const rowArch = link.getAttribute("data-arch");
+        const label = link.getAttribute("data-label");
+        const file = link.getAttribute("data-file");
+
+        if (!rowOs || !rowArch) return;
+
+        // Dressing up the links
+        const osIcons = {
+          mac: `<svg viewBox="0 0 384 512" width="28" height="28" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>`,
+          win: `<svg viewBox="0 0 448 512" width="28" height="28" fill="currentColor"><path d="M0 93.7l183.6-25.3v177.4H0V93.7zm0 324.6l183.6 25.3V268.3H0v150zm203.8 28.1L448 512V268.3H203.8v178.1zm0-380.6v180.1H448V0l-244.2 65.8z"/></svg>`,
+          generic: `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>`,
+        };
+
+        const archIcons = {
+          x64: `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>`,
+          arm64: `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><circle cx="12" cy="12" r="3"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/></svg>`,
+        };
+
+        link.classList.add("Box-row");
+        const currentIcon = osIcons[rowOs] || osIcons.generic;
+        const currentArchIcon = archIcons[rowArch] || "";
+
+        const isRecommended = rowOs === os && rowArch === arch;
+        if (isRecommended) {
+          link.classList.add("is-recommended");
+        }
+
+        link.innerHTML = `
+            <div class="asset-icon">${currentIcon}</div>
+            <div class="asset-info">
+              <div class="asset-name">
+                <span style="display: flex; align-items: center; gap: 8px;">
+                  ${label}
+                  <span style="display: inline-flex; align-items: center; background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 11px; color: #555;">
+                    ${currentArchIcon} ${rowArch}
+                  </span>
+                  ${isRecommended ? '<span class="badge badge-recommended">Recommended for your system</span>' : ""}
+                </span>
+              </div>
+              <div class="asset-filename">${file}</div>
+            </div>
+            <div class="download-icon">
+              <svg viewBox="0 0 512 512" width="20" height="20" fill="currentColor"><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64zM432 456a24 24 0 1 1 0-48 24 24 0 1 1 0 48z"/></svg>
+            </div>
+          `;
+      });
+    </script>
+
+    <github-ribbon link="ribbonlink" type="right" color="#679d2c">Fork me on GitHub</github-ribbon>
+  </body>
+</html>

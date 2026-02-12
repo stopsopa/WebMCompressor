@@ -1,0 +1,74 @@
+name: Deploy branches to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - multiple
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version/Tag to generate download.html for (e.g. 2.1.0 or v2.1.0). If empty, reads from electron/package.json"
+        required: false
+        default: ""
+  workflow_call:
+    inputs:
+      version:
+        description: "Version/Tag to generate download.html for"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Resolve Version
+        id: vars
+        shell: bash
+        run: |
+          RAW_VERSION="${{ inputs.version || github.event.inputs.version }}"
+          if [ -n "$RAW_VERSION" ]; then
+            VERSION="$RAW_VERSION"
+          else
+            # Extract from electron/package.json
+            VERSION=$(cat electron/package.json | grep '"version":' | head -1 | awk -F: '{ print $2 }' | sed 's/[", ]//g')
+          fi
+          # Strip 'v' prefix if present for the generation script
+          VERSION_CLEAN=${VERSION#v}
+          echo "VERSION=$VERSION_CLEAN" >> $GITHUB_OUTPUT
+          echo "Resolved version: $VERSION_CLEAN (from input: $RAW_VERSION)"
+
+      - name: Generate download.html
+        run: |
+          # Ensure public directory exists
+          mkdir -p public
+          # Run generation script
+          NODE_OPTIONS="--experimental-strip-types" node .github/generate_download_helper/generate.ts ${{ steps.vars.outputs.VERSION }} public/download.html
+
+      - name: Prepare deployment directory
+        run: |
+          set -x
+          BRANCH_NAME="${{ github.ref_name }}"
+          mkdir -p "deploy/${BRANCH_NAME}"
+          cp -r public/* "deploy/${BRANCH_NAME}/" 
+          ls -l "deploy/${BRANCH_NAME}/download.html"
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./deploy
+          keep_files: true
