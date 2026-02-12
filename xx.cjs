@@ -25,6 +25,16 @@ cat <<EEE
   🐙 GitHub: $(git ls-remote --get-url origin | awk '{\$1=\$1};1' | tr -d '\\n' | sed -E 's/git@github\\.com:([^/]+)\\/(.+)\\.git/https:\\/\\/github.com\\/\\1\\/\\2/g')
 
 -- DEV NOTES --
+you can always stop github actions execution which was triggered on push and run manually:
+"Build & Release Pipeline" - pipeline
+  and untick the flag "Run official Electron build steps (QA & Release)?"
+  that will always speed up the process.
+  but do this only when you know build will succeed and you don't need QA builds.
+  at the end of this pipeline the last step will push to gh-pages branch. and that should release to gh pages
+
+You can always trigger workflow "Deploy branches to GitHub Pages" to release download helper manually.
+  you have to be careful though picking the branch and the tag
+
 
 EEE
 
