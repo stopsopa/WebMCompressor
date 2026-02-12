@@ -69,7 +69,6 @@
       "extraResources": [
         "bin"
       ],
-      "artifactName": "${productName}-${version}-${arch}-setup.${ext}",
       "icon": "public/icon.ico"
     },
     "nsis": {

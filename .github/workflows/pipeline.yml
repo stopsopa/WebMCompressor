@@ -401,6 +401,7 @@ jobs:
           path: |
             electron/release/*.dmg
             electron/release/*.exe
+            electron/release/*.zip
           retention-days: 1
 
       - name: 📢 QA Build Summary (${{ matrix.target }} ${{ matrix.arch }})
@@ -530,7 +531,7 @@ jobs:
       tag_name: ${{ needs.bump.outputs.new_tag }}
       run_electron_build: ${{ github.event_name != 'workflow_dispatch' || inputs.run_electron_build }}
     secrets: inherit
-    
+
   # STEP 5: Deploy to GitHub Pages (Release update)
   pages:
     needs: [bump, build-release]
