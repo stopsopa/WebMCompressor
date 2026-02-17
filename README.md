@@ -8,7 +8,7 @@
 
 [![Latest Release](https://img.shields.io/github/v/release/stopsopa/webmcompressor)](https://github.com/stopsopa/webmcompressor/releases)
 
-Minimalistic desktop application for **macOS and Windows** for high-efficiency video recompression to WebM format using **ffmpeg two-pass VP9 encoding**, following [Google's VP9 VOD recommendations](https://developers.google.com/media/vp9/settings/vod/) (essentially the same method used by YouTube to optimize its video delivery).
+Minimalistic desktop application for **macOS and Windows** for high-efficiency video recompression to WebM format using **ffmpeg two-pass VP9 encoding**, following [Google's VP9 VOD recommendations](https://developers.google.com/media/vp9/settings/vod/) (essentially achieving the same result when uploading to YouTube - the same levels of compression and quality).
 
 ## ✨ Key Features
 
