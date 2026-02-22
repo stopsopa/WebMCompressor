@@ -30,6 +30,15 @@ Minimalistic desktop application for **macOS and Windows** for high-efficiency v
 - **Styling:** Vanilla CSS with modern CSS features
 - **CI/CD:** GitHub Actions with automated releases for Win/Mac (x64 & ARM64)
 
+## 📥 Installation (TLDR version)
+
+Just go to [download binary selector helper](https://stopsopa.github.io/WebMCompressor/main/download.html)
+
+>
+> [!NOTE]
+> Pay attention to "possible issues" section below the download list.
+>
+
 ## 📥 Installation
 
 Pretty much follow instruction for other similar tool [LaymanSync](https://github.com/stopsopa/LaymanSync?tab=readme-ov-file#installation) (installation is described there in details) but obviously download from this repository [release page](https://github.com/stopsopa/WebMCompressor/releases)
